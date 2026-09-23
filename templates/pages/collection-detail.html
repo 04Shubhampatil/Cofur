@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="cove-page">
+    <section class="cove-hero page-banner">
+      <div class="cove-hero-image">
+        {% if collection.banner_desktop %}
+        <picture data-shot="banner-{{ collection.slug }}">
+          {% if collection.banner_mobile_image %}<source media="(max-width:767px)" srcset="{{ collection.banner_mobile_image.url }}" sizes="100vw">{% endif %}
+          <img src="{{ collection.banner_desktop.url }}" sizes="100vw" alt="{{ collection.banner_alt|default:collection.name }}"{% if collection.banner_mobile_image and collection.banner_mobile_alt %} data-mobile-alt="{{ collection.banner_mobile_alt }}"{% endif %} fetchpriority="high" decoding="async">
+        </picture>
+        {% endif %}
+      </div>
+      <div class="cove-hero-copy">
+        <div>
+          <h1>{{ collection.display_heading|br }}</h1>
+        </div>
+      </div>
+    </section>
+    <section class="cove-products" aria-labelledby="cove-products-title">
+      <h2 class="sr-only" id="cove-products-title">{{ collection.name }} products</h2>
+      {% if collection.description %}<p class="sr-only">{{ collection.description }}</p>{% endif %}
+      <div class="cove-product-grid">
+        {% for product in products %}
+          {% include "components/product-card.html" with product=product %}
+        {% empty %}
+          <p class="cove-empty">Products coming soon. <a href="{% url 'website:contact' %}?collection={{ collection.slug }}">Enquire about the {{ collection.name }} collection</a>.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

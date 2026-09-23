@@ -1,0 +1,13 @@
+{% with s=seo %}
+  <title>{{ s.title|default:site.default_meta_title|default:site.site_name }}</title>
+  {% if s.description|default:site.default_meta_description %}<meta name="description" content="{{ s.description|default:site.default_meta_description }}">{% endif %}
+  {% if s.keywords|default:site.default_meta_keywords %}<meta name="keywords" content="{{ s.keywords|default:site.default_meta_keywords }}">{% endif %}
+  <meta name="robots" content="{{ s.robots|default:site.default_robots|default:'index, follow' }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.site_name }}">
+  <meta property="og:title" content="{{ s.og_title|default:s.title|default:site.site_name }}">
+  {% if s.og_description|default:s.description|default:site.default_meta_description %}<meta property="og:description" content="{{ s.og_description|default:s.description|default:site.default_meta_description }}">{% endif %}
+  {% if s.og_image %}<meta property="og:image" content="{{ s.og_image }}">{% elif site.default_og_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site.default_og_image.url }}">{% endif %}
+  {% if s.canonical %}<link rel="canonical" href="{{ s.canonical }}"><meta property="og:url" content="{{ s.canonical }}">{% endif %}
+  <meta name="twitter:card" content="summary_large_image">
+{% endwith %}

@@ -1,0 +1,43 @@
+{% extends "dashboard/generic/form.html" %}
+{% load dashboard_tags %}
+{% block form_body %}
+{% for key, label, fields in tabs %}
+<section class="card form-section" id="section-{{ key }}">
+  <h2 class="form-section__title">{{ label }}</h2>
+  {% if key == "overview" %}<p class="muted">Shown at the top of the product page (Overview) and on the collection cards. The hover image is revealed when a card is hovered.</p>
+  {% elif key == "details" %}<p class="muted">The two-column image mosaic under the <b>Product details</b> heading. Tiles can also be a video (MP4/WebM upload or a YouTube/Vimeo link).</p>
+  {% elif key == "specs_image" %}<p class="muted">The large image on the left of the <b>Specifications</b> block. It is swapped when a fabric swatch is clicked.</p>
+  {% elif key == "fabric" %}<p class="muted">The <b>Fabric options</b> accordion: intro text plus one swatch per colour. The finish image replaces the Specifications image when that swatch is selected.</p>
+  {% elif key == "features" %}<p class="muted">The <b>Features</b> accordion: bullet list first, then the Frame / Upholstery / Cover / Base table.</p>
+  {% elif key == "dimensions" %}<p class="muted">The <b>Dimensions</b> accordion: measurement values and the drawings (top view, side view, angled view). The first two drawings sit side by side; the third goes under them beside the values.</p>
+  {% elif key == "care" %}<p class="muted">The <b>Material care</b> accordion: one line per item.</p>
+  {% elif key == "gallery" %}<p class="muted">The image carousel under the <b>Gallery</b> heading.</p>
+  {% elif key == "related" %}<p class="muted">Hold Ctrl/Cmd to select several. When none are selected, other products from the same sub-category are shown.</p>
+  {% endif %}
+  {% if fields %}
+  <div class="form-rows">
+    {% for name in fields %}{% with field=form|field_by_name:name %}{% include "dashboard/generic/_field.html" with field=field %}{% endwith %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if key == "details" %}
+    {% include "dashboard/products/_dropzone.html" with kind="detail" label="Add product details images" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.detail_images title="Product details images / videos" empty_label="tile" %}
+  {% elif key == "fabric" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.colors title="Fabric swatches" empty_label="swatch" %}
+  {% elif key == "features" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.features title="Feature bullet points" empty_label="feature" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.specs title="Specification table (label / value)" empty_label="specification" %}
+  {% elif key == "dimensions" %}
+    {% include "dashboard/products/_dropzone.html" with kind="dimension" label="Add dimension drawings" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.dimension_images title="Dimension images" empty_label="drawing" %}
+  {% elif key == "care" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.care title="Material care items" empty_label="care item" %}
+  {% elif key == "gallery" %}
+    {% include "dashboard/products/_dropzone.html" with kind="gallery" label="Add gallery images" %}
+    {% include "dashboard/generic/_formset.html" with formset=formsets.gallery_images title="Gallery images" empty_label="image" %}
+  {% endif %}
+</section>
+{% endfor %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% endblock %}

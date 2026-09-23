@@ -1,0 +1,37 @@
+{% load static dashboard_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in · {{ site.site_name }} CMS</title>
+  <link rel="icon" href="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'images/cofur-o.png' %}{% endif %}">
+  <link rel="stylesheet" href="{% static_v 'dashboard/css/dashboard.css' %}">
+</head>
+<body class="dash dash--auth">
+  <main class="auth">
+    <form class="auth__card" method="post" action="{% url 'dashboard:login' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="auth__brand">
+        {% if site.logo %}<img src="{{ site.logo.url }}" alt="{{ site.site_name }}">{% else %}<strong>{{ site.site_name }}</strong>{% endif %}
+        <p>Content management</p>
+      </div>
+      {% if form.non_field_errors %}<div class="alert alert--error">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+      <div class="field">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}<small class="error">{{ e }}</small>{% endfor %}
+      </div>
+      <label class="check"><input type="checkbox" name="remember" value="1"> Keep me signed in</label>
+      <button class="btn btn--primary btn--block" type="submit">Sign in</button>
+      <p class="auth__foot"><a href="{% url 'website:home' %}">← Back to website</a></p>
+    </form>
+  </main>
+</body>
+</html>

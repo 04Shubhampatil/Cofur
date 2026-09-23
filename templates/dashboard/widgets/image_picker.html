@@ -1,0 +1,15 @@
+{% load static %}<div class="img-picker" data-image-picker>
+  <div class="img-picker__preview{% if not widget.preview_url %} is-empty{% endif %}" data-preview>
+    {% if widget.preview_url %}<img src="{{ widget.preview_url }}" alt="">{% else %}<span>No image</span>{% endif %}
+  </div>
+  <div class="img-picker__controls">
+    <label class="btn btn--ghost btn--sm">
+      <input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %} data-file-input>
+      <span>Upload image</span>
+    </label>
+    {% if widget.is_initial and not widget.required %}
+    <label class="img-picker__clear"><input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}"> Remove</label>
+    {% endif %}
+    <small class="img-picker__hint" data-picker-hint>{% if widget.value and widget.is_initial %}{{ widget.value }}{% else %}JPG, PNG, WebP or SVG up to 10 MB{% endif %}</small>
+  </div>
+</div>

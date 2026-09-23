@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags %}
+{% block content %}
+<div class="page-head"><h1>Delete {{ verbose_name|default:"record" }}</h1></div>
+<form method="post" class="card card--form" style="max-width:560px">
+  {% csrf_token %}
+  <p>Are you sure you want to delete <strong>{{ object }}</strong>? This cannot be undone.</p>
+  {% if object.products.count %}<p class="alert alert--warn">{{ object.products.count }} product(s) reference this record and will lose the link.</p>{% endif %}
+  <div class="form-actions">
+    <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+    <button class="btn btn--danger" type="submit">{% icon "trash" %}<span>Delete</span></button>
+  </div>
+</form>
+{% endblock %}

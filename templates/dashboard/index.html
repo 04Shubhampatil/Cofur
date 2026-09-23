@@ -1,0 +1,83 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags humanize %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
+    <p class="muted">Here is what is happening on the COFUR website.</p>
+  </div>
+</div>
+
+<section class="stats">
+  {% for stat in stats %}
+  <a class="stat" href="{% url stat.url %}{{ stat.query|default:'' }}">
+    <span class="stat__icon">{% icon stat.icon %}</span>
+    <span class="stat__value">{{ stat.value|intcomma }}</span>
+    <span class="stat__label">{{ stat.label }}</span>
+  </a>
+  {% endfor %}
+</section>
+
+{% if quick_actions %}
+<section class="card">
+  <div class="card__head"><h2>Quick actions</h2></div>
+  <div class="quick-actions">
+    {% for action in quick_actions %}<a class="btn btn--ghost" href="{% url action.url %}">{% icon action.icon %}<span>{{ action.label }}</span></a>{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="grid grid--2">
+  {% if perms.enquiries.view_enquiry %}
+  <section class="card">
+    <div class="card__head"><h2>Enquiries</h2><a class="link" href="{% url 'dashboard:enquiry_list' %}">View all</a></div>
+    <div class="mini-stats">
+      <div><b>{{ enquiry_stats.total }}</b><span>Total</span></div>
+      <div><b>{{ enquiry_stats.new }}</b><span>New</span></div>
+      <div><b>{{ enquiry_stats.pending }}</b><span>Pending</span></div>
+      <div><b>{{ enquiry_stats.converted }}</b><span>Converted</span></div>
+    </div>
+    {% if recent_enquiries %}
+    <ul class="activity">
+      {% for enquiry in recent_enquiries %}
+      <li><a href="{% url 'dashboard:enquiry_detail' enquiry.pk %}"><strong>{{ enquiry.name }}</strong><span class="muted">{{ enquiry.product|default:enquiry.collection_ref|default:"General enquiry" }}</span></a><span class="badge badge--{% if enquiry.status == 'new' %}info{% elif enquiry.status == 'converted' %}success{% else %}warn{% endif %}">{{ enquiry.get_status_display }}</span><time class="muted">{{ enquiry.created_at|naturaltime }}</time></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No enquiries yet.</p>{% endif %}
+  </section>
+  {% endif %}
+
+  {% if perms.catalog.view_product %}
+  <section class="card">
+    <div class="card__head"><h2>Recently added products</h2><a class="link" href="{% url 'dashboard:product_list' %}">View all</a></div>
+    {% if recent_products %}
+    <ul class="activity">
+      {% for product in recent_products %}
+      <li><a href="{% url 'dashboard:product_update' product.pk %}">{% if product.thumbnail %}<img class="activity__thumb" src="{{ product.thumbnail.url }}" alt="">{% endif %}<strong>{{ product.name }}</strong><span class="muted">{{ product.collection|default:"No sub-category" }}</span></a><span class="badge {% if product.is_published %}badge--success{% else %}badge--warn{% endif %}">{{ product.get_status_display }}</span><time class="muted">{{ product.created_at|naturaltime }}</time></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No products yet. <a href="{% url 'dashboard:product_create' %}">Add the first one</a>.</p>{% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card__head"><h2>Recently updated products</h2></div>
+    <ul class="activity">
+      {% for product in updated_products %}
+      <li><a href="{% url 'dashboard:product_update' product.pk %}"><strong>{{ product.name }}</strong><span class="muted">{{ product.collection|default:"No sub-category" }}</span></a><time class="muted">{{ product.updated_at|naturaltime }}</time></li>
+      {% empty %}<li class="empty">Nothing updated yet.</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if perms.catalog.view_collection %}
+  <section class="card">
+    <div class="card__head"><h2>Recently added sub-categories</h2><a class="link" href="{% url 'dashboard:collection_list' %}">View all</a></div>
+    <ul class="activity">
+      {% for collection in recent_collections %}
+      <li><a href="{% url 'dashboard:collection_update' collection.pk %}"><strong>{{ collection.name }}</strong><span class="muted">{{ collection.category|default:"No category" }} · {{ collection.product_count }} product{{ collection.product_count|pluralize }}</span></a><time class="muted">{{ collection.created_at|naturaltime }}</time></li>
+      {% empty %}<li class="empty">No sub-categories yet.</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

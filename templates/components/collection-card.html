@@ -1,0 +1,7 @@
+{% load static %}<a class="seating-card{% if collection.card_style %} seating-card--{{ collection.card_style }}{% endif %}" href="{{ collection.link }}" aria-label="{% if collection.link_override %}Enquire about{% else %}Explore{% endif %} {{ collection.name }} collection">
+  <div class="seating-product">{% if collection.image %}<img src="{{ collection.image.url }}" alt="{{ collection.banner_alt|default:collection.name }}">{% endif %}</div>
+  <div class="seating-card-copy">
+    <h3 data-static-title>{{ collection.name }} collection</h3>
+    {% if collection.tagline %}<p class="eyebrow">{{ collection.tagline }}</p>{% endif %}
+  </div><img class="seating-hover-arrow" src="{% static 'images/frame1.svg' %}" alt="">
+</a>

@@ -1,0 +1,34 @@
+{% load dashboard_tags %}
+{% comment %}Inline formset rendered as a sortable list of rows. Params: formset, title, empty_label{% endcomment %}
+<div class="formset" data-formset data-prefix="{{ formset.prefix }}">
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert alert--error">{{ formset.non_form_errors }}</div>{% endif %}
+  <div class="formset__head"><h3>{{ title }}</h3><button type="button" class="btn btn--ghost btn--sm" data-formset-add>{% icon "plus" %}<span>Add {{ empty_label|default:"row" }}</span></button></div>
+  <div class="formset__rows" data-formset-rows>
+    {% for form in formset.forms %}
+    <div class="formset__row{% if form.errors %} has-error{% endif %}" data-formset-row>
+      <span class="drag" draggable="true" title="Drag to reorder">{% icon "drag" %}</span>
+      {{ form.id }}
+      <div class="formset__fields">
+        {% for field in form.visible_fields %}
+          {% if field.name == "DELETE" %}{% elif field.name == "order" %}<div class="field field--order" hidden>{{ field }}</div>{% else %}{% include "dashboard/generic/_field.html" with field=field %}{% endif %}
+        {% endfor %}
+      </div>
+      <label class="formset__delete" title="Remove">{{ form.DELETE }}<span>{% icon "trash" %}</span></label>
+    </div>
+    {% endfor %}
+  </div>
+  <template data-formset-empty>
+    <div class="formset__row" data-formset-row>
+      <span class="drag" draggable="true" title="Drag to reorder">{% icon "drag" %}</span>
+      {{ formset.empty_form.id }}
+      <div class="formset__fields">
+        {% for field in formset.empty_form.visible_fields %}
+          {% if field.name == "DELETE" %}{% elif field.name == "order" %}<div class="field field--order" hidden>{{ field }}</div>{% else %}{% include "dashboard/generic/_field.html" with field=field %}{% endif %}
+        {% endfor %}
+      </div>
+      <label class="formset__delete" title="Remove">{{ formset.empty_form.DELETE }}<span>{% icon "trash" %}</span></label>
+    </div>
+  </template>
+  {% if not formset.forms %}<p class="formset__empty muted" data-formset-empty-note>No {{ empty_label|default:"rows" }} yet.</p>{% endif %}
+</div>

@@ -1,0 +1,28 @@
+# /etc/nginx/sites-available/cofur  — replace example.com with your domain
+server {
+    listen 80;
+    server_name example.com www.example.com;
+
+    client_max_body_size 120M;   # must cover MAX_VIDEO_UPLOAD_MB
+
+    location /static/ {
+        alias /srv/cofur/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /media/ {
+        alias /srv/cofur/media/;
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+
+    location / {
+        proxy_pass http://unix:/run/cofur/gunicorn.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90;
+    }
+}

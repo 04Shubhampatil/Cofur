@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cofur — Furniture for the way people work</title>
+  <meta name="description"
+    content="Cofur designs considered furniture for offices, coworking spaces and commercial interiors.">
+  <meta property="og:title" content="Cofur Furniture">
+  <meta property="og:description" content="Furniture for the way people actually work.">
+  <link rel="icon" href="assets/images/cofur-o.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body data-page="home">
+  <div data-include="includes/header.html"></div>
+  <main>
+    <section class="hero">
+      <div class="hero-slides">
+        <div class="hero-slide is-active" data-shot="hero-1">
+          <picture>
+            <source media="(max-width:767px)"
+              srcset="assets/images/hero-1-m480.webp 480w, assets/images/hero-1-m564.webp 564w" sizes="100vw">
+            <img src="assets/images/hero-1-d1440.webp"
+              srcset="assets/images/hero-1-d768.webp 768w, assets/images/hero-1-d1024.webp 1024w, assets/images/hero-1-d1440.webp 1440w, assets/images/hero-1-d1672.webp 1672w"
+              sizes="100vw" width="1672" height="941"
+              alt="Reception lounge with cream armchairs and planting beneath a curved timber ceiling"
+              fetchpriority="high" decoding="async">
+          </picture>
+        </div>
+        <div class="hero-slide" data-shot="hero-2">
+          <picture>
+            <source media="(max-width:767px)"
+              srcset="assets/images/hero-2-m480.webp 480w, assets/images/hero-2-m564.webp 564w" sizes="100vw">
+            <img src="assets/images/hero-2-d1440.webp"
+              srcset="assets/images/hero-2-d768.webp 768w, assets/images/hero-2-d1024.webp 1024w, assets/images/hero-2-d1440.webp 1440w, assets/images/hero-2-d1920.webp 1920w"
+              sizes="100vw" width="2232" height="705"
+              alt="Office reception with a terracotta honeycomb acoustic ceiling above a circular welcome desk"
+              loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="hero-slide" data-shot="hero-3">
+          <picture>
+            <source media="(max-width:767px)"
+              srcset="assets/images/hero-3-m480.webp 480w, assets/images/hero-3-m768.webp 768w" sizes="100vw">
+            <img src="assets/images/hero-3-d1440.webp"
+              srcset="assets/images/hero-3-d768.webp 768w, assets/images/hero-3-d1024.webp 1024w, assets/images/hero-3-d1440.webp 1440w, assets/images/hero-3-d1920.webp 1920w"
+              sizes="100vw" width="2232" height="705"
+              alt="Colleagues meeting at a long table on herringbone flooring beside timber slat walls"
+              loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="hero-slide" data-shot="hero-4">
+          <picture>
+            <source media="(max-width:767px)"
+              srcset="assets/images/hero-4-m480.webp 480w, assets/images/hero-4-m598.webp 598w" sizes="100vw">
+            <img src="assets/images/hero-4-d1440.webp"
+              srcset="assets/images/hero-4-d768.webp 768w, assets/images/hero-4-d1024.webp 1024w, assets/images/hero-4-d1440.webp 1440w, assets/images/hero-4-d1920.webp 1920w"
+              sizes="100vw" width="2233" height="704"
+              alt="Breakout lounge with rust swivel chairs against a blue and white acoustic panel wall"
+              loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="hero-slide" data-shot="hero-5">
+          <picture>
+            <source media="(max-width:767px)"
+              srcset="assets/images/hero-5-m480.webp 480w, assets/images/hero-5-m768.webp 768w" sizes="100vw">
+            <img src="assets/images/hero-5-d1440.webp"
+              srcset="assets/images/hero-5-d768.webp 768w, assets/images/hero-5-d1024.webp 1024w, assets/images/hero-5-d1440.webp 1440w, assets/images/hero-5-d1774.webp 1774w"
+              sizes="100vw" width="1774" height="887"
+              alt="Office kitchen and social stair with acoustic baffles above a shared dining table"
+              loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <!-- <div class="hero-slide hero-slide--video"><video class="hero-video" muted playsinline preload="none"
+            poster="assets/images/hero-3.jpg">
+            <source src="assets/video/cofur-office-interior.mp4" type="video/mp4">
+          </video></div> -->
+      </div>
+      <h1>Furniture for the way people actually work</h1>
+      <div class="hero-dots" role="tablist" aria-label="Hero slides"></div>
+    </section>
+
+    <!-- Category rail: heading and arrows on one line, cards scrolling beneath.
+         The cards are a plain scroller with snap points, so a trackpad swipe or
+         a drag works even before the arrow script runs. -->
+    <section class="range-rail container" id="our-products" aria-labelledby="range-rail-title">
+      <div class="range-rail__head">
+        <h2 id="range-rail-title">We help create spaces that people <strong>want to work in.</strong></h2>
+        <div class="range-rail__nav">
+          <button class="range-rail__arrow" type="button" data-rail-prev aria-label="Previous categories">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <button class="range-rail__arrow" type="button" data-rail-next aria-label="Next categories">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <ul class="range-rail__track" tabindex="0" role="list"
+        aria-label="Product categories. Scroll sideways or use the arrows.">
+        <li class="range-card"><a href="soft-seating-main-category.html">
+            <img src="assets/images/category-seating.png" alt="Soft seating lounge chairs" loading="lazy"
+              decoding="async">
+            <span class="range-card__copy">
+              <b>Soft Seating</b>
+              <em><span>Lounge, modular &amp; breakout</span></em>
+              <i>View items</i>
+            </span>
+          </a></li>
+        <li class="range-card"><a href="contact.html?collection=acoustic-lights">
+            <img src="assets/images/category-acoustic.png" alt="Acoustic pendant lighting" loading="lazy"
+              decoding="async">
+            <span class="range-card__copy">
+              <b>Acoustic Lights</b>
+              <em><span>Pendants &amp; suspended fixtures</span></em>
+              <i>View items</i>
+            </span>
+          </a></li>
+        <li class="range-card"><a href="contact.html?collection=acoustic-ceilings">
+            <img src="assets/images/statement-3-d1024.webp"
+              alt="Magenta ribbon acoustic ceiling rafts above a workplace cafe" loading="lazy" decoding="async">
+            <span class="range-card__copy">
+              <b>Acoustic Ceilings</b>
+              <em><span>Rafts, baffles &amp; clouds</span></em>
+              <i>View items</i>
+            </span>
+          </a></li>
+        <li class="range-card"><a href="contact.html?collection=phone-booth">
+            <img src="assets/images/why-cofur-v2-d960.webp"
+              alt="Timber focus booth with an acoustic tile wall and two stools" loading="lazy" decoding="async">
+            <span class="range-card__copy">
+              <b>Phone Booth</b>
+              <em><span>Focus rooms &amp; quiet pods</span></em>
+              <i>View items</i>
+            </span>
+          </a></li>
+      </ul>
+    </section>
+
+    <!-- <section class="home-section categories" id="our-products">
+  
+      <div class="category-grid"><a class="category-card" href="soft-seating.html">
+          <div class="category-copy">
+            <h3 data-static-title>Soft seating</h3>
+            <p>Explore the materials that define our surfaces and their character.</p><span
+              class="category-button"><span>View collection</span><svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" />
+              </svg></span>
+          </div>
+          <div class="category-image"><img src="assets/images/category-seating.png" alt="Soft seating collection"
+              loading="lazy"></div>
+        </a><a class="category-card" href="contact.html">
+          <div class="category-copy">
+            <h3 data-static-title>Acoustic lights</h3>
+            <p>How we shape, finish, and install each surface with precision.</p><span
+              class="category-button"><span>View collection</span><svg viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" />
+              </svg></span>
+          </div>
+          <div class="category-image"><img src="assets/images/category-acoustic.png" alt="Acoustic lights collection"
+              loading="lazy"></div>
+        </a></div>
+    </section> -->
+
+    <section class="statement-story" id="about-cofur" aria-label="Who we are">
+      <div class="who-we-are">
+        <div class="statement-images">
+          <picture data-shot="statement-1">
+            <source media="(max-width:767px)"
+              srcset="assets/images/statement-1-m387.webp 387w" sizes="100vw">
+            <img src="assets/images/statement-1-d1440.webp"
+              srcset="assets/images/statement-1-d768.webp 768w, assets/images/statement-1-d1024.webp 1024w, assets/images/statement-1-d1440.webp 1440w, assets/images/statement-1-d1920.webp 1920w"
+              sizes="100vw" width="2232" height="705"
+              alt="Pale green lounge chairs and a navy banquette in a quiet breakout area" loading="lazy"
+              decoding="async">
+          </picture>
+          <picture data-shot="statement-2">
+            <source media="(max-width:767px)"
+              srcset="assets/images/statement-2-m480.webp 480w, assets/images/statement-2-m768.webp 768w" sizes="100vw">
+            <img src="assets/images/statement-2-d1440.webp"
+              srcset="assets/images/statement-2-d768.webp 768w, assets/images/statement-2-d1024.webp 1024w, assets/images/statement-2-d1440.webp 1440w, assets/images/statement-2-d1920.webp 1920w"
+              sizes="100vw" width="2232" height="705"
+              alt="Green disc acoustic pendants above a circular planted seating island" loading="lazy"
+              decoding="async">
+          </picture>
+          <picture data-shot="statement-3">
+            <source media="(max-width:767px)"
+              srcset="assets/images/statement-3-m480.webp 480w, assets/images/statement-3-m768.webp 768w" sizes="100vw">
+            <img src="assets/images/statement-3-d1440.webp"
+              srcset="assets/images/statement-3-d768.webp 768w, assets/images/statement-3-d1024.webp 1024w, assets/images/statement-3-d1440.webp 1440w, assets/images/statement-3-d1920.webp 1920w"
+              sizes="100vw" width="2231" height="705"
+              alt="Magenta ribbon acoustic ceiling rafts above a workplace cafe" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="who-overlay"></div>
+        <div class="who-copy">
+          <div class="who-lines">
+            <h2 class="sr-only" data-static-title>We design spaces that work better. We build solutions that last. We
+              create comfort that matters.</h2>
+            <!-- Each line carries its own display word. The active line lifts its
+                 opening verb into the left column and collapses the inline copy of
+                 it, so the sentence reads whole either way. -->
+            <div class="statement-lines">
+              <p class="statement-line is-active">
+                <span class="statement-word" aria-hidden="true">We design</span>
+                <span class="statement-body"><span class="statement-prefix"><span>we design&nbsp;</span></span>spaces that
+                  work better.</span>
+              </p>
+              <p class="statement-line">
+                <span class="statement-word" aria-hidden="true">We build</span>
+                <span class="statement-body"><span class="statement-prefix"><span>we build&nbsp;</span></span>solutions that
+                  last.</span>
+              </p>
+              <p class="statement-line">
+                <span class="statement-word" aria-hidden="true">We create</span>
+                <span class="statement-body"><span class="statement-prefix"><span>we create&nbsp;</span></span>comfort that
+                  matters.</span>
+              </p>
+            </div>
+            <!-- Phone-only progress for the pinned sequence; hidden on desktop,
+                 where all three lines are on screen at once. -->
+            <div class="statement-steps" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <div class="who-bottom">
+            <p class="who-description">You bring the vision. We bring expertise and design to make it work.</p><a
+              class="action-link action-light" href="about.html"><span>About us</span><b><svg viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" />
+                </svg></b></a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="featured-section home-section" id="featured-products">
+      <div class="section-heading">
+        <h2>Featured products</h2>
+      </div>
+      <div class="featured-stage"><img src="assets/images/featured-grove.jpg"
+          alt="Grove Trio upholstered modular seating">
+        <div class="featured-title">
+          <h3 data-static-title>Grove Trio</h3><a class="text-cta" href="collection.html"><span>View
+              products</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              aria-hidden="true">
+              <path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" />
+            </svg></a>
+        </div>
+      </div>
+    </section>
+    <div class="container home-lower">
+      <section class="why-grid">
+        <div class="why-copy">
+          <picture class="reveal" data-shot="why-cofur">
+            <source media="(max-width:767px)"
+              srcset="assets/images/why-cofur-v2-m480.webp 480w, assets/images/why-cofur-v2-m768.webp 768w"
+              sizes="(max-width:900px) 100vw, 46vw">
+            <img
+              src="assets/images/why-cofur-v2-d960.webp"
+              srcset="assets/images/why-cofur-v2-d640.webp 640w, assets/images/why-cofur-v2-d960.webp 960w, assets/images/why-cofur-v2-d1280.webp 1280w, assets/images/why-cofur-v2-d1536.webp 1536w"
+              sizes="(max-width:900px) 100vw, 46vw" width="1536" height="1024"
+              alt="Timber focus booth with a beige acoustic tile wall, copper wall light and two stools"
+              loading="lazy" decoding="async">
+          </picture>
+          <h2 class="section-title">What makes COFUR different</h2>
+          <div class="why-list reveal">
+            <div>Design with purpose</div>
+            <div>Performance you can live with</div>
+            <div>Flexibility built in</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <div data-include="includes/footer.html"></div>
+  <script src="assets/vendor/gsap.min.js"></script>
+  <script src="assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="includes/header.js"></script>
+  <script src="includes/footer.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

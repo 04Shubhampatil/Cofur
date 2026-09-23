@@ -1,0 +1,10 @@
+{% extends "dashboard/generic/list.html" %}
+{% load dashboard_tags %}
+{% block before_table %}
+<section class="stats stats--4">
+  <a class="stat" href="{% url 'dashboard:enquiry_list' %}"><span class="stat__value">{{ enquiry_stats.total }}</span><span class="stat__label">Total enquiries</span></a>
+  <a class="stat" href="?status=new"><span class="stat__value">{{ enquiry_stats.new }}</span><span class="stat__label">New</span></a>
+  <a class="stat" href="?status=in_progress"><span class="stat__value">{{ enquiry_stats.pending }}</span><span class="stat__label">Pending</span></a>
+  <a class="stat" href="?status=converted"><span class="stat__value">{{ enquiry_stats.converted }}</span><span class="stat__label">Converted</span></a>
+</section>
+{% endblock %}

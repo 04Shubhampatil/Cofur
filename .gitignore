@@ -1,0 +1,25 @@
+.env
+*.pyc
+__pycache__/
+db.sqlite3
+/media/
+/staticfiles/
+*.log
+.DS_Store
+.venv/
+venv/
+.idea/
+.vscode/
+media/
+staticfiles/
+
+# Python tooling, tests, and coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local assistant workspace
+.claude/

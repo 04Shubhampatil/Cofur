@@ -1,0 +1,48 @@
+{% comment %}Contact page enquiry form. Expects `form` (EnquiryForm) and `page` (ContactPage).{% endcomment %}
+<form id="enquiry-form" class="contact-form" method="post" action="{% url 'website:enquire' %}" novalidate data-enquiry-form>
+  {% csrf_token %}
+  {{ form.website }}
+  {{ form.form_started }}
+  {{ form.product_slug }}
+  <input type="hidden" name="collection" value="{{ collection_ref|default:form.collection.value|default:'' }}">
+  {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="contact-grid">
+    <div class="cfield{% if form.name.errors %} has-error{% endif %}">
+      <label for="{{ form.name.id_for_label }}">Full Name<em>*</em></label>
+      <input id="{{ form.name.id_for_label }}" name="name" autocomplete="name" required value="{{ form.name.value|default:'' }}" maxlength="150">
+      {% for e in form.name.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+    <div class="cfield{% if form.email.errors %} has-error{% endif %}">
+      <label for="{{ form.email.id_for_label }}">Email Address<em>*</em></label>
+      <input id="{{ form.email.id_for_label }}" name="email" type="email" autocomplete="email" required value="{{ form.email.value|default:'' }}">
+      {% for e in form.email.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+    <div class="cfield{% if form.phone.errors %} has-error{% endif %}">
+      <label for="{{ form.phone.id_for_label }}">Phone<em>*</em></label>
+      <input id="{{ form.phone.id_for_label }}" name="phone" type="tel" autocomplete="tel" required pattern="[0-9 +()\-]{7,20}" value="{{ form.phone.value|default:'' }}">
+      {% for e in form.phone.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+    <div class="cfield{% if form.company.errors %} has-error{% endif %}">
+      <label for="{{ form.company.id_for_label }}">Company</label>
+      <input id="{{ form.company.id_for_label }}" name="company" autocomplete="organization" value="{{ form.company.value|default:'' }}">
+      {% for e in form.company.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+    <div class="cfield cfield--full{% if form.product.errors %} has-error{% endif %}">
+      <label for="{{ form.product.id_for_label }}">Product</label>
+      <select id="{{ form.product.id_for_label }}" name="product">
+        <option value="">Select a product (optional)</option>
+        {% for product in form.fields.product.queryset %}<option value="{{ product.pk }}"{% if form.product.value|stringformat:'s' == product.pk|stringformat:'s' %} selected{% endif %}>{{ product.name }}</option>{% endfor %}
+      </select>
+      {% for e in form.product.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+    <div class="cfield cfield--full{% if form.message.errors %} has-error{% endif %}">
+      <label for="{{ form.message.id_for_label }}">Message<em>*</em></label>
+      <textarea id="{{ form.message.id_for_label }}" name="message" rows="6" required minlength="5">{{ form.message.value|default:'' }}</textarea>
+      {% for e in form.message.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+    </div>
+  </div>
+  <div class="contact-submit">
+    <button class="contact-button" type="submit">{{ page.form_button_text|default:"Send Message" }}</button>
+    <p class="form-message{% if request.GET.sent %} show{% endif %}" role="status">{{ page.success_message }}</p>
+  </div>
+</form>

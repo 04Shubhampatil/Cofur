@@ -1,0 +1,32 @@
+{% load static cofur_tags %}<div class="footer-include">
+  <footer class="cofur-footer">
+    <div class="cofur-footer__inner">
+      <div class="cofur-footer__brand">
+        <a class="cofur-footer__logo" href="{% url 'website:home' %}" aria-label="{{ site.site_name }} home"><img src="{% if site.logo_light %}{{ site.logo_light.url }}{% else %}{% static 'images/cofur-logo-light.webp' %}{% endif %}" alt="{{ site.site_name }} — {{ site.tagline }}"></a>
+        {% if site.address %}
+        <address class="cofur-footer__address">{% if site.google_maps_url %}<a href="{{ site.google_maps_url }}" target="_blank" rel="noopener">{{ site.address }}</a>{% else %}{{ site.address }}{% endif %}</address>
+        {% endif %}
+        <ul class="cofur-footer__contact">
+          {% if site.contact_email %}<li><a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a></li>{% endif %}
+        </ul>
+        <ul class="cofur-footer__social">
+          <li><a href="{{ site.linkedin_url|default:'#' }}" aria-label="LinkedIn"{% if site.linkedin_url %} target="_blank" rel="noopener"{% endif %}>{% social_icon "linkedin" %}</a></li>
+          <li><a href="{{ site.instagram_url|default:'#' }}" aria-label="Instagram"{% if site.instagram_url %} target="_blank" rel="noopener"{% endif %}>{% social_icon "instagram" %}</a></li>
+          <li><a href="{{ site.twitter_url|default:'#' }}" aria-label="X"{% if site.twitter_url %} target="_blank" rel="noopener"{% endif %}>{% social_icon "x" %}</a></li>
+        </ul>
+      </div>
+      <div class="cofur-footer__cta">
+        {% if site.footer_eyebrow %}<p class="cofur-footer__eyebrow">{{ site.footer_eyebrow }}</p>{% endif %}
+        {% if site.footer_title %}<h2 class="cofur-footer__title" data-static-title>{{ site.footer_title|br }}</h2>{% endif %}
+        <div class="cofur-footer__actions">
+          {% if site.footer_primary_cta_text %}<a class="cofur-footer__btn cofur-footer__btn--ghost" href="{{ site.footer_primary_cta_url|default:'/contact/' }}"><span>{{ site.footer_primary_cta_text }}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3"/></svg></a>{% endif %}
+          {% if site.footer_secondary_cta_text %}<a class="cofur-footer__btn" href="{{ site.footer_secondary_cta_url|default:'/collections/' }}"><span>{{ site.footer_secondary_cta_text }}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3"/></svg></a>{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="cofur-footer__bar">
+      <p class="cofur-footer__copy">{{ site.copyright_rendered }}</p>
+      <nav class="cofur-footer__menu" aria-label="Footer">{% for item in footer_menu_items %}<a href="{{ item.get_url }}"{% if item.open_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>{% endfor %}</nav>
+    </div>
+  </footer>
+</div>

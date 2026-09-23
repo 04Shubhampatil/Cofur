@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="enquiry-page contact-page">
+    <section class="enquiry-hero page-banner">
+      {% if page.banner_image %}
+      <picture data-shot="banner-contact">
+        {% mobile_source page.banner_mobile_image %}
+        <img src="{{ page.banner_image.url }}" sizes="100vw" alt="{{ page.banner_alt }}"{% if page.banner_mobile_image and page.banner_mobile_alt %} data-mobile-alt="{{ page.banner_mobile_alt }}"{% endif %} fetchpriority="high" decoding="async">
+      </picture>
+      {% endif %}
+      <h1>{{ page.page_title }}</h1>
+    </section>
+
+    <section class="container contact-lead">
+      {% if page.eyebrow %}<p class="contact-lead__eyebrow">{{ page.eyebrow }}</p>{% endif %}
+      <h2>{{ page.heading }}</h2>
+      {% if page.intro_text %}<p class="contact-lead__copy">{{ page.intro_text }}</p>{% endif %}
+    </section>
+
+    <section class="container contact-cards" aria-label="How to reach us">
+      {% if page.address %}
+      <article class="contact-card">
+        <h3>{{ page.visit_heading }}</h3>
+        <p>{{ page.address|br }}</p>
+      </article>
+      {% endif %}
+      {% if page.email %}
+      <article class="contact-card">
+        <h3>{{ page.mail_heading }}</h3>
+        <p><a href="mailto:{{ page.email }}">{{ page.email }}</a></p>
+      </article>
+      {% endif %}
+      {% if page.working_hours %}
+      <article class="contact-card">
+        <h3>{{ page.hours_heading }}</h3>
+        <p>{{ page.working_hours|br }}</p>
+      </article>
+      {% endif %}
+    </section>
+
+    <section class="container contact-form-section">
+      <div class="contact-form-panel">
+        <h2 class="contact-form-title">{{ page.form_heading }}</h2>
+        {% include "components/enquiry-form.html" %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

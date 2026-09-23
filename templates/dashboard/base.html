@@ -1,0 +1,78 @@
+{% load static dashboard_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}{{ page_title|default:"Dashboard" }}{% endblock %} · {{ site.site_name }} CMS</title>
+  <link rel="icon" href="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'images/cofur-o.png' %}{% endif %}">
+  <link rel="stylesheet" href="{% static_v 'dashboard/css/dashboard.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="dash">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="dash__overlay" data-sidebar-close hidden></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <a href="{% url 'dashboard:index' %}" class="sidebar__logo">
+        {% if site.logo_light %}<img src="{{ site.logo_light.url }}" alt="{{ site.site_name }}">{% else %}<span>{{ site.site_name }}</span>{% endif %}
+      </a>
+      <span class="sidebar__tag">CMS</span>
+      <button class="icon-btn sidebar__close" type="button" data-sidebar-close aria-label="Close menu">{% icon "x" %}</button>
+    </div>
+    <nav class="sidebar__nav" aria-label="Dashboard">
+      {% for section in sidebar_sections %}
+        {% if section.title %}<p class="sidebar__title">{{ section.title }}</p>{% endif %}
+        <ul>
+          {% for item in section.items %}
+            <li><a href="{{ item.url }}" class="sidebar__link{% if item.active %} is-active{% endif %}">{% icon item.icon %}<span>{{ item.label }}</span>{% if item.label == "Enquiries" and new_enquiry_count %}<b class="pill">{{ new_enquiry_count }}</b>{% endif %}</a></li>
+          {% endfor %}
+        </ul>
+      {% endfor %}
+      <p class="sidebar__title">Account</p>
+      <ul>
+        <li><a href="{% url 'dashboard:password_change' %}" class="sidebar__link{% if request.path == '/admin/password/' %} is-active{% endif %}">{% icon "key" %}<span>Change password</span></a></li>
+        <li>
+          <form method="post" action="{% url 'dashboard:logout' %}">{% csrf_token %}<button type="submit" class="sidebar__link sidebar__link--btn">{% icon "logout" %}<span>Logout</span></button></form>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="dash__main">
+    <header class="topbar">
+      <button class="icon-btn topbar__menu" type="button" data-sidebar-open aria-label="Open menu" aria-controls="sidebar">{% icon "menu" %}</button>
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="{% url 'dashboard:index' %}">Dashboard</a>
+        {% for crumb in breadcrumbs %}<span class="crumbs__sep">/</span>{% crumb_url crumb as url %}{% if url %}<a href="{{ url }}">{{ crumb.label }}</a>{% else %}<span>{{ crumb.label }}</span>{% endif %}{% endfor %}
+      </nav>
+      <div class="topbar__right">
+        <a class="btn btn--ghost btn--sm" href="{% url 'website:home' %}" target="_blank" rel="noopener">{% icon "external" %}<span>View site</span></a>
+        <span class="topbar__user" title="{{ request.user.email }}">{{ request.user.get_full_name|default:request.user.username }}</span>
+      </div>
+    </header>
+
+    <main class="content" id="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite">
+    {% for message in messages %}<div class="toast toast--{{ message.tags|default:'info' }}" data-toast>{{ message }}</div>{% endfor %}
+  </div>
+
+  <dialog class="confirm" id="confirm-dialog">
+    <form method="dialog" class="confirm__panel">
+      <h3 data-confirm-title>Are you sure?</h3>
+      <p data-confirm-text>This action cannot be undone.</p>
+      <div class="confirm__actions">
+        <button type="button" class="btn btn--ghost" value="cancel" data-confirm-cancel>Cancel</button>
+        <button type="button" class="btn btn--danger" value="ok" data-confirm-ok>Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="{% static_v 'dashboard/js/dashboard.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

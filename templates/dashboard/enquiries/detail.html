@@ -1,0 +1,43 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags cofur_tags %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ page_title }}</h1><p class="muted">Received {{ object.created_at|date:"d M Y, H:i" }} · {{ object.get_source_display }}</p></div>
+  <div class="page-head__actions">
+    <a class="btn btn--ghost" href="{% url 'dashboard:enquiry_list' %}">Back to list</a>
+    {% if perms.enquiries.delete_enquiry %}<a class="btn btn--danger" href="{% url 'dashboard:enquiry_delete' object.pk %}">{% icon "trash" %}<span>Delete</span></a>{% endif %}
+  </div>
+</div>
+<div class="grid grid--2">
+  <section class="card">
+    <div class="card__head"><h2>Contact details</h2><span class="badge badge--{% if object.status == 'new' %}info{% elif object.status == 'converted' %}success{% elif object.status == 'closed' %}{% else %}warn{% endif %}">{{ object.get_status_display }}</span></div>
+    <dl class="dl">
+      <dt>Name</dt><dd>{{ object.name }}</dd>
+      <dt>Email</dt><dd><a href="mailto:{{ object.email }}">{{ object.email }}</a></dd>
+      <dt>Phone</dt><dd>{% if object.phone %}<a href="tel:{{ object.phone|cut:' ' }}">{{ object.phone }}</a>{% else %}—{% endif %}</dd>
+      <dt>Company</dt><dd>{{ object.company|default:"—" }}</dd>
+      <dt>City</dt><dd>{{ object.city|default:"—" }}</dd>
+      <dt>Product</dt><dd>{% if object.product %}<a href="{% url 'dashboard:product_update' object.product.pk %}">{{ object.product }}</a>{% else %}—{% endif %}</dd>
+      <dt>Interest</dt><dd>{{ object.collection_ref|default:"—" }}</dd>
+      <dt>IP / device</dt><dd class="muted">{{ object.ip_address|default:"—" }}<br><small>{{ object.user_agent|truncatechars:90 }}</small></dd>
+    </dl>
+    <h3>Message</h3>
+    <div class="message-box">{{ object.message|paragraphs }}</div>
+  </section>
+  <section class="card">
+    <div class="card__head"><h2>Status &amp; notes</h2></div>
+    {% if can_change %}
+    <form method="post">
+      {% csrf_token %}
+      {% include "dashboard/generic/_field.html" with field=form.status %}
+      {% include "dashboard/generic/_field.html" with field=form.admin_notes %}
+      <div class="form-actions"><button class="btn btn--primary" type="submit">{% icon "check" %}<span>Save</span></button></div>
+    </form>
+    {% else %}
+    <p><strong>Status:</strong> {{ object.get_status_display }}</p>
+    <div class="message-box">{{ object.admin_notes|paragraphs|default:"<p class='muted'>No notes.</p>" }}</div>
+    {% endif %}
+    <p class="muted" style="margin-top:16px">Last updated {{ object.updated_at|date:"d M Y, H:i" }}</p>
+  </section>
+</div>
+{% endblock %}

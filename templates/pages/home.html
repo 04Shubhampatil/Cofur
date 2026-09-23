@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main>
+    {% if page.hero_visible %}
+    <section class="hero">
+      <div class="hero-slides">
+        {% for slide in hero_slides %}
+        <div class="hero-slide{% if forloop.first %} is-active{% endif %}" data-shot="hero-{{ forloop.counter }}">
+          <picture>
+            {% mobile_source slide.mobile_image %}
+            <img src="{{ slide.image.url }}" sizes="100vw" alt="{{ slide.alt_text }}"{% if slide.mobile_image and slide.mobile_alt %} data-mobile-alt="{{ slide.mobile_alt }}"{% endif %}{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async">
+          </picture>
+        </div>
+        {% endfor %}
+      </div>
+      <h1>{{ page.hero_heading }}</h1>
+      <div class="hero-dots" role="tablist" aria-label="Hero slides"></div>
+    </section>
+    {% endif %}
+
+    {% if page.intro_visible or page.category_section_visible %}
+    <!-- Category rail: heading and arrows on one line, cards scrolling beneath. -->
+    <section class="range-rail container" id="our-products" aria-labelledby="range-rail-title">
+      <div class="range-rail__head">
+        <h2 id="range-rail-title">{% if page.intro_visible %}{{ page.intro_heading }} {% if page.intro_heading_highlight %}<strong>{{ page.intro_heading_highlight }}</strong>{% endif %}{% endif %}</h2>
+        <div class="range-rail__nav">
+          <button class="range-rail__arrow" type="button" data-rail-prev aria-label="Previous categories">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <button class="range-rail__arrow" type="button" data-rail-next aria-label="Next categories">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+      </div>
+      {% if page.category_section_visible %}
+      <ul class="range-rail__track" tabindex="0" role="list" aria-label="Product categories. Scroll sideways or use the arrows.">
+        {% for category in categories %}
+        <li class="range-card"><a href="{{ category.link }}">
+            {% if category.card_image %}<img src="{{ category.card_image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
+            <span class="range-card__copy">
+              <b>{{ category.name }}</b>
+              {% if category.subtitle %}<em><span>{{ category.subtitle }}</span></em>{% endif %}
+              <i>{{ category.card_link_text|default:"View items" }}</i>
+            </span>
+          </a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if page.statement_visible and statement_lines %}
+    <section class="statement-story" id="about-cofur" aria-label="Who we are">
+      <div class="who-we-are">
+        <div class="statement-images">
+          {% for line in statement_lines %}
+          <picture data-shot="statement-{{ forloop.counter }}">
+            <img src="{% if line.image %}{{ line.image.url }}{% endif %}" sizes="100vw" alt="{{ line.alt_text }}" loading="lazy" decoding="async">
+          </picture>
+          {% endfor %}
+        </div>
+        <div class="who-overlay"></div>
+        <div class="who-copy">
+          <div class="who-lines">
+            <h2 class="sr-only" data-static-title>{{ page.statement_heading }}</h2>
+            <div class="statement-lines">
+              {% for line in statement_lines %}
+              <p class="statement-line{% if forloop.first %} is-active{% endif %}">
+                <span class="statement-word" aria-hidden="true">{{ line.verb }}</span>
+                <span class="statement-body"><span class="statement-prefix"><span>{{ line.verb|lower }}&nbsp;</span></span>{{ line.text }}</span>
+              </p>
+              {% endfor %}
+            </div>
+            <div class="statement-steps" aria-hidden="true">{% for line in statement_lines %}<i></i>{% endfor %}</div>
+          </div>
+          <div class="who-bottom">
+            {% if page.statement_description %}<p class="who-description">{{ page.statement_description }}</p>{% endif %}
+            {% if page.statement_cta_text %}<a class="action-link action-light" href="{{ page.statement_cta_url|default:'/about/' }}"><span>{{ page.statement_cta_text }}</span><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" /></svg></b></a>{% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if page.featured_visible and featured_products %}
+    <section class="featured-section home-section" id="featured-products">
+      <div class="section-heading">
+        <h2>{{ page.featured_heading }}</h2>
+      </div>
+      {% for product in featured_products %}
+      <div class="featured-stage">{% if product.main_image %}<img src="{{ product.main_image.url }}" alt="{{ product.main_image_alt|default:product.name }}">{% endif %}
+        <div class="featured-title">
+          <h3 data-static-title>{{ product.name }}</h3><a class="text-cta" href="{% if product.collection %}{{ product.collection.get_absolute_url }}{% else %}{{ product.get_absolute_url }}{% endif %}"><span>{{ page.featured_cta_text|default:"View products" }}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" /></svg></a>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if page.why_visible %}
+    <div class="container home-lower">
+      <section class="why-grid">
+        <div class="why-copy">
+          {% if page.why_image %}
+          <picture class="reveal" data-shot="why-cofur">
+            <img src="{{ page.why_image.url }}" sizes="(max-width:900px) 100vw, 46vw" alt="{{ page.why_image_alt }}" loading="lazy" decoding="async">
+          </picture>
+          {% endif %}
+          <h2 class="section-title">{{ page.why_heading }}</h2>
+          <div class="why-list reveal">
+            {% for item in differentiators %}
+            <div>{{ item.heading }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+    {% endif %}
+  </main>
+{% endblock %}

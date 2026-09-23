@@ -1,0 +1,10 @@
+{% load cofur_tags %}<article class="about-person{% if reverse %} about-person--reverse{% endif %} reveal">{% if member.image %}<img src="{{ member.image.url }}" alt="{{ member.name }}"{% if parallax %} data-about-parallax{% endif %}>{% endif %}
+  <div>
+    <div class="about-person__id">
+      <h3>{{ member.name }}</h3>
+      {% if member.designation %}<p class="about-person__role">{{ member.designation }}</p>{% endif %}
+    </div>
+    {% if member.quote %}<p class="about-person__copy">{{ member.quote }}</p>{% endif %}
+    {{ member.biography|paragraphs }}
+  </div>
+</article>

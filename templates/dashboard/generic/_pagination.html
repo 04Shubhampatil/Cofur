@@ -1,0 +1,20 @@
+{% load dashboard_tags %}
+{% if is_paginated %}
+<nav class="pagination" aria-label="Pagination">
+  <span class="muted">Page {{ page_obj.number }} of {{ paginator.num_pages }}</span>
+  <div class="pagination__links">
+    {% if page_obj.has_previous %}<a class="btn btn--ghost btn--sm" href="{% qs_replace page=page_obj.previous_page_number %}">‹ Prev</a>{% endif %}
+    {% for num in paginator.get_elided_page_range %}
+      {% if num == paginator.ELLIPSIS %}<span class="pagination__gap">…</span>
+      {% elif num == page_obj.number %}<span class="btn btn--sm btn--primary">{{ num }}</span>
+      {% else %}<a class="btn btn--ghost btn--sm" href="{% qs_replace page=num %}">{{ num }}</a>{% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}<a class="btn btn--ghost btn--sm" href="{% qs_replace page=page_obj.next_page_number %}">Next ›</a>{% endif %}
+  </div>
+  {% if per_page %}
+  <form method="get" class="pagination__size">{% for key, value in request.GET.items %}{% if key != 'per_page' and key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+    <label>Per page <select name="per_page" class="form-select form-select--sm" onchange="this.form.submit()">{% for n in "10,20,50,100"|split:"," %}<option value="{{ n }}"{% if per_page|stringformat:"s" == n %} selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+  </form>
+  {% endif %}
+</nav>
+{% endif %}

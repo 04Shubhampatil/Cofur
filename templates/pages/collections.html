@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="seating-page">
+    <section class="seating-hero page-banner">
+      <div class="seating-hero-image">{% if category and category.banner_desktop %}{% picture category.banner_mobile_image %}<img src="{{ category.banner_desktop.url }}" alt="{{ category.name }}"{% if category.banner_mobile_image and category.banner_mobile_alt %} data-mobile-alt="{{ category.banner_mobile_alt }}"{% endif %} fetchpriority="high" decoding="async">{% endpicture %}{% else %}<img src="{% static 'images/banner-seating.png' %}" alt="{{ heading }}">{% endif %}</div>
+      <div class="seating-hero-copy">
+        <h1>{{ heading }}</h1>
+      </div>
+    </section>
+    <section class="seating-collections" aria-labelledby="seating-collections-title">
+      {% if category and category.description %}<p class="sr-only" id="seating-collections-title">{{ category.description }}</p>{% endif %}
+      <div class="seating-grid">
+        {% for collection in collections %}
+          {% include "components/collection-card.html" with collection=collection %}
+          {% if category and category.lifestyle_image and forloop.counter == 2 or category and category.lifestyle_image and forloop.last and forloop.counter < 2 %}
+          <div class="seating-lifestyle">
+            <picture data-shot="seating-lifestyle">
+              <img src="{{ category.lifestyle_image.url }}" sizes="(max-width:900px) 100vw, 34vw" alt="{{ category.name }} lifestyle" loading="lazy" decoding="async">
+            </picture>
+          </div>
+          {% endif %}
+        {% empty %}
+          <p class="seating-empty">No collections have been published yet. <a href="{% url 'website:contact' %}">Contact us</a> to discuss your project.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

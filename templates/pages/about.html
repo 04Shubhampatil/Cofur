@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="about-page">
+    <section class="about-hero page-banner">
+      <h1>{{ page.hero_heading }}</h1>
+      <div class="about-hero__image">
+        {% if page.hero_image %}
+        <picture data-shot="banner-about">
+          {% mobile_source page.hero_mobile_image %}
+          <img src="{{ page.hero_image.url }}" sizes="100vw" alt="{{ page.hero_image_alt }}"{% if page.hero_mobile_image and page.hero_mobile_alt %} data-mobile-alt="{{ page.hero_mobile_alt }}"{% endif %} fetchpriority="high" decoding="async" data-about-parallax>
+        </picture>
+        {% endif %}
+      </div>
+    </section>
+    {% if page.intro_heading or page.intro_text %}
+    <section class="about-intro about-intro--centered container">
+      {% if page.intro_heading %}<h2>{{ page.intro_heading }}</h2>{% endif %}
+      {{ page.intro_text|paragraphs }}
+    </section>
+    {% endif %}
+    <section class="about-values container" aria-labelledby="about-values-title">
+      <div class="about-values__list">
+        <div class="about-values__line" aria-hidden="true"></div>
+        {% for section in page.value_sections %}
+        {% if section.heading or section.content %}
+        <article class="about-value reveal">
+          <span class="about-value__num" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+          <h3>{{ section.heading }}</h3>
+          {{ section.content|paragraphs }}
+        </article>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% if page.mission_heading or page.mission_content %}
+    <section class="about-mission container">
+      <h2>{{ page.mission_heading }}</h2>
+      {{ page.mission_content|paragraphs }}
+    </section>
+    {% endif %}
+    <section class="about-team container">
+      {% if page.team_visible and team_members %}
+      <div class="about-rule"><span>{{ page.team_heading }}</span></div>
+      {% for member in team_members %}
+        {% include "components/team-card.html" with member=member reverse=forloop.counter|divisibleby:2 parallax=forloop.counter0|add:0|divisibleby:1 %}
+      {% endfor %}
+      {% endif %}
+      {% if page.find_us_visible %}
+      <div class="about-rule"><span>{{ page.find_us_heading }}</span></div>
+      <div class="about-find">
+        {% if page.find_us_map_url %}
+        <div class="about-location"><iframe title="{{ page.find_us_company|default:site.site_name }} location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen src="{{ page.find_us_map_url }}"></iframe></div>
+        {% endif %}
+        <div class="about-address">
+          <h3>{{ page.find_us_company|default:site.site_name }}</h3>
+          <p>{{ page.find_us_address|default:site.address|br }}</p>
+        </div>
+      </div>
+      {% endif %}
+    </section>
+    <section id="sustainability" class="about-sustainability container">
+      <div class="about-rule"><span>{{ page.sustainability_heading }}</span></div>
+      <div class="about-quote">
+        {% if page.sustainability_image %}
+        <picture data-shot="sustainability">
+          <img src="{{ page.sustainability_image.url }}" sizes="(max-width:600px) 100vw, 50vw" alt="{{ page.sustainability_image_alt }}" loading="lazy" decoding="async">
+        </picture>
+        {% endif %}
+        <p>{{ page.sustainability_content }}</p><span class="about-quote__mark about-quote__mark--close" aria-hidden="true">“</span>
+      </div>
+      <div class="about-materials">
+        <article>
+          <h3>{{ page.recycled_heading }}</h3>
+          {{ page.recycled_content|paragraphs }}
+        </article>
+        <article>
+          <h3>{{ page.tree_heading }}</h3>
+          {{ page.tree_description|paragraphs }}
+        </article>
+      </div>
+    </section>
+
+    {% if page.india_visible and page.india_text %}
+    <section class="about-india container">
+      <div class="about-rule"><span></span></div>
+      {% if page.india_image %}<h2><img src="{{ page.india_image.url }}" alt=""></h2>{% endif %}
+      {{ page.india_text|paragraphs }}
+    </section>
+    {% endif %}
+  </main>
+{% endblock %}

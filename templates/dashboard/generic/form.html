@@ -1,0 +1,43 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="form-page" novalidate data-dirty-check>
+  {% csrf_token %}
+  <a class="back-link" href="{{ cancel_url }}">&larr; Back</a>
+  <div class="page-head">
+    <div><h1>{{ page_title }}</h1>{% if help_text %}<p class="muted">{{ help_text }}{% for link in help_links %} <a class="link" href="{{ link.url }}">{{ link.label }}</a>{% endfor %}</p>{% endif %}</div>
+    <div class="page-head__actions">
+      {% if preview_url %}<a class="btn btn--ghost" href="{{ preview_url }}" target="_blank" rel="noopener">{% icon "external" %}<span>Preview</span></a>{% endif %}
+      <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+      {% if not hide_continue %}<button class="btn btn--ghost" type="submit" name="_continue" value="1">Save &amp; continue</button>{% endif %}
+      <button class="btn btn--primary" type="submit" data-submit>{% icon "check" %}<span>Save</span></button>
+    </div>
+  </div>
+
+  {% if form.non_field_errors %}<div class="alert alert--error">{{ form.non_field_errors }}</div>{% endif %}
+
+  {% block form_body %}
+  {% if fieldsets %}
+    {% for title, fields in fieldsets %}
+    <section class="card form-section">
+      <h2 class="form-section__title">{{ title }}</h2>
+      <div class="form-rows">
+        {% for name in fields %}{% with field=form|field_by_name:name %}{% include "dashboard/generic/_field.html" with field=field %}{% endwith %}{% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  {% else %}
+    <section class="card form-section"><div class="form-rows">{% for field in form.visible_fields %}{% include "dashboard/generic/_field.html" with field=field %}{% endfor %}</div></section>
+  {% endif %}
+  {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+  {% endblock %}
+
+  {% block after_form %}{% endblock %}
+
+  <div class="form-actions form-actions--sticky">
+    <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+    {% if not hide_continue %}<button class="btn btn--ghost" type="submit" name="_continue" value="1">Save &amp; continue editing</button>{% endif %}
+    <button class="btn btn--primary" type="submit">{% icon "check" %}<span>Save</span></button>
+  </div>
+</form>
+{% endblock %}

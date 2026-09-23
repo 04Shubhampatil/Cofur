@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Contact — Cofur</title>
+  <meta name="description" content="Talk to Cofur about your workplace furniture project — acoustics, soft seating and bespoke solutions.">
+  <link rel="icon" href="assets/images/cofur-o.png">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body data-page="enquiry">
+  <div data-include="includes/header.html"></div>
+  <main class="enquiry-page contact-page">
+    <section class="enquiry-hero page-banner">
+      <picture data-shot="banner-contact">
+        <source media="(max-width:767px)"
+          srcset="assets/images/banner-contact-m480.webp 480w, assets/images/banner-contact-m768.webp 768w"
+          sizes="100vw">
+        <img src="assets/images/banner-contact-d1440.webp"
+          srcset="assets/images/banner-contact-d768.webp 768w, assets/images/banner-contact-d1024.webp 1024w, assets/images/banner-contact-d1440.webp 1440w, assets/images/banner-contact-d1672.webp 1672w"
+          sizes="100vw" width="1672" height="941"
+          alt="Contact Us — a navy telephone handset on a pale studio background" fetchpriority="high"
+          decoding="async">
+      </picture>
+      <h1>Contact us</h1>
+    </section>
+
+    <section class="container contact-lead">
+      <p class="contact-lead__eyebrow">Contact</p>
+      <h2>Tell us about your space</h2>
+      <p class="contact-lead__copy">Have a project in mind, or need help choosing the right solution? Share a few
+        details and our design team will come back to you within two working days.</p>
+    </section>
+
+    <section class="container contact-cards" aria-label="How to reach us">
+      <article class="contact-card">
+        <h3>Visit us</h3>
+        <p>COFUR Pvt. Ltd.<br>3rd Floor, Odessa Boutique Offices, Road Number 9, Wagle Industrial Estate,
+          Thane West, Maharashtra 400604, India</p>
+      </article>
+      <article class="contact-card">
+        <h3>Mail us</h3>
+        <p><a href="mailto:info@cofur.in">info@cofur.in</a></p>
+      </article>
+      <article class="contact-card">
+        <h3>Working hours</h3>
+        <p>Monday&ndash;Saturday<br>10:00 &ndash; 19:00 IST</p>
+      </article>
+    </section>
+
+    <section class="container contact-form-section">
+      <div class="contact-form-panel">
+        <h2 class="contact-form-title">Feel free to reach out</h2>
+        <form id="enquiry-form" class="contact-form" novalidate>
+          <div class="contact-grid">
+            <div class="cfield">
+              <label for="fullname">Full Name<em>*</em></label>
+              <input id="fullname" name="fullname" autocomplete="name" required>
+            </div>
+            <div class="cfield">
+              <label for="email">Email Address<em>*</em></label>
+              <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="cfield">
+              <label for="city">City<em>*</em></label>
+              <input id="city" name="city" autocomplete="address-level2" required>
+            </div>
+            <div class="cfield">
+              <label for="state">State<em>*</em></label>
+              <input id="state" name="state" autocomplete="address-level1" required>
+            </div>
+            <div class="cfield cfield--full">
+              <label for="country">Country<em>*</em></label>
+              <select id="country" name="country" required>
+                <option selected>India</option>
+                <option>United Arab Emirates</option>
+                <option>United Kingdom</option>
+                <option>United States</option>
+                <option>Singapore</option>
+                <option>Australia</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="cfield cfield--full">
+              <label for="message">Message<em>*</em></label>
+              <textarea id="message" name="message" rows="6" required></textarea>
+            </div>
+          </div>
+          <div class="contact-submit">
+            <button class="contact-button" type="submit">Send Message</button>
+            <p class="form-message" role="status">Thank you. Your message has been recorded and our team will be in
+              touch.</p>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <div data-include="includes/footer.html"></div>
+  <script src="assets/vendor/gsap.min.js"></script>
+  <script src="assets/vendor/ScrollTrigger.min.js"></script>
+  <script src="includes/header.js"></script>
+  <script src="includes/footer.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>

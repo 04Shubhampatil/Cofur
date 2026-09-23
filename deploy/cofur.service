@@ -1,0 +1,22 @@
+[Unit]
+Description=COFUR Django CMS (gunicorn)
+After=network.target mysql.service
+
+[Service]
+User=cofur
+Group=www-data
+WorkingDirectory=/srv/cofur
+EnvironmentFile=/srv/cofur/.env
+ExecStart=/srv/cofur/.venv/bin/gunicorn config.wsgi:application \
+    --bind unix:/run/cofur/gunicorn.sock \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile /var/log/cofur/access.log \
+    --error-logfile /var/log/cofur/error.log
+RuntimeDirectory=cofur
+RuntimeDirectoryMode=0775
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

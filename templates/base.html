@@ -1,0 +1,30 @@
+{% load static cofur_tags %}<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  {% include "partials/seo.html" %}
+  <link rel="icon" href="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'images/cofur-o.png' %}{% endif %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body data-page="{{ body_page|default:'page' }}"
+      data-static-url="{% static '' %}"
+      data-enquire-url="{% url 'website:enquire' %}"
+      data-whatsapp="{{ site.whatsapp_number }}"
+      data-whatsapp-message="{{ site.whatsapp_message }}"
+      data-whatsapp-icon="{% if site.favicon %}{{ site.favicon.url }}{% else %}{% static 'images/cofur-o.png' %}{% endif %}">
+  {% include "partials/navbar.html" %}
+  {% block product_nav %}{% endblock %}
+  {% include "partials/messages.html" %}
+  {% block content %}{% endblock %}
+  {% include "partials/footer.html" %}
+  <script src="{% static 'vendor/gsap.min.js' %}"></script>
+  <script src="{% static 'vendor/ScrollTrigger.min.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

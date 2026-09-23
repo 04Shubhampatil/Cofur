@@ -1,0 +1,6 @@
+{% load cofur_tags %}{% load static %}<a class="cove-card" href="{{ product.get_absolute_url }}">
+  <h3 data-static-title>{% if product.card_title_prefix %}<em>{{ product.card_title_prefix }}</em> {{ product.card_title_rest }}{% else %}{{ product.name }}{% endif %}</h3>
+  {% if product.tagline %}<p class="eyebrow">{{ product.tagline }}</p>{% endif %}
+  <div class="cove-card-media">{% if product.card_picture %}<img src="{{ product.card_picture.url }}"{% if product.hover_image %} data-hover-src="{{ product.hover_image.url }}"{% endif %} alt="{{ product.main_image_alt|default:product.name }}">{% endif %}</div>
+  <span><img src="{% static 'images/cove-hover-arrow.svg' %}" alt=""><b>View product</b></span>
+</a>

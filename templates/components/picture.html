@@ -1,0 +1,8 @@
+{% comment %}
+Responsive <picture>: desktop image with an optional mobile source.
+Params: image, mobile (optional), alt, sizes (optional), extra (optional attrs string), shot (data-shot)
+{% endcomment %}
+<picture{% if shot %} data-shot="{{ shot }}"{% endif %}>
+  {% if mobile %}<source media="(max-width:767px)" srcset="{{ mobile.url }}" sizes="100vw">{% endif %}
+  <img src="{{ image.url }}" sizes="{{ sizes|default:'100vw' }}" alt="{{ alt|default:'' }}"{% if eager %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async"{% if extra %} {{ extra|safe }}{% endif %}>
+</picture>

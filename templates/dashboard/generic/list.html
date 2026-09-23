@@ -1,0 +1,82 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ page_title }}</h1><p class="muted">{{ total_count }} record{{ total_count|pluralize }}</p></div>
+  <div class="page-head__actions">
+    {% block head_actions %}{% endblock %}
+    {% if create_url %}<a class="btn btn--primary" href="{{ create_url }}">{% icon "plus" %}<span>Add {{ model_name }}</span></a>{% endif %}
+  </div>
+</div>
+
+{% block before_table %}{% endblock %}
+
+<form method="get" class="toolbar" data-filter-form>
+  <div class="toolbar__search">
+    {% icon "search" %}
+    <input type="search" name="q" value="{{ search_query }}" placeholder="Search {{ page_title|lower }}…" class="form-input" aria-label="Search">
+  </div>
+  {% for flt in filters %}
+    {% if flt.type == "date_from" or flt.type == "date_to" %}
+      <label class="toolbar__filter"><span>{{ flt.label }}</span><input type="date" name="{{ flt.name }}" value="{{ flt.value }}" class="form-input"></label>
+    {% else %}
+      <label class="toolbar__filter"><span>{{ flt.label }}</span>
+        <select name="{{ flt.name }}" class="form-select">
+          <option value="">All</option>
+          {% for value, label in flt.choices %}<option value="{{ value }}"{% if flt.value|stringformat:"s" == value|stringformat:"s" %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+    {% endif %}
+  {% endfor %}
+  {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+  <button class="btn btn--ghost btn--sm" type="submit">Apply</button>
+  {% if search_query or request.GET.status or request.GET.featured or request.GET.collection or request.GET.category or request.GET.is_active or request.GET.date_from or request.GET.date_to or request.GET.source or request.GET.show_on_home %}<a class="btn btn--link btn--sm" href="{{ request.path }}">Clear</a>{% endif %}
+</form>
+
+{% if rows %}
+<div class="card card--table">
+  <div class="table-wrap">
+    <table class="table{% if reorder_url %} table--sortable{% endif %}" {% if reorder_url %}data-sortable data-reorder-url="{{ reorder_url }}"{% endif %}>
+      <thead>
+        <tr>
+          {% if reorder_url %}<th class="th-drag"></th>{% endif %}
+          {% for col in columns %}
+            <th>{% if col.sortable %}{% if request.GET.sort == col.field %}<a href="{% qs_replace sort='-'|add:col.field page=None %}" class="sort is-asc">{{ col.label }} ↑</a>{% elif request.GET.sort == '-'|add:col.field %}<a href="{% qs_replace sort=col.field page=None %}" class="sort is-desc">{{ col.label }} ↓</a>{% else %}<a href="{% qs_replace sort=col.field page=None %}" class="sort">{{ col.label }}</a>{% endif %}{% else %}{{ col.label }}{% endif %}</th>
+          {% endfor %}
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr data-id="{{ row.obj.pk }}">
+          {% if reorder_url %}<td class="td-drag"><span class="drag" draggable="true" title="Drag to reorder">{% icon "drag" %}</span></td>{% endif %}
+          {% for col in columns %}<td data-label="{{ col.label }}">{% cell row.obj col %}</td>{% endfor %}
+          <td class="td-actions">
+            {% block row_actions %}
+            <div class="actions">
+              {% for action in row.actions %}
+                {% if action.method == "post" %}
+                  <form method="post" action="{{ action.url }}" class="inline"{% if action.confirm %} data-confirm="{{ action.confirm }}"{% endif %}>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="action{% if action.danger %} action--danger{% endif %}" title="{{ action.label }}">{% icon action.icon %}<span>{{ action.label }}</span></button></form>
+                {% else %}
+                  <a class="action{% if action.danger %} action--danger{% endif %}" href="{{ action.url }}" title="{{ action.label }}">{% icon action.icon %}<span>{{ action.label }}</span></a>
+                {% endif %}
+              {% endfor %}
+            </div>
+            {% endblock %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "dashboard/generic/_pagination.html" %}
+</div>
+{% else %}
+<div class="card empty-state">
+  <div class="empty-state__icon">{% icon "box" %}</div>
+  <h2>{% if search_query %}No results for “{{ search_query }}”{% else %}Nothing here yet{% endif %}</h2>
+  <p>{{ empty_message }}</p>
+  {% if create_url and not search_query %}<a class="btn btn--primary" href="{{ create_url }}">{% icon "plus" %}<span>Add {{ model_name }}</span></a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

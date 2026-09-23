@@ -1,0 +1,79 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags %}
+{% block content %}
+<section class="card">
+  <div class="page-head" style="margin-bottom:14px">
+    <div><h1>Products</h1></div>
+    <div class="page-head__actions">
+      <form method="get" class="toolbar toolbar--inline" id="product-filters">
+        <div class="toolbar__search">{% icon "search" %}<input type="search" name="q" value="{{ search_query }}" placeholder="Search here…" class="form-input" aria-label="Search"></div>
+      </form>
+      {% if perms.catalog.add_product %}<a class="btn btn--primary" href="{% url 'dashboard:product_create' %}">Add New</a>{% endif %}
+    </div>
+  </div>
+  <div class="filter-row">
+    {% for flt in filters %}
+    <select name="{{ flt.name }}" class="form-select" form="product-filters" onchange="document.getElementById('product-filters').requestSubmit()">
+      <option value="">---All {{ flt.label }}---</option>
+      {% for value, label in flt.choices %}<option value="{{ value }}"{% if flt.value|stringformat:"s" == value|stringformat:"s" %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% endfor %}
+    {% if search_query or request.GET.category or request.GET.collection or request.GET.status or request.GET.featured %}<a class="btn btn--link btn--sm" href="{{ request.path }}">Clear</a>{% endif %}
+    {% if perms.catalog.change_product %}
+    <div class="filter-row__right">
+      <label class="check"><input type="checkbox" data-select-all> <span>Select All</span></label>
+      <form method="post" action="{% url 'dashboard:product_bulk' %}" class="bulk" data-bulk-form>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <div class="dropdown" data-dropdown>
+          <button type="button" class="btn btn--primary" data-dropdown-toggle>Action ▾</button>
+          <div class="dropdown__menu">
+            <button type="submit" name="action" value="publish">Publish</button>
+            <button type="submit" name="action" value="unpublish">Unpublish</button>
+            <button type="submit" name="action" value="feature">Mark featured</button>
+            <button type="submit" name="action" value="unfeature">Remove featured</button>
+            {% if perms.catalog.delete_product %}<button type="submit" name="action" value="delete" class="is-danger" data-bulk-confirm="Delete the selected products? This cannot be undone.">Delete</button>{% endif %}
+          </div>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if rows %}
+<div class="product-grid">
+  {% for row in rows %}{% with p=row.obj %}
+  <article class="pcard{% if not p.is_published %} is-draft{% endif %}" data-id="{{ p.pk }}">
+    <header class="pcard__head">
+      <span>{{ p.category|default:"—" }}</span>
+      <input type="checkbox" class="pcard__check" name="ids" value="{{ p.pk }}" form="bulk-ids" data-row-check aria-label="Select {{ p.name }}">
+    </header>
+    <a class="pcard__media" href="{% url 'dashboard:product_update' p.pk %}">
+      {% if p.card_picture %}<img src="{{ p.card_picture.url }}" alt="" loading="lazy">{% else %}<span class="pcard__empty">No image</span>{% endif %}
+      <span class="pcard__overlay"><b>{{ p.name }}</b><small>{{ p.collection|default:"—" }}</small></span>
+    </a>
+    <footer class="pcard__actions">
+      <a class="icon-round" href="{{ p.get_absolute_url }}" target="_blank" rel="noopener" title="View on site">{% icon "eye" %}</a>
+      {% if perms.catalog.change_product %}
+      <form method="post" action="{% url 'dashboard:product_toggle_featured' p.pk %}" class="inline" data-ajax-toggle>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="icon-round{% if p.is_featured %} is-on{% endif %}" title="{% if p.is_featured %}Featured{% else %}Mark featured{% endif %}" data-toggle-class="is-on">{% icon "star" %}</button></form>
+      <a class="icon-round" href="{% url 'dashboard:product_update' p.pk %}" title="Edit">{% icon "edit" %}</a>
+      {% else %}<span></span><span></span>{% endif %}
+      {% if perms.catalog.delete_product %}<a class="icon-round icon-round--danger" href="{% url 'dashboard:product_delete' p.pk %}" title="Delete">{% icon "trash" %}</a>{% else %}<span></span>{% endif %}
+      {% if perms.catalog.change_product %}
+      <form method="post" action="{% url 'dashboard:product_toggle_publish' p.pk %}" class="inline" data-switch>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="switch{% if p.is_published %} is-on{% endif %}" role="switch" aria-checked="{{ p.is_published|yesno:'true,false' }}" title="Published / draft"><i></i></button></form>
+      {% else %}<span class="badge {% if p.is_published %}badge--success{% else %}badge--warn{% endif %}">{{ p.get_status_display }}</span>{% endif %}
+    </footer>
+  </article>
+  {% endwith %}{% endfor %}
+</div>
+<form id="bulk-ids" hidden></form>
+<div class="card" style="padding:0">{% include "dashboard/generic/_pagination.html" %}</div>
+{% else %}
+<div class="card empty-state">
+  <div class="empty-state__icon">{% icon "box" %}</div>
+  <h2>{% if search_query %}No results for “{{ search_query }}”{% else %}No products yet{% endif %}</h2>
+  {% if perms.catalog.add_product and not search_query %}<a class="btn btn--primary" href="{% url 'dashboard:product_create' %}">Add New</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% load dashboard_tags %}{% if gallery_upload_url %}
+<div class="dropzone dropzone--compact" data-dropzone data-upload-url="{{ gallery_upload_url }}" data-kind="{{ kind }}" data-delete-url-template="{% url 'dashboard:product_image_delete' 0 %}" data-reorder-url="{% url 'dashboard:product_image_reorder' %}">
+  <div class="dropzone__inner">
+    {% icon "upload" %}
+    <p><strong>{{ label }}:</strong> drag &amp; drop here or <label class="link"><input type="file" multiple accept="image/*" hidden data-dropzone-input>browse</label></p>
+    <small class="muted">JPG, PNG or WebP up to 10 MB each. Large images are resized automatically.</small>
+  </div>
+  <div class="dropzone__queue" data-dropzone-queue></div>
+</div>
+{% else %}
+<p class="alert alert--info">Save the product first to upload images by drag &amp; drop, or add rows below.</p>
+{% endif %}

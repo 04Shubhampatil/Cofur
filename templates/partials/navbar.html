@@ -1,0 +1,33 @@
+{% load static %}<header class="site-header" id="site-header">
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="{% url 'website:home' %}" aria-label="{{ site.site_name }} home">
+      <img class="logo" src="{% if site.logo %}{{ site.logo.url }}{% else %}{% static 'images/cofur-logo-dark.webp' %}{% endif %}" alt="{{ site.site_name }} — {{ site.tagline }}">
+    </a>
+    <button class="menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-links">
+      {% for item in header_menu_items %}
+        {% if item.children.exists %}
+          <button class="nav-trigger" type="button" data-mega-trigger aria-expanded="false">{{ item.label }} <span>⌄</span></button>
+        {% else %}
+          <a href="{{ item.get_url }}"{% if item.css_class %} class="{{ item.css_class }}"{% endif %}{% if item.open_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </nav>
+  {% for item in header_menu_items %}
+    {% if item.children.exists %}
+      <div class="mega-menu" aria-hidden="true">
+        <div class="mega-grid">
+          {% for section in item.active_children %}
+            <section>
+              <h2>{% if section.link_type != 'none' %}<a href="{{ section.get_url }}">{{ section.label }}</a>{% else %}{{ section.label }}{% endif %}</h2>
+              {% for link in section.active_children %}
+                <a href="{{ link.get_url }}"{% if link.open_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ link.label }}</a>
+              {% endfor %}
+            </section>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+</header>

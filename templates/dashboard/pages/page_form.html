@@ -1,0 +1,19 @@
+{% extends "dashboard/generic/form.html" %}
+{% load dashboard_tags %}
+{% block form_body %}
+{% for key, label, fields, formset_key, formset_title in tabs %}
+<section class="card form-section" id="section-{{ key }}">
+  <h2 class="form-section__title">{{ label }}</h2>
+  <div class="form-rows">
+    {% for name in fields %}{% with field=form|field_by_name:name %}{% include "dashboard/generic/_field.html" with field=field %}{% endwith %}{% endfor %}
+  </div>
+  {% if formset_key %}
+    <hr class="rule">
+    {% with formset=formsets|get_item:formset_key %}
+      {% include "dashboard/generic/_formset.html" with formset=formset title=formset_title empty_label="item" %}
+    {% endwith %}
+  {% endif %}
+</section>
+{% endfor %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% endblock %}
