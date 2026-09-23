@@ -1,7 +1,7 @@
 # /etc/nginx/sites-available/cofur  — replace example.com with your domain
 server {
     listen 80;
-    server_name example.com www.example.com;
+    server_name cofur.in www.cofur.in;
 
     client_max_body_size 120M;   # must cover MAX_VIDEO_UPLOAD_MB
 
