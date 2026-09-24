@@ -10,7 +10,7 @@ from apps.catalog.models import (
     ProductImage,
     ProductSpecification,
 )
-from apps.core.models import SiteSettings
+from apps.core.models import NavigationItem, SiteSettings
 from apps.enquiries.models import Enquiry
 from apps.pages.models import (
     AboutPage,
@@ -359,3 +359,86 @@ class FooterSettingsForm(CMSModelForm):
             "footer_primary_cta_url", "footer_secondary_cta_text", "footer_secondary_cta_url",
             "copyright_text", "address", "google_maps_url", "contact_email", "linkedin_url", "instagram_url", "twitter_url",
         ]
+
+
+# ---------------------------------------------------------------- collections mega menu
+class MegaMenuItemForm(CMSModelForm):
+    """One column heading, or one link inside a column, of the Collections mega menu."""
+
+    LINK_TYPES = [
+        ("category", "Category page"),
+        ("collection", "Sub-category page"),
+        ("external", "Custom URL / path"),
+        ("none", "No link (heading only)"),
+    ]
+
+    class Meta(CMSModelForm.Meta):
+        model = NavigationItem
+        fields = ["parent", "label", "link_type", "category", "collection", "external_url", "url_suffix", "open_in_new_tab", "is_active"]
+        labels = {
+            "parent": "Column",
+            "link_type": "Opens",
+            "collection": "Sub-category",
+            "category": "Category",
+            "external_url": "Custom URL / path",
+            "is_active": "Visible in the menu",
+        }
+        help_texts = {
+            "label": "The text visitors see, e.g. 'Phone Booth 01'.",
+            "url_suffix": "Optional anchor or query added to the link, e.g. #sustainability.",
+        }
+
+    def __init__(self, *args, root=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.root = root
+        columns = NavigationItem.objects.filter(parent=root).order_by("order", "id")
+        if self.instance.pk:
+            columns = columns.exclude(pk=self.instance.pk)
+        self.fields["parent"].queryset = columns
+        self.fields["parent"].required = False
+        self.fields["parent"].empty_label = "— None: this is a column of its own —"
+        self.fields["parent"].help_text = "Leave empty to add another column to the menu."
+        # Keep any link type the existing row already uses, even if it is not offered for new rows.
+        choices = list(self.LINK_TYPES)
+        current = self.instance.link_type if self.instance.pk else None
+        if current and current not in {value for value, _ in choices}:
+            choices.append((current, dict(NavigationItem.LINK_TYPES)[current]))
+        self.fields["link_type"].choices = choices
+        self.fields["category"].queryset = Category.objects.all()
+        self.fields["collection"].queryset = Collection.objects.select_related("category")
+        for name in ("category", "collection"):
+            self.fields[name].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        link_type = cleaned.get("link_type")
+        required_for = {
+            "category": ("category", "Choose a category."),
+            "collection": ("collection", "Choose a sub-category."),
+            "external": ("external_url", "Enter a URL or a path such as /contact/?collection=storage."),
+        }
+        if link_type in required_for:
+            field, message = required_for[link_type]
+            if not cleaned.get(field):
+                self.add_error(field, message)
+        if cleaned.get("parent") and self.instance.pk and self.instance.children.exists():
+            self.add_error("parent", "This column holds links, so it has to stay a column. Move or delete its links first.")
+        return cleaned
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        obj.menu = self.root.menu
+        # No column chosen means the row belongs directly under 'Collections' as a column.
+        obj.parent = self.cleaned_data.get("parent") or self.root
+        if obj.link_type != "category":
+            obj.category = None
+        if obj.link_type != "collection":
+            obj.collection = None
+        if obj.link_type != "external":
+            obj.external_url = ""
+        if obj.pk is None:
+            siblings = NavigationItem.objects.filter(parent=obj.parent).order_by("-order").first()
+            obj.order = (siblings.order + 1) if siblings else 0
+        if commit:
+            obj.save()
+        return obj

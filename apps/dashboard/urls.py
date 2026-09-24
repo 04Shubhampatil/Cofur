@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, home, pages, people, settings
+from .views import auth, catalog, home, navigation, pages, people, settings
 
 app_name = "dashboard"
 
@@ -15,6 +15,15 @@ urlpatterns = [
     path("content/about/", pages.AboutPageEditView.as_view(), name="page_about"),
     path("content/contact/", pages.ContactPageEditView.as_view(), name="page_contact"),
     path("content/footer/", settings.FooterSettingsView.as_view(), name="footer_settings"),
+
+    # Collections mega menu
+    path("menus/collections/", navigation.MegaMenuView.as_view(), name="mega_menu"),
+    path("menus/collections/add/", navigation.MegaMenuItemCreateView.as_view(), name="mega_menu_item_create"),
+    path("menus/collections/reorder/", navigation.MegaMenuItemReorderView.as_view(), name="mega_menu_item_reorder"),
+    path("menus/collections/<int:pk>/", navigation.MegaMenuItemUpdateView.as_view(), name="mega_menu_item_update"),
+    path("menus/collections/<int:pk>/delete/", navigation.MegaMenuItemDeleteView.as_view(), name="mega_menu_item_delete"),
+    path("menus/collections/<int:pk>/toggle-active/", navigation.MegaMenuItemToggleActiveView.as_view(), name="mega_menu_item_toggle_active"),
+    path("menus/collections/<int:pk>/move/<slug:direction>/", navigation.MegaMenuItemMoveView.as_view(), name="mega_menu_item_move"),
 
     # Catalog: products
     path("products/", catalog.ProductListView.as_view(), name="product_list"),

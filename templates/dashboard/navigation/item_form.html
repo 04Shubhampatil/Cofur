@@ -1,0 +1,27 @@
+{% extends "dashboard/generic/form.html" %}
+{% block extra_js %}
+{{ block.super }}
+<script>
+  /* Show only the destination field that matches the chosen link type. */
+  (function () {
+    var form = document.querySelector('.form-page');
+    if (!form) return;
+    var select = form.querySelector('[name="link_type"]');
+    if (!select) return;
+    var targets = { category: 'category', collection: 'collection', external: 'external_url' };
+    function sync() {
+      var keep = targets[select.value];
+      Object.values(targets).forEach(function (name) {
+        var wrap = form.querySelector('[data-field="' + name + '"]');
+        if (wrap) wrap.hidden = name !== keep;
+      });
+      ['url_suffix', 'open_in_new_tab'].forEach(function (name) {
+        var wrap = form.querySelector('[data-field="' + name + '"]');
+        if (wrap) wrap.hidden = select.value === 'none';
+      });
+    }
+    select.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{% endblock %}

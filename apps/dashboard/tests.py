@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.catalog.models import Category, Collection, Product, ProductImage
-from apps.core.models import SiteSettings
+from apps.core.models import NavigationItem, NavigationMenu, SiteSettings
 from apps.core.roles import ensure_roles
 from apps.core.tests import make_image
 from apps.enquiries.models import Enquiry
@@ -605,3 +605,151 @@ class AdminSecurityTests(DashboardTestCase):
         response = self.client.post(reverse("dashboard:password_change"), {"old_password": "Admin-Pass-123!", "new_password1": "short1", "new_password2": "short1"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "at least 12 characters")
+
+
+class MegaMenuTests(DashboardTestCase):
+    """The Collections dropdown: category columns, their sub-category links, and ordering."""
+
+    def setUp(self):
+        self.client.force_login(self.superuser)
+        self.menu = NavigationMenu.objects.create(name="Header", slug="header")
+        self.root = NavigationItem.objects.create(menu=self.menu, label="Collections", link_type="none", order=0)
+        self.about = NavigationItem.objects.create(menu=self.menu, label="About", link_type="internal", internal_page="website:about", order=1)
+        self.column = NavigationItem.objects.create(menu=self.menu, label="Soft Seating", parent=self.root, link_type="category", category=self.category, order=0)
+        self.link = NavigationItem.objects.create(menu=self.menu, label="Cove Series", parent=self.column, link_type="collection", collection=self.collection, order=0)
+
+    def payload(self, **extra):
+        data = {"label": "New row", "link_type": "none", "is_active": "on"}
+        data.update(extra)
+        return data
+
+    def test_page_lists_columns_with_their_links_only(self):
+        response = self.client.get(reverse("dashboard:mega_menu"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([row["obj"] for row in response.context["rows"]], [self.column, self.link])
+        self.assertEqual([row["depth"] for row in response.context["rows"]], [0, 1])
+        self.assertEqual(response.context["column_count"], 1)
+        self.assertNotContains(response, 'data-id="%d"' % self.about.pk)  # other bar items stay out of this screen
+
+    def test_add_column(self):
+        response = self.client.post(reverse("dashboard:mega_menu_item_create"), self.payload(label="Storage", link_type="none"))
+        self.assertRedirects(response, reverse("dashboard:mega_menu"))
+        storage = NavigationItem.objects.get(label="Storage")
+        self.assertEqual(storage.parent, self.root)
+        self.assertEqual(storage.menu, self.menu)
+        self.assertEqual(storage.order, 1)  # appended after the existing column
+
+    def test_add_link_inside_a_column(self):
+        response = self.client.post(
+            reverse("dashboard:mega_menu_item_create"),
+            self.payload(label="Pebble Series", parent=self.column.pk, link_type="collection", collection=self.collection.pk),
+        )
+        self.assertRedirects(response, reverse("dashboard:mega_menu"))
+        item = NavigationItem.objects.get(label="Pebble Series")
+        self.assertEqual(item.parent, self.column)
+        self.assertEqual(item.get_url(), self.collection.get_absolute_url())
+
+    def test_add_form_prefills_the_column_from_the_query_string(self):
+        response = self.client.get(reverse("dashboard:mega_menu_item_create") + f"?column={self.column.pk}")
+        self.assertEqual(response.context["form"].initial["parent"], self.column.pk)
+        self.assertContains(response, "Add link")
+
+    def test_destination_is_required_for_the_chosen_type(self):
+        response = self.client.post(reverse("dashboard:mega_menu_item_create"), self.payload(link_type="category"))
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context["form"], "category", "Choose a category.")
+
+    def test_unused_destinations_are_cleared_on_save(self):
+        response = self.client.post(
+            reverse("dashboard:mega_menu_item_update", args=[self.link.pk]),
+            self.payload(label="Cove Series", parent=self.column.pk, link_type="external", external_url="/contact/?collection=cove"),
+        )
+        self.assertEqual(response.status_code, 302)
+        self.link.refresh_from_db()
+        self.assertIsNone(self.link.collection)
+        self.assertEqual(self.link.get_url(), "/contact/?collection=cove")
+
+    def test_a_column_holding_links_cannot_become_a_link(self):
+        response = self.client.post(
+            reverse("dashboard:mega_menu_item_update", args=[self.column.pk]),
+            self.payload(label="Soft Seating", parent=self.column.pk, link_type="category", category=self.category.pk),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors["parent"])
+
+    def test_items_outside_the_collections_menu_are_not_editable_here(self):
+        for name in ("mega_menu_item_update", "mega_menu_item_delete"):
+            self.assertEqual(self.client.get(reverse(f"dashboard:{name}", args=[self.about.pk])).status_code, 404)
+        self.assertEqual(self.client.post(reverse("dashboard:mega_menu_item_toggle_active", args=[self.about.pk])).status_code, 404)
+
+    def test_reorder_columns_and_links(self):
+        storage = NavigationItem.objects.create(menu=self.menu, label="Storage", parent=self.root, link_type="none", order=1)
+        pebble = NavigationItem.objects.create(menu=self.menu, label="Pebble Series", parent=self.column, link_type="none", order=1)
+        self.client.post(
+            reverse("dashboard:mega_menu_item_reorder"),
+            json.dumps({"order": [storage.pk, self.column.pk, pebble.pk, self.link.pk]}),
+            content_type="application/json",
+        )
+        self.assertEqual([item.label for item in self.root.active_children()], ["Storage", "Soft Seating"])
+        self.assertEqual([item.label for item in self.column.active_children()], ["Pebble Series", "Cove Series"])
+
+    def test_reorder_ignores_items_outside_the_menu(self):
+        self.client.post(
+            reverse("dashboard:mega_menu_item_reorder"),
+            json.dumps({"order": [self.about.pk, self.column.pk]}),
+            content_type="application/json",
+        )
+        self.about.refresh_from_db()
+        self.assertEqual(self.about.order, 1)
+
+    def test_toggle_hides_the_row_from_the_menu(self):
+        self.client.post(reverse("dashboard:mega_menu_item_toggle_active", args=[self.link.pk]))
+        self.link.refresh_from_db()
+        self.assertFalse(self.link.is_active)
+        self.assertEqual(list(self.column.active_children()), [])
+
+    def test_delete_column_removes_its_links(self):
+        response = self.client.post(reverse("dashboard:mega_menu_item_delete", args=[self.column.pk]))
+        self.assertRedirects(response, reverse("dashboard:mega_menu"))
+        self.assertFalse(NavigationItem.objects.filter(pk__in=[self.column.pk, self.link.pk]).exists())
+
+    def test_editor_can_edit_but_not_delete(self):
+        self.client.force_login(self.editor)
+        self.assertEqual(self.client.get(reverse("dashboard:mega_menu")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:mega_menu_item_update", args=[self.link.pk])).status_code, 200)
+        self.assertEqual(self.client.post(reverse("dashboard:mega_menu_item_delete", args=[self.link.pk])).status_code, 403)
+
+    def test_staff_is_read_only(self):
+        self.client.force_login(self.staffer)
+        self.assertEqual(self.client.get(reverse("dashboard:mega_menu")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("dashboard:mega_menu_item_create")).status_code, 403)
+
+    def test_move_column_up_and_down(self):
+        storage = NavigationItem.objects.create(menu=self.menu, label="Storage", parent=self.root, link_type="none", order=1)
+        booth = NavigationItem.objects.create(menu=self.menu, label="Phone Booth", parent=self.root, link_type="none", order=2)
+        self.client.post(reverse("dashboard:mega_menu_item_move", args=[booth.pk, "up"]))
+        self.assertEqual([i.label for i in self.root.active_children()], ["Soft Seating", "Phone Booth", "Storage"])
+        self.client.post(reverse("dashboard:mega_menu_item_move", args=[self.column.pk, "down"]))
+        self.assertEqual([i.label for i in self.root.active_children()], ["Phone Booth", "Soft Seating", "Storage"])
+
+    def test_move_link_inside_its_column(self):
+        pebble = NavigationItem.objects.create(menu=self.menu, label="Pebble Series", parent=self.column, link_type="none", order=1)
+        self.client.post(reverse("dashboard:mega_menu_item_move", args=[pebble.pk, "up"]))
+        self.assertEqual([i.label for i in self.column.active_children()], ["Pebble Series", "Cove Series"])
+
+    def test_move_at_the_end_of_the_list_does_nothing(self):
+        self.client.post(reverse("dashboard:mega_menu_item_move", args=[self.column.pk, "up"]))
+        self.assertEqual([i.label for i in self.root.active_children()], ["Soft Seating"])
+
+    def test_move_buttons_are_disabled_at_the_ends(self):
+        NavigationItem.objects.create(menu=self.menu, label="Storage", parent=self.root, link_type="none", order=1)
+        rows = self.client.get(reverse("dashboard:mega_menu")).context["rows"]
+        columns = [row for row in rows if row["depth"] == 0]
+        self.assertEqual([(row["is_first"], row["is_last"]) for row in columns], [(True, False), (False, True)])
+
+    def test_move_rejects_items_outside_the_collections_menu(self):
+        self.assertEqual(self.client.post(reverse("dashboard:mega_menu_item_move", args=[self.about.pk, "up"])).status_code, 404)
+
+    def test_staff_cannot_move_rows(self):
+        self.client.force_login(self.staffer)
+        self.assertEqual(self.client.post(reverse("dashboard:mega_menu_item_move", args=[self.column.pk, "down"])).status_code, 403)

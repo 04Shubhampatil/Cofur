@@ -1,0 +1,71 @@
+{% extends "dashboard/base.html" %}
+{% load dashboard_tags %}
+{% block content %}
+<div class="page-head">
+  <div><h1>{{ page_title }}</h1><p class="muted">{{ intro }}</p></div>
+  <div class="page-head__actions">
+    <a class="btn btn--ghost" href="/" target="_blank" rel="noopener">{% icon "external" %}<span>Preview site</span></a>
+    {% if create_url %}<a class="btn btn--primary" href="{{ create_url }}">{% icon "plus" %}<span>Add column</span></a>{% endif %}
+  </div>
+</div>
+
+<section class="card card--table">
+  <div class="table-wrap">
+    <table class="table menu-tree{% if reorder_url %} table--sortable{% endif %}" {% if reorder_url %}data-sortable data-reorder-url="{{ reorder_url }}"{% endif %}>
+      <thead>
+        <tr>
+          {% if reorder_url %}<th class="th-drag"></th><th class="th-move">Move</th>{% endif %}
+          <th>Label</th>
+          <th>Type</th>
+          <th>Opens</th>
+          <th>Visible</th>
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr data-id="{{ row.obj.pk }}" data-parent="{{ row.parent_key }}" class="menu-tree__row menu-tree__row--d{{ row.depth }}">
+          {% if reorder_url %}
+          <td class="td-drag"><span class="drag" draggable="true" title="Drag to reorder within the same level">{% icon "drag" %}</span></td>
+          <td class="td-move">
+            <div class="move-btns">
+              <form method="post" action="{{ row.move_up_url }}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="icon-btn" type="submit" title="Move {{ row.level_label|lower }} up"{% if row.is_first %} disabled{% endif %}><span class="sr-only">Move {{ row.obj.label }} up</span>{% icon "arrow-up" %}</button>
+              </form>
+              <form method="post" action="{{ row.move_down_url }}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="icon-btn" type="submit" title="Move {{ row.level_label|lower }} down"{% if row.is_last %} disabled{% endif %}><span class="sr-only">Move {{ row.obj.label }} down</span>{% icon "arrow-down" %}</button>
+              </form>
+            </div>
+          </td>
+          {% endif %}
+          <td data-label="Label">
+            <span class="menu-tree__indent" style="--depth:{{ row.depth }}"></span>
+            <strong class="cell-title">{{ row.obj.label }}</strong>
+            {% if row.child_count %}<span class="badge">{{ row.child_count }} link{{ row.child_count|pluralize }}</span>{% endif %}
+          </td>
+          <td data-label="Type"><span class="muted">{{ row.level_label }}</span></td>
+          <td data-label="Opens">
+            <span class="muted">{{ row.obj.target_description }}</span>
+            {% if row.obj.url_suffix %}<code class="muted">{{ row.obj.url_suffix }}</code>{% endif %}
+          </td>
+          <td data-label="Visible">
+            {% if can_change %}
+            <form method="post" action="{{ row.toggle_url }}" class="inline" data-switch>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="switch{% if row.obj.is_active %} is-on{% endif %}" role="switch" aria-checked="{{ row.obj.is_active|yesno:'true,false' }}" title="Show or hide this item"><i></i></button></form>
+            {% else %}{% if row.obj.is_active %}<span class="badge badge--success">Visible</span>{% else %}<span class="badge">Hidden</span>{% endif %}{% endif %}
+          </td>
+          <td class="td-actions"><div class="actions">
+            {% if row.add_child_url %}<a class="action" href="{{ row.add_child_url }}" title="Add a link inside this column">{% icon "plus" %}<span>Add link</span></a>{% endif %}
+            {% if can_change %}<a class="action" href="{{ row.edit_url }}">{% icon "edit" %}<span>Edit</span></a>{% endif %}
+            {% if can_delete %}<a class="btn btn--sm btn--outline-danger" href="{{ row.delete_url }}">Delete</a>{% endif %}
+          </div></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:32px">The menu is empty. Use “Add column” to create the first category column.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<p class="muted showing">{{ column_count }} column{{ column_count|pluralize }} in the COLLECTIONS dropdown. Use the arrows (or drag the handle) to move a row within its own level — a column among columns, a link within its column.</p>
+{% endblock %}

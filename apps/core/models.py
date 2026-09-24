@@ -123,3 +123,14 @@ class NavigationItem(OrderableModel, ActivatableModel):
 
     def active_children(self):
         return self.children.filter(is_active=True).select_related("collection", "category", "product")
+
+    def target_description(self):
+        """Human-readable summary of where this item points, for the CMS list."""
+        if self.link_type == "none":
+            return "No link (heading only)"
+        if self.link_type == "internal":
+            return dict(self.INTERNAL_PAGES).get(self.internal_page, "—")
+        if self.link_type in {"collection", "category", "product"}:
+            related = {"collection": self.collection, "category": self.category, "product": self.product}[self.link_type]
+            return str(related) if related else "—"
+        return self.external_url or "—"

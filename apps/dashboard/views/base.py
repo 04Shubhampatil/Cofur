@@ -189,7 +189,8 @@ class DashboardDeleteView(DashboardPermissionMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["cancel_url"] = reverse(self.list_url_name)
+        # Subclasses whose list page is not a plain reverse() set cancel_url themselves.
+        context["cancel_url"] = reverse(self.list_url_name) if self.list_url_name else ""
         context["breadcrumbs"] = self.breadcrumbs
         context["verbose_name"] = self.model._meta.verbose_name
         return context

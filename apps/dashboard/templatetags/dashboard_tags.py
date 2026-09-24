@@ -160,6 +160,8 @@ def icon(name):
         "drag": '<circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>',
         "dot": '<circle cx="12" cy="12" r="3"/>',
         "chevron": '<path d="M9 18l6-6-6-6"/>',
+        "arrow-up": '<path d="M12 19V5M5 12l7-7 7 7"/>',
+        "arrow-down": '<path d="M12 5v14M19 12l-7 7-7-7"/>',
         "key": '<path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15 8m0 0l3 3L22 7l-3-3"/>',
     }
     return format_html(
