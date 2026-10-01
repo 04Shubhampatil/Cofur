@@ -186,15 +186,6 @@ def get_item(mapping, key):
 @register.simple_tag
 def static_v(path):
     """Static URL with a ?v= cache-buster based on the file's modification time."""
-    import os
+    from apps.core.assets import versioned_static
 
-    from django.conf import settings
-    from django.templatetags.static import static as static_url
-
-    version = 0
-    for base in getattr(settings, "STATICFILES_DIRS", []):
-        candidate = os.path.join(str(base), path)
-        if os.path.exists(candidate):
-            version = int(os.path.getmtime(candidate))
-            break
-    return f"{static_url(path)}?v={version}"
+    return versioned_static(path)

@@ -496,9 +496,14 @@ class BannerMobileAdminTests(DashboardTestCase):
         self.assertContains(response, "minimum 800px wide")
         self.assertLess(html.index('name="banner_image"'), html.index('name="banner_mobile_image"'))
         self.assertLess(html.index('name="banner_mobile_image"'), html.index('name="banner_mobile_alt"'))
+        # A product has no banner, so none of the banner-mobile fields belong on it.
         product_html = self.client.get(reverse("dashboard:product_update", args=[self.product.pk])).content.decode()
-        self.assertNotIn("mobile_image", product_html)
+        self.assertNotIn("banner_mobile_image", product_html)
         self.assertNotIn("Mobile banner image", product_html)
+        # It does have a mobile crop of its own: the one the home page Featured
+        # section uses, which sits with the main image it overrides.
+        self.assertIn('name="featured_mobile_image"', product_html)
+        self.assertLess(product_html.index('name="main_image"'), product_html.index('name="featured_mobile_image"'))
 
     def test_save_and_remove_collection_mobile_banner(self):
         base = {"name": "Cove", "slug": "cove", "category": self.category.pk, "order": 1, "is_active": "on", "robots": "index, follow"}

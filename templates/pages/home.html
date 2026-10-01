@@ -37,14 +37,7 @@
       {% if page.category_section_visible %}
       <ul class="range-rail__track" tabindex="0" role="list" aria-label="Product categories. Scroll sideways or use the arrows.">
         {% for category in categories %}
-        <li class="range-card"><a href="{{ category.link }}">
-            {% if category.card_image %}<img src="{{ category.card_image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
-            <span class="range-card__copy">
-              <b>{{ category.name }}</b>
-              {% if category.subtitle %}<em><span>{{ category.subtitle }}</span></em>{% endif %}
-              <i>{{ category.card_link_text|default:"View items" }}</i>
-            </span>
-          </a></li>
+        {% include "components/category-card.html" with category=category %}
         {% endfor %}
       </ul>
       {% endif %}
@@ -90,7 +83,7 @@
         <h2>{{ page.featured_heading }}</h2>
       </div>
       {% for product in featured_products %}
-      <div class="featured-stage">{% if product.main_image %}<img src="{{ product.main_image.url }}" alt="{{ product.main_image_alt|default:product.name }}">{% endif %}
+      <div class="featured-stage">{% if product.main_image %}<picture>{% mobile_source product.featured_mobile_image %}<img src="{{ product.main_image.url }}" alt="{{ product.main_image_alt|default:product.name }}"{% if product.featured_mobile_image and product.featured_mobile_alt %} data-mobile-alt="{{ product.featured_mobile_alt }}"{% endif %}></picture>{% endif %}
         <div class="featured-title">
           <h3 data-static-title>{{ product.name }}</h3><a class="text-cta" href="{% if product.collection %}{{ product.collection.get_absolute_url }}{% else %}{{ product.get_absolute_url }}{% endif %}"><span>{{ page.featured_cta_text|default:"View products" }}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" /></svg></a>
         </div>

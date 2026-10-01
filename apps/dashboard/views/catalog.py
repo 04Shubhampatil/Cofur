@@ -113,6 +113,7 @@ class CategoryToggleActiveView(ToggleFieldView):
 CATEGORY_FIELDSETS = [
     ("Basic information", ["name", "slug", "subtitle", "description", "card_link_text", "link_override", "show_on_home", "order", "is_active"]),
     ("Images", ["thumbnail_image", "banner_image", "banner_mobile_image", "banner_mobile_alt", "lifestyle_image"]),
+    ("Catalogue", ["catalogue_pdf"]),
     ("SEO", ["seo_title", "meta_description", "meta_keywords", "og_title", "og_description", "og_image", "canonical_url", "robots"]),
 ]
 
@@ -275,7 +276,7 @@ class ProductListView(DashboardListView):
 # Sections follow the order of the public product page so editors can see where each image lands.
 PRODUCT_TABS = [
     ("basic", "Basic information", ["name", "slug", "sku", "collection", "category", "name_prefix", "tagline", "short_description", "seating_capacity", "areas", "order"]),
-    ("overview", "Overview image & card images", ["main_image", "main_image_alt", "description", "materials", "card_image", "hover_image"]),
+    ("overview", "Overview image & card images", ["main_image", "main_image_alt", "featured_mobile_image", "featured_mobile_alt", "description", "materials", "card_image", "hover_image"]),
     ("details", "Product details images", ["details_heading"]),
     ("specs_image", "Specifications image", ["specs_heading", "finish_image"]),
     ("fabric", "Fabric options", ["fabric_heading", "fabric_intro"]),

@@ -165,6 +165,29 @@ class AboutPage(SEOFieldsMixin, SingletonModel):
         ]
 
 
+class CataloguePage(SEOFieldsMixin, SingletonModel):
+    """The Catalogues page: a banner over the same category rail the home page uses."""
+
+    page_title = models.CharField(max_length=120, default="Catalogues")
+    banner_image = models.ImageField(upload_to="catalogues/", blank=True, null=True)
+    banner_mobile_image = banner_mobile_image_field(upload_to="catalogues/")
+    banner_mobile_alt = banner_mobile_alt_field()
+    banner_alt = models.CharField(max_length=255, blank=True)
+
+    heading = models.CharField(max_length=200, blank=True, default="Every range, ready to download")
+
+
+    class Meta:
+        verbose_name = "Catalogue page"
+
+    def __str__(self):
+        return "Catalogue page"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        optimise_fields(self, "banner_image", "banner_mobile_image")
+
+
 class ContactPage(SEOFieldsMixin, SingletonModel):
     page_title = models.CharField(max_length=120, default="Contact us")
     banner_image = models.ImageField(upload_to="contact/", blank=True, null=True)

@@ -1,15 +1,40 @@
 from django.contrib import messages
-from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_http_methods
 
 from apps.catalog.models import Category, Collection, Product
 from apps.core.models import SiteSettings
 from apps.enquiries.forms import EnquiryForm
 from apps.enquiries.services import is_rate_limited, save_enquiry
-from apps.pages.models import AboutPage, ContactPage, HomePage
+from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage
+from apps.stories.models import Story
 from apps.team.models import TeamMember
+
+
+def _page_seo(request, title, description=""):
+    """SEO for a listing with no model behind it — same keys as seo_context()."""
+    site = SiteSettings.load()
+    image_url = ""
+    if site.default_og_image:
+        try:
+            image_url = request.build_absolute_uri(site.default_og_image.url)
+        except ValueError:
+            image_url = ""
+    return {
+        "title": title or site.default_meta_title,
+        "description": description or site.default_meta_description,
+        "keywords": site.default_meta_keywords,
+        "og_title": title or site.default_meta_title,
+        "og_description": description or site.default_meta_description,
+        "og_image": image_url,
+        "canonical": request.build_absolute_uri(request.path),
+        "robots": site.default_robots,
+    }
 
 
 def _seo(request, obj, title, description="", image=None):
@@ -47,6 +72,76 @@ def about(request):
         "body_page": "about",
     }
     return render(request, "pages/about.html", context)
+
+
+def stories(request):
+    """Our Story: every published post, filterable by category and searchable."""
+    posts = Story.objects.published()
+
+    # Checkbox filters. Nothing ticked means everything, which is what a visitor
+    # expects from a filter row that starts all-on.
+    kinds = [k for k in request.GET.getlist("kind") if k in dict(Story.KIND_CHOICES)]
+    if kinds:
+        posts = posts.filter(kind__in=kinds)
+
+    query = request.GET.get("q", "").strip()
+    if query:
+        posts = posts.filter(Q(title__icontains=query) | Q(excerpt__icontains=query) | Q(body__icontains=query))
+
+    paginator = Paginator(posts, 9)
+    page = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "page_obj": page,
+        "posts": page.object_list,
+        "total": paginator.count,
+        "kinds": [{"value": value, "label": label, "checked": not kinds or value in kinds} for value, label in Story.KIND_CHOICES],
+        "query": query,
+        "recent_posts": Story.objects.published()[:5],
+        "seo": _page_seo(request, f"Our Story — {SiteSettings.load().site_name}", "News, announcements and writing from COFUR."),
+        "body_page": "stories",
+    }
+    return render(request, "pages/stories.html", context)
+
+
+def story_detail(request, slug):
+    post = get_object_or_404(Story.objects.published(), slug=slug)
+    context = {
+        "post": post,
+        "recent_posts": Story.objects.published().exclude(pk=post.pk)[:5],
+        "seo": _seo(request, post, post.title, post.summary, post.cover_image),
+        "body_page": "story",
+    }
+    return render(request, "pages/story-detail.html", context)
+
+
+@xframe_options_sameorigin
+def catalogue_preview(request, slug):
+    """Serve a category's catalogue so it can be framed by our own pages.
+
+    The site sends X-Frame-Options: DENY everywhere, which is why the PDF came
+    up blank inside the preview panel — the browser refused to render a framed
+    document. Rather than relax that site-wide, this one response opts in to
+    same-origin framing. Everything else stays DENY.
+    """
+    category = get_object_or_404(Category, slug=slug, is_active=True)
+    if not category.catalogue_pdf:
+        raise Http404("No catalogue for this category")
+    response = FileResponse(category.catalogue_pdf.open("rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{category.slug}-catalogue.pdf"'
+    return response
+
+
+def catalogues(request):
+    """Every range in one place, each card offering its catalogue download."""
+    page = CataloguePage.load()
+    context = {
+        "page": page,
+        "categories": Category.objects.filter(is_active=True),
+        "seo": _seo(request, page, f"Catalogues — {SiteSettings.load().site_name}", page.heading[:160], page.banner_image),
+        "body_page": "catalogues",
+    }
+    return render(request, "pages/catalogues.html", context)
 
 
 def collection_list(request):

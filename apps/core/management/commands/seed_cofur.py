@@ -144,6 +144,7 @@ class Command(BaseCommand):
             "tagline": "Change the way you work",
             "contact_email": "info@cofur.in",
             "whatsapp_number": "919320461618",
+            "phone_number": "+91 93204 61618",
             "whatsapp_message": "Hello Cofur, I would like to know more about your furniture.",
             "address": "3rd Floor, Odessa Boutique Offices, Road Number 9, Wagle Industrial Estate, Thane West, Maharashtra 400604, India",
             "google_maps_url": "https://maps.google.com/?q=Odessa+Boutique+Offices,+Road+Number+9,+Wagle+Industrial+Estate,+Thane+West,+Maharashtra+400604",
@@ -153,7 +154,7 @@ class Command(BaseCommand):
             "footer_primary_cta_url": "/contact/",
             "footer_secondary_cta_text": "Download catalog",
             "footer_secondary_cta_url": "/categories/soft-seating/",
-            "copyright_text": "Copyright © {year} COFUR Pvt. Ltd. All rights reserved.",
+            "copyright_text": "Copyright © {year} COFUR Pvt. Ltd. All rights reserved",
             "default_meta_title": "Cofur — Furniture for the way people work",
             "default_meta_description": "Cofur designs considered furniture for offices, coworking spaces and commercial interiors.",
         }
@@ -471,8 +472,8 @@ class Command(BaseCommand):
             item(header, f"Accessories 0{n}", n, accessories, link_type="external", external_url="/contact/?collection=accessories")
 
         item(header, "About", 1, link_type="internal", internal_page="website:about")
-        item(header, "Communications", 2, link_type="internal", internal_page="website:about", url_suffix="#sustainability")
-        item(header, "Catalogues", 3, link_type="category", category=categories["soft-seating"], css_class="nav-spacer")
+        item(header, "Our Story", 2, link_type="internal", internal_page="website:stories")
+        item(header, "Catalogues", 3, link_type="internal", internal_page="website:catalogues", css_class="nav-spacer")
         item(header, "Contact", 4, link_type="internal", internal_page="website:contact")
 
         item(footer, "Collections", 0, link_type="internal", internal_page="website:home", url_suffix="#our-products")

@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "apps.pages",
     "apps.team",
     "apps.enquiries",
+    "apps.stories",
     "apps.website",
     "apps.dashboard",
     "apps.api",

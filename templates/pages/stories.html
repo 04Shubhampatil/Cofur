@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="stories-page">
+    <section class="container stories-head">
+      <h1>Our Story</h1>
+    </section>
+
+    <section class="container stories-layout" aria-label="Posts">
+      <div class="stories-main">
+        {% comment %}
+          Filters submit normally, so the list works without JavaScript and
+          every filtered view has its own URL to share or bookmark. JS only
+          saves the visitor a click by submitting on change.
+        {% endcomment %}
+        <form class="stories-filters" method="get" data-stories-filters>
+          <div class="stories-filters__kinds">
+            {% for kind in kinds %}
+            <label class="stories-check">
+              <input type="checkbox" name="kind" value="{{ kind.value }}"{% if kind.checked %} checked{% endif %}>
+              <span class="stories-check__box" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+              <span class="stories-check__label">{{ kind.label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+          <noscript><button class="btn-filter" type="submit">Apply</button></noscript>
+        </form>
+
+        <p class="stories-count">{{ total }} Item{{ total|pluralize }}</p>
+
+        {% if posts %}
+        <ul class="stories-grid" role="list">
+          {% for post in posts %}
+          <li class="story-card">
+            <a href="{{ post.get_absolute_url }}">
+              {% if post.cover_image %}
+              <span class="story-card__media">
+                <img src="{{ post.cover_image.url }}" alt="{{ post.cover_alt|default:post.title }}" loading="lazy" decoding="async">
+                <span class="story-card__tag">{{ post.get_kind_display }}</span>
+              </span>
+              {% endif %}
+              <span class="story-card__body">
+                <span class="story-card__meta">
+                  {% if not post.cover_image %}<span class="story-card__tag story-card__tag--inline">{{ post.get_kind_display }}</span>{% endif %}
+                  <time class="story-card__date" datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"j F Y" }}</time>
+                </span>
+                <b class="story-card__title">{{ post.title }}</b>
+                {% if post.summary %}<span class="story-card__text">{{ post.summary }}</span>{% endif %}
+              </span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="stories-pagination" aria-label="Pagination">
+          {% if page_obj.has_previous %}<a href="{% querystring page=page_obj.previous_page_number %}">Previous</a>{% endif %}
+          <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}<a href="{% querystring page=page_obj.next_page_number %}">Next</a>{% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <p class="stories-empty">
+          {% if query or kinds %}Nothing matches that yet. <a href="{% url 'website:stories' %}">Show everything</a>.
+          {% else %}The first post is on its way.{% endif %}
+        </p>
+        {% endif %}
+      </div>
+
+      <aside class="stories-aside" aria-label="Search and recent posts">
+        <form class="stories-search" method="get" role="search">
+          <label for="story-search">Search</label>
+          <div class="stories-search__row">
+            <input id="story-search" type="search" name="q" value="{{ query }}" placeholder="Search posts">
+            <button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+          </div>
+        </form>
+
+        {% if recent_posts %}
+        <div class="stories-recent">
+          <h2>Recent Posts</h2>
+          <ul role="list">
+            {% for post in recent_posts %}<li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>{% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </aside>
+    </section>
+  </main>
+{% endblock %}

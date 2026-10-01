@@ -8,6 +8,7 @@
         {% endif %}
         <ul class="cofur-footer__contact">
           {% if site.contact_email %}<li><a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a></li>{% endif %}
+          {% if site.phone_number %}<li><a href="{{ site.phone_href }}">{{ site.phone_number }}</a></li>{% endif %}
         </ul>
         <ul class="cofur-footer__social">
           <li><a href="{{ site.linkedin_url|default:'#' }}" aria-label="LinkedIn"{% if site.linkedin_url %} target="_blank" rel="noopener"{% endif %}>{% social_icon "linkedin" %}</a></li>
@@ -25,7 +26,7 @@
       </div>
     </div>
     <div class="cofur-footer__bar">
-      <p class="cofur-footer__copy">{{ site.copyright_rendered }}</p>
+      <p class="cofur-footer__copy">{{ site.copyright_rendered }}{% if site.credit_text %}<span class="cofur-footer__sep" aria-hidden="true">|</span>{% if site.credit_url %}<a href="{{ site.credit_url }}" target="_blank" rel="noopener">{{ site.credit_text }}</a>{% else %}{{ site.credit_text }}{% endif %}{% endif %}</p>
       <nav class="cofur-footer__menu" aria-label="Footer">{% for item in footer_menu_items %}<a href="{{ item.get_url }}"{% if item.open_in_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ item.label }}</a>{% endfor %}</nav>
     </div>
   </footer>

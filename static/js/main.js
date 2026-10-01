@@ -18,6 +18,29 @@ function initSite(){
     img.classList.add('cove-base-image');
     img.closest('.cove-card-media')?.append(hoverImg);
   });
+  // Touch screens never fire hover, so the room shot would be unreachable on a
+  // phone. Holding a card shows it instead — the same gesture the related
+  // product cards already answer to. Sliding a finger means the visitor is
+  // scrolling, so the card returns to its cut-out.
+  if(matchMedia('(hover:none)').matches){
+    document.querySelectorAll('.cove-card').forEach(card=>{
+      const hold=()=>card.classList.add('is-held'),release=()=>card.classList.remove('is-held');
+      card.addEventListener('touchstart',hold,{passive:true});
+      ['touchend','touchcancel','touchmove'].forEach(evt=>card.addEventListener(evt,release,{passive:true}));
+    });
+  }
+  // The home category cards open on their own instead: a phone has no hover,
+  // and asking someone to press and hold hides the subtitle behind a gesture
+  // nobody is told about. Scrolling a card into view opens it and scrolling it
+  // away closes it, so the page shows the same thing a desktop hover does —
+  // including on a refresh, where whatever is already on screen opens at once.
+  if(matchMedia('(hover:none)').matches&&'IntersectionObserver'in window){
+    const rail=document.querySelectorAll('.range-card');
+    if(rail.length){
+      const io=new IntersectionObserver(entries=>entries.forEach(entry=>entry.target.classList.toggle('is-inview',entry.isIntersecting)),{threshold:.6});
+      rail.forEach(card=>io.observe(card));
+    }
+  }
   const closeMega=()=>{mega?.classList.remove('open');mega?.setAttribute('aria-hidden','true');trigger?.setAttribute('aria-expanded','false')};
   trigger?.addEventListener('click',()=>{const open=mega?.classList.toggle('open');mega?.setAttribute('aria-hidden',String(!open));trigger?.setAttribute('aria-expanded',String(open))});
   trigger?.addEventListener('mouseenter',()=>{if(innerWidth>900){mega?.classList.add('open');mega?.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true')}});
@@ -88,12 +111,205 @@ function initSite(){
       el.classList.remove('reveal');
       gsap.from(el.querySelectorAll('.title-char'), {y: 40, opacity: 0, stagger: .022, duration: .8, ease: 'power3.out', scrollTrigger: {trigger: el, start: 'top 90%', once: true}});
     });
+    initSectionMotion(motion);
     initHomeMotion(motion);
     initAboutMotion(motion);
     document.fonts.ready.then(() => ScrollTrigger.refresh());
     window.addEventListener('load', () => ScrollTrigger.refresh(), {once: true});
   }else document.querySelectorAll('.reveal').forEach(x=>x.style.visibility='visible');
 }
+/* --------------------------------------------------------------------------
+   Scroll motion
+   --------------------------------------------------------------------------
+   Three kinds of motion, kept apart on purpose:
+
+   1. ENTRANCE  — fires once as a block arrives, then the element is left
+                  alone. Cheap, and right for text and cards.
+   2. PROGRESS  — tied to scroll position and scrubbed, so the image keeps
+                  answering the scroll rather than playing a canned clip. Used
+                  only for large photography, where it is worth the cost.
+   3. PINNED    — already owned by the statement sequence and the collection
+                  story. Nothing new is pinned here: a page that holds still
+                  twice feels broken, and pinning is the first thing to fail
+                  on a phone.
+
+   Each tier is registered through gsap.matchMedia, so a phone is not handed a
+   shrunken desktop animation and a reduced-motion visitor gets opacity only,
+   with every pixel of content still present.
+
+   The hidden state is always set from JavaScript, never CSS. If this file
+   fails to load the page reads normally instead of showing blank space.
+   -------------------------------------------------------------------------- */
+
+// Anything an existing timeline already drives, or that owns its own state.
+// Animating one element twice reads as a stutter.
+const MOTION_SKIP = [
+  '.reveal', '[data-parallax]', '.hero', '.page-banner', '.statement-story', '.collection-story',
+  '.featured-stage', '.testimonial-window', '.line-cta', '.range-card', '.cove-card',
+  '.range-rail__track', '.mosaic', '.about-value', '.site-header', '.cofur-footer',
+].join(',');
+
+function motionBlocks() {
+  // Walk the page rather than relying on hand-tagged classes: only three
+  // elements site-wide carried `reveal`, so most sections had no motion and a
+  // new template would have had none either.
+  const groups = [];
+  document.querySelectorAll('main > section, main > * > section').forEach(section => {
+    if (section.matches(MOTION_SKIP) || section.closest('.statement-story,.collection-story')) return;
+    // Sections usually wrap their content in a container; animating that keeps
+    // full-bleed backgrounds still while the content moves.
+    const scope = section.querySelector(':scope > .container') || section;
+    const blocks = [...scope.children].filter(child =>
+      !child.matches(MOTION_SKIP) && !child.closest(MOTION_SKIP) && child.getBoundingClientRect().height > 0
+    );
+    if (blocks.length) groups.push({section, blocks});
+  });
+  return groups;
+}
+
+function initSectionMotion(motion) {
+  const groups = motionBlocks();
+
+  // ---- entrance: the same choreography, a shorter throw on small screens ----
+  const entrance = distance => () => {
+    groups.forEach(({section, blocks}) => {
+      gsap.set(blocks, {autoAlpha: 0, y: distance});
+      gsap.to(blocks, {
+        autoAlpha: 1, y: 0, duration: .85, ease: 'power3.out', stagger: .09,
+        scrollTrigger: {trigger: section, start: 'top 88%', once: true},
+      });
+    });
+    return () => gsap.set(groups.flatMap(g => g.blocks), {clearProps: 'opacity,visibility,transform'});
+  };
+  motion.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', entrance(38));
+  motion.add('(max-width: 900px) and (prefers-reduced-motion: no-preference)', entrance(22));
+
+  // Reduced motion still gets the content, just without the travel.
+  motion.add('(prefers-reduced-motion: reduce)', () => {
+    groups.forEach(({section, blocks}) => {
+      gsap.set(blocks, {autoAlpha: 0});
+      gsap.to(blocks, {autoAlpha: 1, duration: .4, stagger: .05, scrollTrigger: {trigger: section, start: 'top 92%', once: true}});
+    });
+  });
+
+  // ---- progress: large photography answers the scroll continuously ----
+  // Desktop only. On a phone the same scrub costs more than it shows, and the
+  // banner is most of the screen, so dimming it as you read is a nuisance.
+  motion.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
+    gsap.utils.toArray('.page-banner').forEach(banner => {
+      gsap.to(banner, {
+        scale: .96, opacity: .55, ease: 'none', transformOrigin: '50% 0%',
+        scrollTrigger: {trigger: banner, start: 'top top', end: 'bottom top', scrub: .6},
+      });
+    });
+    // The home hero holds still while it is read, then eases back as the page
+    // scrolls over it — a settle, not a zoom.
+    gsap.utils.toArray('.hero-slides').forEach(slides => {
+      gsap.to(slides, {
+        scale: 1.04, yPercent: 4, ease: 'none',
+        scrollTrigger: {trigger: slides.closest('.hero') || slides, start: 'top top', end: 'bottom top', scrub: .8},
+      });
+    });
+  });
+
+  // Category photography settles into its frame as the card arrives: 1.04 -> 1,
+  // scrubbed, so it tracks the scroll instead of playing to its own clock.
+  motion.add('(min-width: 769px) and (prefers-reduced-motion: no-preference)', () => {
+    gsap.utils.toArray('.range-card > a > img').forEach(img => {
+      gsap.fromTo(img, {scale: 1.04}, {
+        scale: 1, ease: 'none',
+        scrollTrigger: {trigger: img.closest('.range-card'), start: 'top 95%', end: 'top 45%', scrub: .7},
+      });
+    });
+  });
+
+  // Smaller photographs elsewhere: a single settle on arrival, no scrub.
+  motion.add('(prefers-reduced-motion: no-preference)', () => {
+    gsap.utils.toArray('main figure img, .contact-card img, .team-card img').forEach(img => {
+      if (img.closest(MOTION_SKIP)) return;
+      gsap.from(img, {scale: 1.06, duration: 1.1, ease: 'power3.out', scrollTrigger: {trigger: img, start: 'top 90%', once: true}});
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   Catalogue preview
+   --------------------------------------------------------------------------
+   A category card whose catalogue is uploaded opens that PDF in place instead
+   of navigating away, so a visitor can look through it and carry on browsing.
+
+   The card stays an ordinary link to the category page. That is deliberate:
+   it is what a middle-click, a "open in new tab", a crawler and a visitor
+   without JavaScript all get. Only a plain left-click is intercepted.
+
+   iOS and most mobile browsers refuse to render a PDF inside an iframe — the
+   frame just comes up blank — so on a touch screen the file is opened in a new
+   tab instead of showing an empty box.
+   -------------------------------------------------------------------------- */
+function initPdfPreview() {
+  const cards = document.querySelectorAll('[data-pdf-preview]');
+  if (!cards.length) return;
+  const inlinePdfWorks = !matchMedia('(hover: none)').matches && !/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+  let dialog = null, lastFocused = null;
+
+  const close = () => {
+    if (!dialog) return;
+    dialog.classList.remove('is-open');
+    document.body.classList.remove('has-pdf-preview');
+    // Drop the iframe so the PDF stops using memory while it is not on screen.
+    const frame = dialog.querySelector('iframe');
+    if (frame) frame.remove();
+    lastFocused?.focus();
+  };
+
+  const build = () => {
+    const el = document.createElement('div');
+    el.className = 'pdf-preview';
+    el.innerHTML =
+      '<div class="pdf-preview__backdrop" data-pdf-close></div>' +
+      '<div class="pdf-preview__panel" role="dialog" aria-modal="true" aria-label="Catalogue preview">' +
+        '<header class="pdf-preview__bar">' +
+          '<p class="pdf-preview__title"></p>' +
+          '<a class="pdf-preview__download" download>Download</a>' +
+          '<button class="pdf-preview__close" type="button" data-pdf-close aria-label="Close preview">&times;</button>' +
+        '</header>' +
+        '<div class="pdf-preview__body"></div>' +
+      '</div>';
+    el.addEventListener('click', event => { if (event.target.closest('[data-pdf-close]')) close(); });
+    document.body.append(el);
+    return el;
+  };
+
+  const open = (url, title, source) => {
+    dialog = dialog || build();
+    lastFocused = source;
+    dialog.querySelector('.pdf-preview__title').textContent = title || 'Catalogue';
+    const download = dialog.querySelector('.pdf-preview__download');
+    download.href = url;
+    const body = dialog.querySelector('.pdf-preview__body');
+    body.innerHTML = '';
+    const frame = document.createElement('iframe');
+    frame.src = url + '#view=FitH';
+    frame.title = title || 'Catalogue preview';
+    body.append(frame);
+    dialog.classList.add('is-open');
+    document.body.classList.add('has-pdf-preview');
+    dialog.querySelector('.pdf-preview__close').focus();
+  };
+
+  cards.forEach(card => card.addEventListener('click', event => {
+    // Leave the browser's own shortcuts alone.
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = card.dataset.pdfPreview;
+    if (!url) return;
+    if (!inlinePdfWorks) { event.preventDefault(); window.open(url, '_blank', 'noopener'); return; }
+    event.preventDefault();
+    open(url, card.dataset.pdfTitle, card);
+  }));
+
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+}
+
 document.addEventListener('DOMContentLoaded',initSite);
 
 function initHeroSlider() {
@@ -141,6 +357,19 @@ function initHeroSlider() {
   if (!reduced) timer = setTimeout(() => go(1), STILL);
 }
 document.addEventListener('DOMContentLoaded', initHeroSlider);
+/* Posts filters: submit as soon as a box is ticked. The form still works
+   without this — the noscript button submits it — so the list is never
+   dependent on JavaScript. */
+function initStoryFilters() {
+  const form = document.querySelector('[data-stories-filters]');
+  if (!form) return;
+  form.addEventListener('change', event => {
+    if (event.target.matches('input[name="kind"]')) form.requestSubmit();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initPdfPreview);
+document.addEventListener('DOMContentLoaded', initStoryFilters);
 
 /**
  * Pins the statement block and steps through its three sentences as the reader
@@ -216,7 +445,7 @@ function initHomeMotion(motion) {
   // the same three steps, so they share one timeline.
   motion.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
     const stopStatement = initStatementSequence(statement);
-    gsap.fromTo('.featured-stage>img', {clipPath:'inset(0 40% 0 40%)', opacity:.35, scale:1.08}, {
+    gsap.fromTo('.featured-stage img', {clipPath:'inset(0 40% 0 40%)', opacity:.35, scale:1.08}, {
       clipPath:'inset(0 0% 0 0%)',opacity:1,scale:1,ease:'none',
       scrollTrigger:{trigger:'.featured-stage',start:'top 85%',end:'top 15%',scrub:.8}
     });
@@ -230,7 +459,7 @@ function initHomeMotion(motion) {
     });
   });
   motion.add('(max-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
-    gsap.from('.featured-stage>img',{opacity:0,duration:1.2,scrollTrigger:{trigger:'.featured-stage',start:'top 85%',once:true}});
+    gsap.from('.featured-stage img',{opacity:0,duration:1.2,scrollTrigger:{trigger:'.featured-stage',start:'top 85%',once:true}});
   });
   document.querySelectorAll('.cta-outline path').forEach((path,index) => {
     const length = path.getTotalLength();
@@ -245,11 +474,16 @@ function initAboutMotion(motion) {
   const page = document.querySelector('.about-page');
   if (!page) return;
   motion.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
+    // These used to play once on arrival and finish on their own clock. Tied
+    // to scroll progress instead, each value answers the scroll the whole way
+    // in — the storytelling feel — while its resting appearance is unchanged.
     gsap.utils.toArray('.about-value').forEach((item,index) => {
       const number=item.querySelector('.about-value__num');
-      if(number)gsap.from(number,{x:index%2?70:-70,opacity:0,duration:1.1,ease:'power3.out',scrollTrigger:{trigger:item,start:'top 82%',once:true}});
+      if(number)gsap.from(number,{x:index%2?70:-70,opacity:0,ease:'none',scrollTrigger:{trigger:item,start:'top 92%',end:'top 52%',scrub:.6}});
+      const heading=item.querySelector('h3');
+      if(heading)gsap.from(heading,{y:30,opacity:0,ease:'none',scrollTrigger:{trigger:item,start:'top 88%',end:'top 50%',scrub:.6}});
       const copy=item.querySelector('p');
-      if(copy)gsap.from(copy,{y:45,opacity:0,duration:.9,ease:'power2.out',scrollTrigger:{trigger:item,start:'top 72%',once:true}});
+      if(copy)gsap.from(copy,{y:45,opacity:0,ease:'none',scrollTrigger:{trigger:item,start:'top 84%',end:'top 46%',scrub:.65}});
     });
     if(document.querySelector('.about-values__line'))gsap.from('.about-values__line',{scaleY:0,transformOrigin:'top',ease:'none',scrollTrigger:{trigger:'.about-values__list',start:'top 70%',end:'bottom 45%',scrub:true}});
     gsap.utils.toArray('.about-person').forEach((person,index) => {

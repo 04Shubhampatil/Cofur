@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from django.forms import inlineformset_factory
 
 from apps.catalog.models import (
@@ -12,8 +13,10 @@ from apps.catalog.models import (
 )
 from apps.core.models import NavigationItem, SiteSettings
 from apps.enquiries.models import Enquiry
+from apps.stories.models import Story
 from apps.pages.models import (
     AboutPage,
+    CataloguePage,
     ContactPage,
     Differentiator,
     HomeHeroSlide,
@@ -62,7 +65,7 @@ class CategoryForm(CMSModelForm):
         }
         fields = [
             "name", "slug", "subtitle", "description", "thumbnail_image", "banner_image", "banner_mobile_image", "banner_mobile_alt",
-            "lifestyle_image", "link_override", "card_link_text", "show_on_home",
+            "lifestyle_image", "catalogue_pdf", "link_override", "card_link_text", "show_on_home",
             "order", "is_active", *SEO_FIELDS,
         ]
 
@@ -117,7 +120,7 @@ class ProductForm(CMSModelForm):
         model = Product
         fields = [
             "name", "slug", "sku", "collection", "category", "name_prefix", "tagline", "short_description", "description",
-            "main_image", "main_image_alt", "card_image", "hover_image", "finish_image",
+            "main_image", "main_image_alt", "featured_mobile_image", "featured_mobile_alt", "card_image", "hover_image", "finish_image",
             "seating_capacity", "areas", "materials", "fabric_intro",
             "dimension_width", "dimension_depth", "dimension_height", "dimension_seat_height", "dimension_weight",
             "dimension_unit", "weight_unit",
@@ -326,6 +329,30 @@ class ContactPageForm(CMSModelForm):
         ]
 
 
+class CataloguePageForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = CataloguePage
+        fields = [
+            "page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt",
+            "heading", *SEO_FIELDS,
+        ]
+        help_texts = {"heading": "Sits above the range cards."}
+
+
+class StoryForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = Story
+        fields = ["title", "slug", "kind", "status", "published_at", "cover_image", "cover_alt", "excerpt", "body", *SEO_FIELDS]
+        widgets = {"published_at": forms.DateInput(attrs={"type": "date"}), "excerpt": forms.Textarea(attrs={"rows": 3}), "body": forms.Textarea(attrs={"rows": 14})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["slug"].required = False
+        self.fields["slug"].help_text = "Leave empty to build it from the title."
+        if not self.instance.pk:
+            self.fields["published_at"].initial = timezone.localdate()
+
+
 # ---------------------------------------------------------------- team / enquiries
 class TeamMemberForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
@@ -346,7 +373,7 @@ class SiteSettingsForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
         model = SiteSettings
         fields = [
-            "site_name", "tagline", "logo", "logo_light", "favicon", "contact_email", "whatsapp_number",
+            "site_name", "tagline", "logo", "logo_light", "favicon", "contact_email", "phone_number", "whatsapp_number",
             "whatsapp_message", "address", "google_maps_url", "linkedin_url", "instagram_url", "twitter_url",
         ]
 
@@ -357,7 +384,7 @@ class FooterSettingsForm(CMSModelForm):
         fields = [
             "logo_light", "footer_eyebrow", "footer_title", "footer_primary_cta_text",
             "footer_primary_cta_url", "footer_secondary_cta_text", "footer_secondary_cta_url",
-            "copyright_text", "address", "google_maps_url", "contact_email", "linkedin_url", "instagram_url", "twitter_url",
+            "copyright_text", "credit_text", "credit_url", "address", "google_maps_url", "contact_email", "phone_number", "linkedin_url", "instagram_url", "twitter_url",
         ]
 
 

@@ -14,6 +14,7 @@ class SiteSettings(SingletonModel):
     favicon = models.ImageField(upload_to="site/", blank=True, null=True)
 
     contact_email = models.EmailField(blank=True)
+    phone_number = models.CharField(max_length=40, blank=True, help_text="Shown in the footer beneath the email, e.g. +91 93204 61618.")
     whatsapp_number = models.CharField(max_length=30, blank=True, help_text="International format without +, e.g. 919320461618")
     whatsapp_message = models.CharField(max_length=255, blank=True, default="Hello Cofur, I would like to know more about your furniture.")
     address = models.TextField(blank=True)
@@ -25,7 +26,9 @@ class SiteSettings(SingletonModel):
     footer_primary_cta_url = models.CharField(max_length=255, blank=True, default="/contact/")
     footer_secondary_cta_text = models.CharField(max_length=60, blank=True, default="Download catalog")
     footer_secondary_cta_url = models.CharField(max_length=255, blank=True, default="/categories/soft-seating/")
-    copyright_text = models.CharField(max_length=255, blank=True, default="Copyright © {year} COFUR Pvt. Ltd. All rights reserved.")
+    copyright_text = models.CharField(max_length=255, blank=True, default="Copyright © {year} COFUR Pvt. Ltd. All rights reserved")
+    credit_text = models.CharField(max_length=120, blank=True, default="Develop by Nivtech.", help_text="Shown after the copyright, separated by a bar. Leave empty to hide it.")
+    credit_url = models.URLField(blank=True, default="https://nivtech.co.in/", help_text="Where the credit links to. Leave empty for plain text.")
 
     linkedin_url = models.URLField("LinkedIn URL", blank=True)
     instagram_url = models.URLField("Instagram URL", blank=True)
@@ -44,6 +47,14 @@ class SiteSettings(SingletonModel):
 
     def __str__(self):
         return self.site_name
+
+    @property
+    def phone_href(self):
+        """tel: link for the footer — punctuation and spaces are not dialled."""
+        import re
+
+        digits = re.sub(r"[^\d+]", "", self.phone_number or "")
+        return f"tel:{digits}" if digits else ""
 
     def copyright_rendered(self):
         from django.utils import timezone
@@ -79,6 +90,8 @@ class NavigationItem(OrderableModel, ActivatableModel):
         ("website:about", "About"),
         ("website:contact", "Contact"),
         ("website:collection_list", "Collections"),
+        ("website:catalogues", "Catalogues"),
+        ("website:stories", "Our Story"),
         ("website:enquire", "Enquire"),
     ]
     menu = models.ForeignKey(NavigationMenu, related_name="items", on_delete=models.CASCADE)

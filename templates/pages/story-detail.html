@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="story-page">
+    <article class="container story-article">
+      <header class="story-article__head">
+        <p class="story-article__meta">
+          <span class="story-article__tag">{{ post.get_kind_display }}</span>
+          <time datetime="{{ post.published_at|date:'Y-m-d' }}">{{ post.published_at|date:"j F Y" }}</time>
+        </p>
+        <h1>{{ post.title }}</h1>
+        {% if post.excerpt %}<p class="story-article__lead">{{ post.excerpt }}</p>{% endif %}
+      </header>
+
+      {% if post.cover_image %}
+      <figure class="story-article__cover">
+        <img src="{{ post.cover_image.url }}" alt="{{ post.cover_alt|default:post.title }}" fetchpriority="high" decoding="async">
+      </figure>
+      {% endif %}
+
+      <div class="story-article__body">{{ post.body|paragraphs }}</div>
+
+      <p class="story-article__back"><a href="{% url 'website:stories' %}">&larr; All posts</a></p>
+    </article>
+
+    {% if recent_posts %}
+    <section class="container story-more" aria-label="More posts">
+      <h2 class="about-rule"><span>More from COFUR</span></h2>
+      <ul class="stories-grid" role="list">
+        {% for other in recent_posts|slice:":3" %}
+        <li class="story-card">
+          <a href="{{ other.get_absolute_url }}">
+            <span class="story-card__media">
+              {% if other.cover_image %}<img src="{{ other.cover_image.url }}" alt="{{ other.cover_alt|default:other.title }}" loading="lazy" decoding="async">{% endif %}
+              <span class="story-card__tag">{{ other.get_kind_display }}</span>
+            </span>
+            <span class="story-card__body">
+              <time class="story-card__date" datetime="{{ other.published_at|date:'Y-m-d' }}">{{ other.published_at|date:"j F Y" }}</time>
+              <b class="story-card__title">{{ other.title }}</b>
+            </span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </main>
+{% endblock %}

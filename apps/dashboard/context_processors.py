@@ -21,6 +21,7 @@ def dashboard_nav(request):
             item("Home page", "dashboard:page_home", "pages.view_homepage", "layout"),
             item("About page", "dashboard:page_about", "pages.view_aboutpage", "info"),
             item("Contact page", "dashboard:page_contact", "pages.view_contactpage", "phone"),
+            item("Catalogues page", "dashboard:page_catalogues", "pages.view_cataloguepage", "box"),
             item("Footer", "dashboard:footer_settings", "core.view_sitesettings", "layout"),
             item("Collections menu", "dashboard:mega_menu", "core.view_navigationitem", "menu"),
         ]},
@@ -29,6 +30,7 @@ def dashboard_nav(request):
             item("Sub-Categories", "dashboard:collection_list", "catalog.view_collection", "layers"),
             item("Products", "dashboard:product_list", "catalog.view_product", "box"),
         ]},
+        {"title": "Our Story", "items": [item("Posts", "dashboard:story_list", "stories.view_story", "edit")]},
         {"title": "People", "items": [item("Team members", "dashboard:team_list", "team.view_teammember", "users")]},
         {"title": "Leads", "items": [item("Enquiries", "dashboard:enquiry_list", "enquiries.view_enquiry", "mail")]},
         {"title": "Settings", "items": [

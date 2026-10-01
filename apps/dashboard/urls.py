@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, home, navigation, pages, people, settings
+from .views import auth, catalog, home, navigation, pages, people, settings, stories
 
 app_name = "dashboard"
 
@@ -14,6 +14,7 @@ urlpatterns = [
     path("content/home/", pages.HomePageEditView.as_view(), name="page_home"),
     path("content/about/", pages.AboutPageEditView.as_view(), name="page_about"),
     path("content/contact/", pages.ContactPageEditView.as_view(), name="page_contact"),
+    path("content/catalogues/", pages.CataloguePageEditView.as_view(), name="page_catalogues"),
     path("content/footer/", settings.FooterSettingsView.as_view(), name="footer_settings"),
 
     # Collections mega menu
@@ -54,6 +55,12 @@ urlpatterns = [
     path("categories/<int:pk>/delete/", catalog.CategoryDeleteView.as_view(), name="category_delete"),
     path("categories/reorder/", catalog.CategoryReorderView.as_view(), name="category_reorder"),
     path("categories/<int:pk>/toggle-active/", catalog.CategoryToggleActiveView.as_view(), name="category_toggle_active"),
+
+    # Our Story
+    path("stories/", stories.StoryListView.as_view(), name="story_list"),
+    path("stories/add/", stories.StoryCreateView.as_view(), name="story_create"),
+    path("stories/<int:pk>/", stories.StoryUpdateView.as_view(), name="story_update"),
+    path("stories/<int:pk>/delete/", stories.StoryDeleteView.as_view(), name="story_delete"),
 
     # People
     path("team/", people.TeamListView.as_view(), name="team_list"),

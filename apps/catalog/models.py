@@ -1,3 +1,4 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
 
@@ -36,6 +37,14 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         max_length=255,
         blank=True,
         help_text="Optional. Send visitors somewhere else than the category page, e.g. /contact/?collection=acoustic-lights",
+    )
+    catalogue_pdf = models.FileField(
+        "Catalogue (PDF)",
+        upload_to="catalogues/",
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(["pdf"])],
+        help_text="Shown as a download button on the home page card. Leave empty to hide the button.",
     )
     card_link_text = models.CharField(max_length=40, blank=True, default="View items")
     show_on_home = models.BooleanField(default=True, db_index=True)
@@ -147,6 +156,19 @@ class Product(SEOFieldsMixin, OrderableModel, TimeStampedModel):
 
     main_image = models.ImageField(upload_to="products/", blank=True, null=True)
     main_image_alt = models.CharField(max_length=255, blank=True)
+    featured_mobile_image = models.ImageField(
+        "Featured image (mobile)",
+        upload_to="products/",
+        blank=True,
+        null=True,
+        help_text="Used in the home page Featured section below 768px, where the wide main image crops badly. Leave empty to reuse the main image.",
+    )
+    featured_mobile_alt = models.CharField(
+        "Featured image alt (mobile)",
+        max_length=255,
+        blank=True,
+        help_text="Describes the mobile crop. Falls back to the main image alt text.",
+    )
     card_image = models.ImageField(upload_to="products/", blank=True, null=True, help_text="Optional card image. Falls back to the main image.")
     hover_image = models.ImageField(upload_to="products/", blank=True, null=True, help_text="Lifestyle image revealed on hover on cards.")
     thumbnail = models.ImageField(upload_to="products/thumbs/", blank=True, null=True, editable=False)
@@ -210,7 +232,7 @@ class Product(SEOFieldsMixin, OrderableModel, TimeStampedModel):
         else:
             regenerate_thumb = bool(self.main_image)
         super().save(*args, **kwargs)
-        optimise_fields(self, "main_image", "card_image", "hover_image", "finish_image")
+        optimise_fields(self, "main_image", "featured_mobile_image", "card_image", "hover_image", "finish_image")
         if self.main_image and (regenerate_thumb or not self.thumbnail):
             thumb_name = make_thumbnail(self.main_image)
             if thumb_name:

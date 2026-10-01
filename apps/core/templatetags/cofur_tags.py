@@ -4,7 +4,15 @@ from django import template
 from django.utils.html import escape, format_html
 from django.utils.safestring import mark_safe
 
+from apps.core.assets import versioned_static
+
 register = template.Library()
+
+
+@register.simple_tag
+def static_v(path):
+    """Static URL with a ?v= cache-buster based on the file's modification time."""
+    return versioned_static(path)
 
 MOBILE_MEDIA = "(max-width:767px)"
 

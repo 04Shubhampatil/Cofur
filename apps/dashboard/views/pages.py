@@ -4,16 +4,18 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import FormView
 
-from apps.pages.models import AboutPage, ContactPage, HomePage
+from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage
 
 from ..forms import (
     AboutPageForm,
+    CataloguePageForm,
     ContactPageForm,
     DifferentiatorFormSet,
     HeroSlideFormSet,
     HomePageForm,
     StatementLineFormSet,
 )
+from ..forms import SEO_FIELDS
 from ..mixins import DashboardPermissionMixin
 
 CONTENT_CRUMB = {"label": "Content"}
@@ -124,6 +126,19 @@ class AboutPageEditView(SingletonPageView):
         context = super().get_context_data(**kwargs)
         context["help_text"] = "Team members are managed under People › Team members."
         return context
+
+
+class CataloguePageEditView(SingletonPageView):
+    model = CataloguePage
+    form_class = CataloguePageForm
+    permission_required = "pages.change_cataloguepage"
+    page_title = "Catalogues page"
+    preview_url_name = "website:catalogues"
+    breadcrumbs = [CONTENT_CRUMB, {"label": "Catalogues page"}]
+    tabs = [
+        ("hero", "Banner & heading", ["page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt", "heading"], None, None),
+        ("seo", "SEO", SEO_FIELDS, None, None),
+    ]
 
 
 class ContactPageEditView(SingletonPageView):

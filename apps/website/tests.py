@@ -1,9 +1,17 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.catalog.models import Product
+from apps.catalog.models import Category, Product
+from apps.core.models import NavigationItem
+from apps.core.tests import make_image
+from apps.pages.models import CataloguePage
 from apps.core.models import SiteSettings
+
+User = get_user_model()
 
 
 class WebsiteViewTests(TestCase):
@@ -240,3 +248,180 @@ class BannerMobileImageTests(TestCase):
         html = self.client.get("/products/cove-social/").content.decode()
         self.assertNotIn("<picture", html)
         self.assertNotIn("data-hover-src-mobile", self.client.get("/collections/cove/").content.decode())
+
+
+class HomeCategoryCardTests(TestCase):
+    """The home rail cards: no link line, and a catalogue download when one is uploaded."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_cofur", skip_images=True, verbosity=0)
+
+    def test_cards_do_not_show_a_view_items_line(self):
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, "range-card")
+        self.assertNotContains(response, "View items")
+
+    def test_no_download_button_without_a_catalogue(self):
+        self.assertNotContains(self.client.get(reverse("website:home")), "range-card__download")
+
+    def test_download_button_points_at_the_uploaded_catalogue(self):
+        category = Category.objects.filter(show_on_home=True).first()
+        category.catalogue_pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, "range-card__download")
+        self.assertContains(response, category.catalogue_pdf.url)
+        self.assertContains(response, f"Download the {category.name} catalogue (PDF)")
+
+    def test_catalogue_must_be_a_pdf(self):
+        category = Category.objects.first()
+        category.catalogue_pdf = "catalogues/not-a-catalogue.exe"
+        with self.assertRaises(ValidationError):
+            category.full_clean()
+
+
+class CataloguePageTests(TestCase):
+    """The Catalogues page: a banner over the same category rail the home page uses."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_cofur", skip_images=True, verbosity=0)
+
+    def test_page_lists_every_active_category(self):
+        response = self.client.get(reverse("website:catalogues"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "range-rail__track")
+        self.assertEqual(len(response.context["categories"]), Category.objects.filter(is_active=True).count())
+        for category in Category.objects.filter(is_active=True):
+            self.assertContains(response, category.name)
+
+    def test_heading_falls_back_to_a_plain_header_without_a_banner(self):
+        response = self.client.get(reverse("website:catalogues"))
+        self.assertContains(response, "catalogue-head")
+        self.assertNotContains(response, "catalogue-hero")
+
+    def test_banner_replaces_the_plain_header_once_uploaded(self):
+        page = CataloguePage.load()
+        page.banner_image.save("catalogues.png", ContentFile(make_image("c.png").read()), save=True)
+        self.addCleanup(page.banner_image.delete, save=True)
+        response = self.client.get(reverse("website:catalogues"))
+        self.assertContains(response, "catalogue-hero")
+        self.assertNotContains(response, "catalogue-head")
+
+    def test_cards_offer_the_catalogue_where_one_is_uploaded(self):
+        category = Category.objects.filter(is_active=True).first()
+        self.assertNotContains(self.client.get(reverse("website:catalogues")), "range-card__download")
+        category.catalogue_pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        response = self.client.get(reverse("website:catalogues"))
+        self.assertContains(response, "range-card__download")
+        self.assertContains(response, category.catalogue_pdf.url)
+
+    def test_header_catalogues_link_points_at_the_page(self):
+        item = NavigationItem.objects.get(label="Catalogues", parent__isnull=True, menu__slug="header")
+        self.assertEqual(item.get_url(), reverse("website:catalogues"))
+        self.assertContains(self.client.get(reverse("website:home")), 'href="/catalogues/"')
+
+    def test_footer_credit_links_to_the_builder(self):
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, "All rights reserved")
+        self.assertContains(response, '<a href="https://nivtech.co.in/" target="_blank" rel="noopener">Develop by Nivtech.</a>')
+
+    def test_footer_shows_the_phone_number_beside_the_email(self):
+        site = SiteSettings.load()
+        site.phone_number = "+91 93204 61618"
+        site.save(update_fields=["phone_number"])
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, 'href="mailto:info@cofur.in"')
+        self.assertContains(response, 'href="tel:+919320461618"')
+        self.assertContains(response, "+91 93204 61618")
+
+    def test_footer_phone_is_hidden_when_not_set(self):
+        site = SiteSettings.load()
+        site.phone_number = ""
+        site.save(update_fields=["phone_number"])
+        self.assertNotContains(self.client.get(reverse("website:home")), 'href="tel:')
+
+    def test_footer_credit_can_be_turned_off(self):
+        site = SiteSettings.load()
+        site.credit_text = ""
+        site.save(update_fields=["credit_text"])
+        self.addCleanup(lambda: SiteSettings.objects.filter(pk=site.pk).update(credit_text="Develop by Nivtech."))
+        self.assertNotContains(self.client.get(reverse("website:home")), "nivtech.co.in")
+
+
+class FeaturedMobileImageTests(TestCase):
+    """A featured product can carry its own crop for phones."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_cofur", skip_images=True, verbosity=0)
+
+    def featured(self):
+        return Product.objects.featured().first()
+
+    def test_featured_section_uses_the_main_image_when_no_mobile_crop(self):
+        product = self.featured()
+        product.main_image.save("grove.png", ContentFile(make_image("g.png").read()), save=True)
+        self.addCleanup(product.main_image.delete, save=True)
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, product.main_image.url)
+        self.assertNotContains(response, 'media="(max-width:767px)" srcset="/media/products/grove-mobile')
+
+    def test_mobile_crop_is_offered_to_small_screens(self):
+        product = self.featured()
+        product.main_image.save("grove.png", ContentFile(make_image("g.png").read()), save=True)
+        product.featured_mobile_image.save("grove-mobile.png", ContentFile(make_image("gm.png").read()), save=True)
+        product.featured_mobile_alt = "Grove Trio seen from the front"
+        product.save()
+        self.addCleanup(product.featured_mobile_image.delete, save=True)
+        self.addCleanup(product.main_image.delete, save=True)
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, 'media="(max-width:767px)"')
+        self.assertContains(response, product.featured_mobile_image.url)
+        self.assertContains(response, 'data-mobile-alt="Grove Trio seen from the front"')
+        # the desktop image is still the one the <img> falls back to
+        self.assertContains(response, product.main_image.url)
+
+    def test_field_is_editable_in_the_product_editor(self):
+        user = User.objects.create_superuser("featured-admin", "f@example.com", "Admin-Pass-123!")
+        self.client.force_login(user)
+        response = self.client.get(reverse("dashboard:product_update", args=[self.featured().pk]))
+        self.assertContains(response, "Featured image (mobile)")
+
+
+class CataloguePreviewTests(TestCase):
+    """The card preview needs the PDF framable by our own pages, and nothing else."""
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_cofur", skip_images=True, verbosity=0)
+
+    def with_catalogue(self):
+        category = Category.objects.filter(is_active=True).first()
+        category.catalogue_pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(Category.objects.filter(pk=category.pk).update, catalogue_pdf="")
+        return category
+
+    def test_preview_is_framable_by_our_own_pages(self):
+        category = self.with_catalogue()
+        response = self.client.get(reverse("website:catalogue_preview", args=[category.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertEqual(response["X-Frame-Options"], "SAMEORIGIN")
+        self.assertIn("inline", response["Content-Disposition"])
+
+    def test_every_other_page_still_refuses_framing(self):
+        self.assertEqual(self.client.get(reverse("website:home"))["X-Frame-Options"], "DENY")
+
+    def test_category_without_a_catalogue_has_no_preview(self):
+        category = Category.objects.filter(is_active=True, catalogue_pdf="").first()
+        self.assertEqual(self.client.get(reverse("website:catalogue_preview", args=[category.slug])).status_code, 404)
+
+    def test_card_points_at_the_preview_and_keeps_its_link(self):
+        category = self.with_catalogue()
+        response = self.client.get(reverse("website:home"))
+        self.assertContains(response, f'data-pdf-preview="/catalogues/{category.slug}/preview/"')
+        # the card is still an ordinary link for crawlers, new tabs and no-JS
+        self.assertContains(response, f'href="{category.link}"')

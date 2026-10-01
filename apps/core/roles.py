@@ -15,11 +15,13 @@ CMS_MODELS = {
     "pages": ["homepage", "homeheroslide", "homestatementline", "differentiator", "aboutpage", "contactpage"],
     "team": ["teammember"],
     "enquiries": ["enquiry"],
+    "stories": ["story"],
     "core": ["sitesettings", "navigationmenu", "navigationitem"],
 }
 
 ROLE_DEFINITIONS = {
     "Admin": {
+        "stories": ["view", "add", "change", "delete"],
         "catalog": ["view", "add", "change", "delete"],
         "pages": ["view", "add", "change", "delete"],
         "team": ["view", "add", "change", "delete"],
@@ -27,6 +29,7 @@ ROLE_DEFINITIONS = {
         "core": ["view", "add", "change", "delete"],
     },
     "Editor": {
+        "stories": ["view", "add", "change", "delete"],
         "catalog": ["view", "add", "change", "delete"],
         "pages": ["view", "add", "change"],
         "team": ["view", "add", "change", "delete"],
@@ -34,6 +37,7 @@ ROLE_DEFINITIONS = {
         "core": ["view", "add", "change"],
     },
     "Staff": {
+        "stories": ["view"],
         "catalog": ["view"],
         "pages": ["view"],
         "team": ["view"],

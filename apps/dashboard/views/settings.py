@@ -51,7 +51,7 @@ class SiteSettingsView(SiteSettingsBaseView):
     breadcrumbs = [SETTINGS_CRUMB, {"label": "Site settings"}]
     fieldsets = [
         ("Brand", ["site_name", "tagline", "logo", "logo_light", "favicon"]),
-        ("Contact", ["contact_email", "address", "google_maps_url", "whatsapp_number", "whatsapp_message"]),
+        ("Contact", ["contact_email", "phone_number", "address", "google_maps_url", "whatsapp_number", "whatsapp_message"]),
         ("Social profiles (footer icons)", ["linkedin_url", "instagram_url", "twitter_url"]),
     ]
 
@@ -61,8 +61,8 @@ class FooterSettingsView(SiteSettingsBaseView):
     page_title = "Footer"
     breadcrumbs = [{"label": "Content"}, {"label": "Footer"}]
     fieldsets = [
-        ("Footer content", ["logo_light", "footer_eyebrow", "footer_title", "copyright_text"]),
+        ("Footer content", ["logo_light", "footer_eyebrow", "footer_title", "copyright_text", "credit_text", "credit_url"]),
         ("Call to action", ["footer_primary_cta_text", "footer_primary_cta_url", "footer_secondary_cta_text", "footer_secondary_cta_url"]),
-        ("Contact information", ["address", "google_maps_url", "contact_email"]),
+        ("Contact information", ["address", "google_maps_url", "contact_email", "phone_number"]),
         ("Social profiles (footer icons)", ["linkedin_url", "instagram_url", "twitter_url"]),
     ]
