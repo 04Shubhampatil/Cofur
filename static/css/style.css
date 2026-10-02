@@ -13574,8 +13574,10 @@ body.has-pdf-preview {
 }
 
 @media (max-width: 900px) {
+    /* grid-template-columns, not `columns`: the listing is a grid now, and
+       the multi-column property it used to use has no effect on one. */
     .stories-grid {
-        columns: 1;
+        grid-template-columns: 1fr;
     }
 
     .stories-layout {
@@ -13630,17 +13632,18 @@ body.has-pdf-preview {
 }
 
 /* ==========================================================================
-   Featured products — phone layout: the title stops sitting on the photo
+   Featured products — narrow layout: the title stops sitting on the photo
 
    The overlay (heading pinned to the top of the image, CTA to the bottom)
    only reads when the product shot carries empty space behind the text, as
-   the wide crop does. At phone widths the crop is tight and the heading
-   landed across the product itself. Below 600px the three parts take their
-   own lines instead: heading, photo, link. `display: contents` drops the
-   .featured-title box so its two children can be ordered around the photo
-   without touching the mark-up.
+   the wide crop does. Once the crop narrows, the heading lands across the
+   product itself. Below 900px — the same width at which the overlay already
+   tightens its insets — the three parts take their own lines instead:
+   heading, photo, link. `display: contents` drops the .featured-title box so
+   its two children can be ordered around the photo without touching the
+   mark-up.
    ========================================================================== */
-@media (max-width: 600px) {
+@media (max-width: 900px) {
     .featured-section .featured-stage {
         height: auto;
         min-height: 0;
