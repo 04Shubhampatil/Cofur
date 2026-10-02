@@ -137,7 +137,7 @@ def catalogues(request):
     page = CataloguePage.load()
     context = {
         "page": page,
-        "categories": Category.objects.filter(is_active=True),
+        "categories": Category.objects.filter(is_active=True, show_on_catalogues=True).order_by("catalogue_order", "pk"),
         "seo": _seo(request, page, f"Catalogues — {SiteSettings.load().site_name}", page.heading[:160], page.banner_image),
         "body_page": "catalogues",
     }

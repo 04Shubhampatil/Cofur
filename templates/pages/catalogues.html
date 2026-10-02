@@ -31,7 +31,7 @@
       </div>
       <ul class="range-rail__track" tabindex="0" role="list" aria-label="Product categories. Scroll sideways or use the arrows.">
         {% for category in categories %}
-          {% include "components/category-card.html" with category=category %}
+          {% include "components/category-card.html" with category=category catalogue=True %}
         {% empty %}
           <li class="cove-empty">Catalogues are on their way. <a href="{% url 'website:contact' %}">Ask us for one</a>.</li>
         {% endfor %}

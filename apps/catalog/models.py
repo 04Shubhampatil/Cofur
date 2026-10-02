@@ -44,10 +44,22 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         blank=True,
         null=True,
         validators=[FileExtensionValidator(["pdf"])],
-        help_text="Shown as a download button on the home page card. Leave empty to hide the button.",
+        help_text="Offered on the Catalogues page card, to preview and download. Leave empty to hide the card's download button.",
     )
     card_link_text = models.CharField(max_length=40, blank=True, default="View items")
     show_on_home = models.BooleanField(default=True, db_index=True)
+    show_on_catalogues = models.BooleanField(
+        "Show on the Catalogues page",
+        default=True,
+        db_index=True,
+        help_text="Uncheck to keep this range off the Catalogues page without hiding it elsewhere.",
+    )
+    catalogue_order = models.PositiveIntegerField(
+        "Catalogues page position",
+        default=0,
+        db_index=True,
+        help_text="Order of the cards on the Catalogues page. Independent of the home page rail.",
+    )
 
     class Meta(OrderableModel.Meta):
         verbose_name = "Category"

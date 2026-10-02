@@ -101,6 +101,20 @@ class QuickCategoryForm(CMSModelForm):
         widgets = {"thumbnail_image": forms.ClearableFileInput()}
 
 
+class CatalogueCardForm(CMSModelForm):
+    """The Catalogues page card for one range.
+
+    Deliberately narrow: this screen is about what the Catalogues page shows,
+    so it exposes the PDF and the card's placement and nothing else. Names,
+    images and SEO stay in the Categories editor, which owns them.
+    """
+
+    class Meta(CMSModelForm.Meta):
+        model = Category
+        fields = ["subtitle", "catalogue_pdf", "show_on_catalogues", "catalogue_order"]
+        help_texts = {"subtitle": "Short line under the name on the card."}
+
+
 class QuickCollectionForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
         model = Collection

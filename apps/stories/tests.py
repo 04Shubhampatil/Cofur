@@ -132,3 +132,34 @@ class StoryDashboardTests(TestCase):
         self.client.force_login(self.staffer)
         self.assertEqual(self.client.get(reverse("dashboard:story_list")).status_code, 200)
         self.assertEqual(self.client.get(reverse("dashboard:story_create")).status_code, 403)
+
+
+class StoryRelatedPostsTests(TestCase):
+    """The 'More from COFUR' row under an article: two cards, side by side."""
+
+    def test_shows_two_other_posts_however_many_exist(self):
+        posts = [make_story(f"Post {n}", days_ago=n) for n in range(8)]
+        response = self.client.get(posts[0].get_absolute_url())
+        self.assertEqual(response.content.decode().count('class="story-card"'), 2)
+
+    def test_never_includes_the_post_being_read(self):
+        posts = [make_story(f"Post {n}", days_ago=n) for n in range(8)]
+        response = self.client.get(posts[0].get_absolute_url())
+        self.assertNotIn(posts[0].get_absolute_url(), response.content.decode().split("story-more")[1])
+
+    def test_shows_the_one_there_is_when_only_two_posts_exist(self):
+        posts = [make_story(f"Post {n}", days_ago=n) for n in range(2)]
+        response = self.client.get(posts[0].get_absolute_url())
+        self.assertEqual(response.content.decode().count('class="story-card"'), 1)
+
+    def test_section_is_hidden_for_the_only_post(self):
+        only = make_story("The only post")
+        self.assertNotContains(self.client.get(only.get_absolute_url()), "More from COFUR")
+
+    def test_drafts_are_never_suggested(self):
+        make_story("Published one", days_ago=1)
+        make_story("A draft", status=Story.STATUS_DRAFT, days_ago=2)
+        current = make_story("Current", days_ago=0)
+        body = self.client.get(current.get_absolute_url()).content.decode()
+        self.assertIn("Published one", body)
+        self.assertNotIn("A draft", body)

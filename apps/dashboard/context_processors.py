@@ -21,9 +21,12 @@ def dashboard_nav(request):
             item("Home page", "dashboard:page_home", "pages.view_homepage", "layout"),
             item("About page", "dashboard:page_about", "pages.view_aboutpage", "info"),
             item("Contact page", "dashboard:page_contact", "pages.view_contactpage", "phone"),
-            item("Catalogues page", "dashboard:page_catalogues", "pages.view_cataloguepage", "box"),
             item("Footer", "dashboard:footer_settings", "core.view_sitesettings", "layout"),
             item("Collections menu", "dashboard:mega_menu", "core.view_navigationitem", "menu"),
+        ]},
+        {"title": "Catalogues", "items": [
+            item("Catalogues page", "dashboard:page_catalogues", "pages.view_cataloguepage", "layout"),
+            item("Catalogue cards", "dashboard:catalogue_card_list", "catalog.view_category", "box"),
         ]},
         {"title": "Products Master", "items": [
             item("Categories", "dashboard:category_list", "catalog.view_category", "grid"),

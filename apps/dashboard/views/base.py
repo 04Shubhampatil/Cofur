@@ -197,9 +197,15 @@ class DashboardDeleteView(DashboardPermissionMixin, DeleteView):
 
 
 class ReorderView(DashboardPermissionMixin, View):
-    """POST JSON {"order": [id, id, ...]} -> updates the ``order`` field."""
+    """POST JSON {"order": [id, id, ...]} -> updates the ordering field.
+
+    ``order_field`` lets a model carry more than one ordering. A row can appear
+    in two places that are sequenced independently, and reordering one must not
+    disturb the other.
+    """
 
     model = None
+    order_field = "order"
     http_method_names = ["post"]
 
     def get_queryset(self):
@@ -214,9 +220,9 @@ class ReorderView(DashboardPermissionMixin, View):
         objects = {obj.pk: obj for obj in self.get_queryset().filter(pk__in=ids)}
         for position, pk in enumerate(ids):
             obj = objects.get(pk)
-            if obj is not None and obj.order != position:
-                obj.order = position
-                obj.save(update_fields=["order"])
+            if obj is not None and getattr(obj, self.order_field) != position:
+                setattr(obj, self.order_field, position)
+                obj.save(update_fields=[self.order_field])
         return JsonResponse({"ok": True})
 
 

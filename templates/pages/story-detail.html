@@ -28,7 +28,7 @@
     <section class="container story-more" aria-label="More posts">
       <h2 class="about-rule"><span>More from COFUR</span></h2>
       <ul class="stories-grid" role="list">
-        {% for other in recent_posts|slice:":3" %}
+        {% for other in recent_posts|slice:":2" %}
         <li class="story-card">
           <a href="{{ other.get_absolute_url }}">
             <span class="story-card__media">

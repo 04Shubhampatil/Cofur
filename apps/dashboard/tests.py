@@ -758,3 +758,72 @@ class MegaMenuTests(DashboardTestCase):
     def test_staff_cannot_move_rows(self):
         self.client.force_login(self.staffer)
         self.assertEqual(self.client.post(reverse("dashboard:mega_menu_item_move", args=[self.column.pk, "down"])).status_code, 403)
+
+
+class CatalogueSectionTests(DashboardTestCase):
+    """The Catalogues page section: its own visibility and its own order.
+
+    The rail is built from Category rows shared with the home rail, so the
+    point of these is that changing one side leaves the other alone.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.superuser)
+        self.booth = Category.objects.create(name="Phone Booth", order=1, catalogue_order=1)
+        self.storage = Category.objects.create(name="Storage", order=2, catalogue_order=2)
+
+    def test_list_shows_every_range(self):
+        response = self.client.get(reverse("dashboard:catalogue_card_list"))
+        self.assertEqual(response.status_code, 200)
+        for name in ("Soft Seating", "Phone Booth", "Storage"):
+            self.assertContains(response, name)
+
+    def test_edit_form_is_scoped_to_the_card(self):
+        response = self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk]))
+        self.assertEqual(response.status_code, 200)
+        for field in ("subtitle", "catalogue_pdf", "show_on_catalogues", "catalogue_order"):
+            self.assertContains(response, f'name="{field}"')
+        # the Categories editor owns these; this screen must not offer them
+        self.assertNotContains(response, 'name="slug"')
+        self.assertNotContains(response, 'name="banner_image"')
+
+    def test_hiding_a_card_removes_it_from_the_page_only(self):
+        self.client.post(reverse("dashboard:catalogue_card_toggle", args=[self.booth.pk]))
+        self.booth.refresh_from_db()
+        self.assertFalse(self.booth.show_on_catalogues)
+        # read the rendered queryset, not the raw HTML: the toggle leaves a
+        # "Phone Booth updated." flash on the next page that would match too
+        rail = [c.name for c in self.client.get(reverse("website:catalogues")).context["categories"]]
+        self.assertNotIn("Phone Booth", rail)
+        # still on the home rail, which has its own switch
+        self.assertTrue(self.booth.show_on_home)
+        home = [c.name for c in self.client.get(reverse("website:home")).context["categories"]]
+        self.assertIn("Phone Booth", home)
+
+    def test_reordering_the_catalogue_rail_leaves_the_home_rail_alone(self):
+        home_before = list(Category.objects.order_by("pk").values_list("pk", "order"))
+        ids = list(Category.objects.order_by("catalogue_order", "pk").values_list("pk", flat=True))
+        response = self.client.post(
+            reverse("dashboard:catalogue_card_reorder"),
+            data=json.dumps({"order": list(reversed(ids))}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        new_order = list(Category.objects.order_by("catalogue_order", "pk").values_list("pk", flat=True))
+        self.assertEqual(new_order, list(reversed(ids)))
+        self.assertEqual(home_before, list(Category.objects.order_by("pk").values_list("pk", "order")))
+
+    def test_catalogues_page_renders_in_catalogue_order(self):
+        # push everything else back so Storage is uniquely first; ties on
+        # catalogue_order fall back to pk, which would hide the effect
+        Category.objects.exclude(pk=self.storage.pk).update(catalogue_order=9)
+        self.storage.catalogue_order = 0
+        self.storage.save(update_fields=["catalogue_order"])
+        names = [c.name for c in self.client.get(reverse("website:catalogues")).context["categories"]]
+        self.assertEqual(names[0], "Storage")
+
+    def test_staff_cannot_change_the_section(self):
+        self.client.force_login(self.staffer)
+        self.assertEqual(self.client.post(reverse("dashboard:catalogue_card_toggle", args=[self.booth.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk])).status_code, 403)

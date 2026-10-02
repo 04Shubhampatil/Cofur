@@ -8118,7 +8118,7 @@ body[data-page] .site-header.overlay.is-stuck .logo {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, .62), rgba(0, 0, 0, .38) 45%, rgba(0, 0, 0, .5))
+    background: linear-gradient(180deg, rgba(0, 0, 0, .74), rgba(0, 0, 0, .69) 45%, rgba(0, 0, 0, .62))
 }
 
 .about-page .about-hero.page-banner h1,
@@ -8427,7 +8427,7 @@ body[data-page="soft-seating"] .site-header.overlay .logo {
 /* Hero wash held darker through the middle so the heading reads on every
    slide, including the brighter interiors (matches the inner-page banners) */
 .hero:after {
-    background: linear-gradient(180deg, rgba(0, 0, 0, .62), rgba(0, 0, 0, .38) 45%, rgba(0, 0, 0, .5))
+    background: linear-gradient(180deg, rgba(0, 0, 0, .74), rgba(0, 0, 0, .69) 45%, rgba(0, 0, 0, .62))
 }
 
 .hero h1 {
@@ -10475,7 +10475,7 @@ body[data-page="cove-social"] .site-header {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, .58), rgba(0, 0, 0, .34) 45%, rgba(0, 0, 0, .48))
+    background: linear-gradient(180deg, rgba(0, 0, 0, .7), rgba(0, 0, 0, .65) 45%, rgba(0, 0, 0, .6))
 }
 
 .pdp-banner__copy {
@@ -13585,11 +13585,24 @@ body.has-pdf-preview {
 }
 
 
-/* --- Related posts: a row of three, not the two-column masonry ----------- */
+/* --- Related posts: a row of two, not the listing's masonry --------------
+   Two equal columns rather than two cards sitting in a three-column track,
+   which would leave a third of the row empty on the right.
+
+   The section takes the article's measure. Left on the full container it ran
+   to 1367px at desktop width while the article sat on 820px, so the row was
+   out of line with the text above it and two cards across that span came out
+   enormous. Constraining the width is what brings the cards back down. ---- */
+.story-more {
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .story-more .stories-grid {
     columns: auto;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(20px, 2.6vw, 38px);
 }
 

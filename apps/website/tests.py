@@ -251,7 +251,11 @@ class BannerMobileImageTests(TestCase):
 
 
 class HomeCategoryCardTests(TestCase):
-    """The home rail cards: no link line, and a catalogue download when one is uploaded."""
+    """The home rail cards: no link line, and a plain link to the category page.
+
+    The catalogue download and the PDF preview belong to the Catalogues page.
+    A home card is only ever a way into the range.
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -265,11 +269,21 @@ class HomeCategoryCardTests(TestCase):
     def test_no_download_button_without_a_catalogue(self):
         self.assertNotContains(self.client.get(reverse("website:home")), "range-card__download")
 
-    def test_download_button_points_at_the_uploaded_catalogue(self):
+    def test_home_card_links_to_the_category_even_with_a_catalogue(self):
         category = Category.objects.filter(show_on_home=True).first()
         category.catalogue_pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
         self.addCleanup(category.catalogue_pdf.delete, save=True)
         response = self.client.get(reverse("website:home"))
+        self.assertContains(response, f'href="{category.link}"')
+        # an uploaded catalogue must not turn the home card into a download or a preview
+        self.assertNotContains(response, "range-card__download")
+        self.assertNotContains(response, "data-pdf-preview")
+
+    def test_catalogues_page_card_offers_the_download(self):
+        category = Category.objects.filter(show_on_catalogues=True).first()
+        category.catalogue_pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        response = self.client.get(reverse("website:catalogues"))
         self.assertContains(response, "range-card__download")
         self.assertContains(response, category.catalogue_pdf.url)
         self.assertContains(response, f"Download the {category.name} catalogue (PDF)")
@@ -421,7 +435,11 @@ class CataloguePreviewTests(TestCase):
 
     def test_card_points_at_the_preview_and_keeps_its_link(self):
         category = self.with_catalogue()
-        response = self.client.get(reverse("website:home"))
+        response = self.client.get(reverse("website:catalogues"))
         self.assertContains(response, f'data-pdf-preview="/catalogues/{category.slug}/preview/"')
         # the card is still an ordinary link for crawlers, new tabs and no-JS
         self.assertContains(response, f'href="{category.link}"')
+
+    def test_home_rail_never_opens_the_preview(self):
+        self.with_catalogue()
+        self.assertNotContains(self.client.get(reverse("website:home")), "data-pdf-preview")

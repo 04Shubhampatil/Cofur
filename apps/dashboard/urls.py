@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, home, navigation, pages, people, settings, stories
+from .views import auth, catalog, catalogues, home, navigation, pages, people, settings, stories
 
 app_name = "dashboard"
 
@@ -15,6 +15,12 @@ urlpatterns = [
     path("content/about/", pages.AboutPageEditView.as_view(), name="page_about"),
     path("content/contact/", pages.ContactPageEditView.as_view(), name="page_contact"),
     path("content/catalogues/", pages.CataloguePageEditView.as_view(), name="page_catalogues"),
+
+    # Catalogues page: the card rail
+    path("catalogues/cards/", catalogues.CatalogueCardListView.as_view(), name="catalogue_card_list"),
+    path("catalogues/cards/<int:pk>/", catalogues.CatalogueCardUpdateView.as_view(), name="catalogue_card_update"),
+    path("catalogues/cards/<int:pk>/toggle/", catalogues.CatalogueCardToggleView.as_view(), name="catalogue_card_toggle"),
+    path("catalogues/cards/reorder/", catalogues.CatalogueCardReorderView.as_view(), name="catalogue_card_reorder"),
     path("content/footer/", settings.FooterSettingsView.as_view(), name="footer_settings"),
 
     # Collections mega menu

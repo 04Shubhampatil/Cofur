@@ -1,11 +1,17 @@
-{% load static %}<li class="range-card"><a href="{{ category.link }}"{% if category.catalogue_pdf %} data-pdf-preview="{% url 'website:catalogue_preview' category.slug %}" data-pdf-title="{{ category.name }} catalogue" aria-haspopup="dialog"{% endif %}>
+{% load static %}{% comment %}
+  One range card, shared by the home rail and the Catalogues page.
+
+  `catalogue` switches on the catalogue behaviour: the card opens a PDF preview
+  instead of navigating, and the download button appears. Without it the card is
+  a plain link to the category page, which is what the home rail wants.
+{% endcomment %}<li class="range-card"><a href="{{ category.link }}"{% if catalogue and category.catalogue_pdf %} data-pdf-preview="{% url 'website:catalogue_preview' category.slug %}" data-pdf-title="{{ category.name }} catalogue" aria-haspopup="dialog"{% endif %}>
     {% if category.card_image %}<img src="{{ category.card_image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
     <span class="range-card__copy">
       <b>{{ category.name }}</b>
       {% if category.subtitle %}<em><span>{{ category.subtitle }}</span></em>{% endif %}
     </span>
   </a>
-  {% if category.catalogue_pdf %}
+  {% if catalogue and category.catalogue_pdf %}
   <a class="range-card__download" href="{{ category.catalogue_pdf.url }}" download
      aria-label="Download the {{ category.name }} catalogue (PDF)" title="Download the {{ category.name }} catalogue (PDF)">
     <img src="{% static 'images/icon-download.svg' %}" alt="" width="22" height="22" loading="lazy" decoding="async">
