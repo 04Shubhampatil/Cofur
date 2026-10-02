@@ -163,3 +163,94 @@ class StoryRelatedPostsTests(TestCase):
         body = self.client.get(current.get_absolute_url()).content.decode()
         self.assertIn("Published one", body)
         self.assertNotIn("A draft", body)
+
+
+class RichTextTests(TestCase):
+    """The body is editor HTML now, so it is rendered rather than escaped.
+
+    That makes the allow-list the thing standing between a CMS account and a
+    script tag on a public page, so these lean on the nasty cases.
+    """
+
+    def render(self, body):
+        from apps.core.templatetags.cofur_tags import richtext
+
+        return str(richtext(body))
+
+    def test_allowed_formatting_survives(self):
+        html = "<p>A <strong>bold</strong> and <em>italic</em> line.</p><h2>Heading</h2><ul><li>One</li></ul>"
+        out = self.render(html)
+        for fragment in ("<strong>bold</strong>", "<em>italic</em>", "<h2>Heading</h2>", "<li>One</li>"):
+            self.assertIn(fragment, out)
+
+    def test_script_tag_and_its_contents_are_dropped(self):
+        out = self.render("<p>Before</p><script>alert('x')</script><p>After</p>")
+        self.assertNotIn("<script", out)
+        self.assertNotIn("alert", out)
+        self.assertIn("<p>Before</p>", out)
+        self.assertIn("<p>After</p>", out)
+
+    def test_event_handlers_are_stripped(self):
+        out = self.render('<p onclick="steal()">Text</p>')
+        self.assertNotIn("onclick", out)
+        self.assertNotIn("steal", out)
+        self.assertIn("Text", out)
+
+    def test_javascript_links_are_refused_but_the_words_remain(self):
+        out = self.render('<p><a href="javascript:alert(1)">Click</a></p>')
+        self.assertNotIn("javascript:", out)
+        self.assertIn("Click", out)
+
+    def test_ordinary_links_are_kept(self):
+        out = self.render('<p><a href="https://cofur.in/about/">About</a></p>')
+        self.assertIn('href="https://cofur.in/about/"', out)
+
+    def test_iframe_is_dropped(self):
+        self.assertNotIn("<iframe", self.render('<p>x</p><iframe src="https://evil.test"></iframe>'))
+
+    def test_unknown_tags_lose_markup_but_keep_text(self):
+        out = self.render("<p>Hello <marquee>there</marquee></p>")
+        self.assertNotIn("marquee", out)
+        self.assertIn("there", out)
+
+    def test_plain_text_bodies_still_render_as_paragraphs(self):
+        out = self.render("First para.\n\nSecond para.")
+        self.assertIn("<p>First para.</p>", out)
+        self.assertIn("<p>Second para.</p>", out)
+
+    def test_plain_text_is_still_escaped(self):
+        self.assertNotIn("<script", self.render("Plain <script>alert(1)</script> text"))
+
+    def test_summary_strips_markup(self):
+        post = make_story("Marked up", body="<p>Anyone can <strong>fill</strong> a room.</p>")
+        self.assertNotIn("<", post.summary)
+        self.assertIn("Anyone can fill a room.", post.summary)
+
+    def test_article_page_renders_the_markup(self):
+        post = make_story("Formatted", body="<p>Lead.</p><h2>Section</h2>")
+        body = self.client.get(post.get_absolute_url()).content.decode()
+        self.assertIn("<h2>Section</h2>", body)
+        self.assertNotIn("&lt;h2&gt;", body)
+
+
+class RichTextAliasTests(TestCase):
+    """contenteditable emits presentational tags; they must survive as semantic ones."""
+
+    def render(self, body):
+        from apps.core.templatetags.cofur_tags import richtext
+
+        return str(richtext(body))
+
+    def test_b_and_i_become_strong_and_em(self):
+        out = self.render("<p><b>Bold</b> and <i>italic</i></p>")
+        self.assertIn("<strong>Bold</strong>", out)
+        self.assertIn("<em>italic</em>", out)
+        self.assertNotIn("<b>", out)
+
+    def test_div_becomes_a_paragraph(self):
+        self.assertIn("<p>Line</p>", self.render("<div>Line</div>"))
+
+    def test_a_body_of_only_b_tags_is_detected_as_html(self):
+        # looks_like_html must see the aliases too, or a bold-only body would
+        # be treated as plain text and escaped
+        self.assertIn("<strong>Bold</strong>", self.render("<b>Bold</b>"))

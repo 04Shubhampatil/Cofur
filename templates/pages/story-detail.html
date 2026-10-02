@@ -19,7 +19,7 @@
       </figure>
       {% endif %}
 
-      <div class="story-article__body">{{ post.body|paragraphs }}</div>
+      <div class="story-article__body">{{ post.body|richtext }}</div>
 
       <p class="story-article__back"><a href="{% url 'website:stories' %}">&larr; All posts</a></p>
     </article>

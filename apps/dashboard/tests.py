@@ -782,7 +782,8 @@ class CatalogueSectionTests(DashboardTestCase):
     def test_edit_form_is_scoped_to_the_card(self):
         response = self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk]))
         self.assertEqual(response.status_code, 200)
-        for field in ("subtitle", "catalogue_pdf", "show_on_catalogues", "catalogue_order"):
+        for field in ("catalogue_title", "catalogue_subtitle", "catalogue_image",
+                      "catalogue_pdf", "show_on_catalogues", "catalogue_order"):
             self.assertContains(response, f'name="{field}"')
         # the Categories editor owns these; this screen must not offer them
         self.assertNotContains(response, 'name="slug"')
@@ -827,3 +828,62 @@ class CatalogueSectionTests(DashboardTestCase):
         self.client.force_login(self.staffer)
         self.assertEqual(self.client.post(reverse("dashboard:catalogue_card_toggle", args=[self.booth.pk])).status_code, 403)
         self.assertEqual(self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk])).status_code, 403)
+
+
+class CatalogueCardContentTests(DashboardTestCase):
+    """The card's own title, subtitle and picture.
+
+    The point of these fields is separation: the Catalogues page can read
+    differently from the category without the category changing.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.superuser)
+        self.category.subtitle = "Lounge, modular & breakout"
+        self.category.save(update_fields=["subtitle"])
+
+    def test_card_falls_back_to_the_category_when_nothing_is_overridden(self):
+        self.assertEqual(self.category.catalogue_card_title, "Soft Seating")
+        self.assertEqual(self.category.catalogue_card_subtitle, "Lounge, modular & breakout")
+        response = self.client.get(reverse("website:catalogues"))
+        self.assertContains(response, "Soft Seating")
+
+    def test_title_and_subtitle_override_the_catalogues_page_only(self):
+        self.category.catalogue_title = "Seating Catalogue 2026"
+        self.category.catalogue_subtitle = "48 pages, every finish"
+        self.category.save(update_fields=["catalogue_title", "catalogue_subtitle"])
+
+        catalogues = self.client.get(reverse("website:catalogues")).content.decode()
+        self.assertIn("Seating Catalogue 2026", catalogues)
+        self.assertIn("48 pages, every finish", catalogues)
+
+        # the category itself is untouched: home rail and category page still
+        # read "Soft Seating"
+        self.category.refresh_from_db()
+        self.assertEqual(self.category.name, "Soft Seating")
+        home = self.client.get(reverse("website:home")).content.decode()
+        self.assertIn("Soft Seating", home)
+        self.assertNotIn("Seating Catalogue 2026", home)
+
+    def test_image_overrides_the_catalogues_page_only(self):
+        self.category.thumbnail_image = make_image("range.jpg")
+        self.category.catalogue_image = make_image("catalogue-cover.jpg")
+        self.category.save()
+        self.addCleanup(self.category.catalogue_image.delete, save=False)
+        self.addCleanup(self.category.thumbnail_image.delete, save=False)
+
+        self.assertEqual(self.category.catalogue_card_image, self.category.catalogue_image)
+        self.assertIn(self.category.catalogue_image.url, self.client.get(reverse("website:catalogues")).content.decode())
+        home = self.client.get(reverse("website:home")).content.decode()
+        self.assertIn(self.category.thumbnail_image.url, home)
+        self.assertNotIn(self.category.catalogue_image.url, home)
+
+    def test_the_card_editor_cannot_rename_the_category(self):
+        response = self.client.get(reverse("dashboard:catalogue_card_update", args=[self.category.pk]))
+        form = response.content.decode()
+        for field in ("catalogue_title", "catalogue_subtitle", "catalogue_image"):
+            self.assertIn(f'name="{field}"', form)
+        # the category's own identity stays in the Categories editor
+        for field in ("name", "slug", "thumbnail_image"):
+            self.assertNotIn(f'name="{field}"', form)

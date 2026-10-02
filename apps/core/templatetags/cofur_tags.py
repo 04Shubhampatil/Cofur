@@ -71,6 +71,21 @@ def paragraphs(value, css_class=""):
     return mark_safe(html)
 
 
+@register.filter(name="richtext")
+def richtext(value):
+    """Render editor-authored HTML, or plain text the way it has always rendered.
+
+    Posts predating the editor are plain text with blank lines between
+    paragraphs; the editor writes HTML. One filter handles both so nothing
+    written before has to be converted.
+    """
+    from apps.core.html import looks_like_html, sanitise_rich_text
+
+    if not value:
+        return ""
+    return sanitise_rich_text(value) if looks_like_html(value) else paragraphs(value)
+
+
 @register.filter(name="lines")
 def lines(value):
     """Split text into a list of non-empty lines."""

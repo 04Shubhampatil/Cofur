@@ -37,7 +37,7 @@ class Story(SEOFieldsMixin, TimeStampedModel):
     cover_image = models.ImageField(upload_to="stories/", blank=True, null=True, help_text="Shown on the card and at the top of the post.")
     cover_alt = models.CharField(max_length=255, blank=True, help_text="Describes the cover image. Falls back to the title.")
     excerpt = models.TextField(blank=True, help_text="One or two lines shown on the card. Falls back to the opening of the body.")
-    body = models.TextField(blank=True, help_text="One paragraph per blank line.")
+    body = models.TextField(blank=True, help_text="Use the toolbar for headings, lists, links and emphasis.")
 
     objects = StoryQuerySet.as_manager()
 
@@ -64,8 +64,18 @@ class Story(SEOFieldsMixin, TimeStampedModel):
 
     @property
     def summary(self):
-        """Card text: the excerpt and the body together, cut on a word boundary."""
-        text = " ".join(f"{self.excerpt} {self.body}".split())
+        """Card text: the excerpt and the body together, cut on a word boundary.
+
+        The body holds editor HTML now, so the tags come out before counting —
+        otherwise a card would open with "<p>" and the meta description, which
+        is built from this, would carry markup into search results.
+        """
+        import html as _html
+
+        from django.utils.html import strip_tags
+
+        body = _html.unescape(strip_tags(self.body or ""))
+        text = " ".join(f"{self.excerpt} {body}".split())
         words = text.split(" ")
         if len(words) <= self.SUMMARY_WORDS:
             return text

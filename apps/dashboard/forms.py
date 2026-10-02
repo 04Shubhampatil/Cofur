@@ -104,15 +104,17 @@ class QuickCategoryForm(CMSModelForm):
 class CatalogueCardForm(CMSModelForm):
     """The Catalogues page card for one range.
 
-    Deliberately narrow: this screen is about what the Catalogues page shows,
-    so it exposes the PDF and the card's placement and nothing else. Names,
-    images and SEO stay in the Categories editor, which owns them.
+    Scoped to what the Catalogues page shows. The title, subtitle and image
+    here are the card's own — they override the category's on this page only
+    and leave it untouched everywhere else. Blank means "use the category's".
     """
 
     class Meta(CMSModelForm.Meta):
         model = Category
-        fields = ["subtitle", "catalogue_pdf", "show_on_catalogues", "catalogue_order"]
-        help_texts = {"subtitle": "Short line under the name on the card."}
+        fields = [
+            "catalogue_title", "catalogue_subtitle", "catalogue_image",
+            "catalogue_pdf", "show_on_catalogues", "catalogue_order",
+        ]
 
 
 class QuickCollectionForm(CMSModelForm):
@@ -357,7 +359,14 @@ class StoryForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
         model = Story
         fields = ["title", "slug", "kind", "status", "published_at", "cover_image", "cover_alt", "excerpt", "body", *SEO_FIELDS]
-        widgets = {"published_at": forms.DateInput(attrs={"type": "date"}), "excerpt": forms.Textarea(attrs={"rows": 3}), "body": forms.Textarea(attrs={"rows": 14})}
+        widgets = {
+            "published_at": forms.DateInput(attrs={"type": "date"}),
+            "excerpt": forms.Textarea(attrs={"rows": 3}),
+            # data-richtext swaps in the toolbar + editing surface; the
+            # textarea stays in the form and still carries the value, so the
+            # field works unchanged if the script fails to load.
+            "body": forms.Textarea(attrs={"rows": 14, "data-richtext": "true"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

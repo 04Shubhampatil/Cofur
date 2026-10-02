@@ -31,9 +31,10 @@ class CatalogueCardListView(DashboardListView):
     breadcrumbs = [CATALOGUE_CRUMB, {"label": "Catalogue cards"}]
     empty_message = "Add a category first — each one becomes a card here."
     columns = [
-        {"label": "", "field": "thumbnail_image", "type": "image"},
-        {"label": "Range", "field": "name", "type": "title"},
-        {"label": "Subtitle", "field": "subtitle"},
+        {"label": "", "field": "catalogue_card_image", "type": "image"},
+        {"label": "Card title", "field": "catalogue_card_title", "type": "title"},
+        {"label": "Subtitle", "field": "catalogue_card_subtitle"},
+        {"label": "Range", "field": "name"},
         {"label": "Catalogue PDF", "field": "catalogue_pdf", "type": "bool"},
         {"label": "On Catalogues page", "field": "show_on_catalogues", "type": "bool"},
         {"label": "Live", "field": "is_active", "type": "active"},

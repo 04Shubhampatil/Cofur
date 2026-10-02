@@ -471,16 +471,22 @@ class Command(BaseCommand):
         for n in range(1, 5):
             item(header, f"Accessories 0{n}", n, accessories, link_type="external", external_url="/contact/?collection=accessories")
 
+        # Keep these two lists in step with each other and with the core
+        # migrations that edit the menus — a fresh seed must land on the same
+        # navigation an existing database reaches by migrating. "Projects" has
+        # no destination yet, hence link_type="none".
         item(header, "About", 1, link_type="internal", internal_page="website:about")
         item(header, "Our Story", 2, link_type="internal", internal_page="website:stories")
         item(header, "Catalogues", 3, link_type="internal", internal_page="website:catalogues", css_class="nav-spacer")
-        item(header, "Contact", 4, link_type="internal", internal_page="website:contact")
+        item(header, "Projects", 4, link_type="none")
+        item(header, "Contact", 5, link_type="internal", internal_page="website:contact")
 
         item(footer, "Collections", 0, link_type="internal", internal_page="website:home", url_suffix="#our-products")
         item(footer, "About", 1, link_type="internal", internal_page="website:about")
-        item(footer, "Communications", 2, link_type="internal", internal_page="website:about", url_suffix="#sustainability")
-        item(footer, "Catalogues", 3, link_type="category", category=categories["soft-seating"])
-        item(footer, "Contact", 4, link_type="internal", internal_page="website:contact")
+        item(footer, "Our Story", 2, link_type="internal", internal_page="website:stories")
+        item(footer, "Catalogues", 3, link_type="internal", internal_page="website:catalogues")
+        item(footer, "Projects", 4, link_type="none")
+        item(footer, "Contact", 5, link_type="internal", internal_page="website:contact")
         self.log("  navigation seeded")
 
     def seed_home(self, products):

@@ -157,7 +157,10 @@ class WebsiteViewTests(TestCase):
     def test_navigation_and_footer_from_database(self):
         from apps.core.models import NavigationItem
 
-        NavigationItem.objects.filter(label="Communications").update(label="Sustainability news")
+        # any nav row will do; the point is that the bar is read from the
+        # database rather than hard-coded in the template
+        renamed = NavigationItem.objects.filter(label="Our Story").update(label="Sustainability news")
+        self.assertTrue(renamed, "expected a nav item to rename")
         response = self.client.get("/")
         self.assertContains(response, "Sustainability news")
         self.assertContains(response, "COFUR Pvt. Ltd. All rights reserved")
@@ -433,12 +436,30 @@ class CataloguePreviewTests(TestCase):
         category = Category.objects.filter(is_active=True, catalogue_pdf="").first()
         self.assertEqual(self.client.get(reverse("website:catalogue_preview", args=[category.slug])).status_code, 404)
 
-    def test_card_points_at_the_preview_and_keeps_its_link(self):
+    def _catalogue_card(self, response, category):
+        """The one range card for this category, so assertions cannot match the nav."""
+        chunks = response.content.decode().split('<li class="range-card"')[1:]
+        for chunk in chunks:
+            card = chunk.split("</li>")[0]
+            if f"/{category.slug}/" in card:
+                return card
+        return ""
+
+    def test_card_href_matches_what_the_click_opens(self):
         category = self.with_catalogue()
-        response = self.client.get(reverse("website:catalogues"))
-        self.assertContains(response, f'data-pdf-preview="/catalogues/{category.slug}/preview/"')
-        # the card is still an ordinary link for crawlers, new tabs and no-JS
-        self.assertContains(response, f'href="{category.link}"')
+        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), category)
+        preview = f"/catalogues/{category.slug}/preview/"
+        # hovering must not advertise a destination the click does not go to
+        self.assertIn(f'href="{preview}"', card)
+        self.assertIn(f'data-pdf-preview="{preview}"', card)
+        # still an ordinary link, for crawlers, new tabs and no-JS
+        self.assertNotIn(f'href="{category.link}"', card)
+
+    def test_card_without_a_catalogue_links_to_the_category(self):
+        category = Category.objects.filter(is_active=True, catalogue_pdf="").first()
+        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), category)
+        self.assertIn(f'href="{category.link}"', card)
+        self.assertNotIn("data-pdf-preview", card)
 
     def test_home_rail_never_opens_the_preview(self):
         self.with_catalogue()

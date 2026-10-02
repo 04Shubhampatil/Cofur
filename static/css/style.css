@@ -13298,10 +13298,18 @@ body.has-pdf-preview {
     color: #9aa0ad;
 }
 
-/* ---- cards ---- */
+/* ---- cards ----
+   A grid, not CSS multi-column. `columns: 2` fills by balancing height, so
+   with only two posts both landed in the first column and the second sat
+   empty. A grid places one card per cell, so two posts always read across.
+   `align-items: start` keeps each card its own height rather than stretching
+   the shorter one to match. */
 .stories-grid {
-    columns: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     column-gap: clamp(26px, 3.4vw, 56px);
+    row-gap: clamp(34px, 4.4vw, 66px);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -13309,8 +13317,8 @@ body.has-pdf-preview {
 
 .story-card {
     break-inside: avoid;
-    margin: 0 0 clamp(34px, 4.4vw, 66px);
-    display: inline-block;
+    margin: 0;
+    display: block;
     width: 100%;
 }
 

@@ -273,3 +273,102 @@
     function addIds(ids) { $$('input[name=ids]', bulk).forEach(i => i.remove()); ids.forEach(id => { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'ids'; i.value = id; bulk.append(i); }); }
   }
 })();
+
+/* Rich text -------------------------------------------------------------------------
+   A toolbar over a contenteditable surface, synced back into the original
+   <textarea> so the form posts exactly as it always did. No library: the site
+   has no build step and nothing else here is vendored, so a few hundred bytes
+   of DOM beats shipping an editor bundle.
+
+   Everything written here is sanitised again on the server before it reaches a
+   page — see apps/core/html.py. The toolbar decides what is convenient to
+   write; the allow-list decides what is safe to render. */
+(() => {
+  const AREAS = document.querySelectorAll('textarea[data-richtext]');
+  if (!AREAS.length) return;
+
+  // Chrome wraps new lines in <div> by default. Paragraphs are what the page
+  // renders, so ask for those instead of translating them back later.
+  try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) { /* older engines */ }
+
+  const BUTTONS = [
+    { cmd: 'bold', label: 'B', title: 'Bold', style: 'font-weight:700' },
+    { cmd: 'italic', label: 'I', title: 'Italic', style: 'font-style:italic' },
+    { cmd: 'formatBlock', value: 'h2', label: 'H2', title: 'Heading' },
+    { cmd: 'formatBlock', value: 'h3', label: 'H3', title: 'Sub-heading' },
+    { cmd: 'insertUnorderedList', label: '• List', title: 'Bulleted list' },
+    { cmd: 'insertOrderedList', label: '1. List', title: 'Numbered list' },
+    { cmd: 'formatBlock', value: 'blockquote', label: '❝', title: 'Quote' },
+    { cmd: 'createLink', label: 'Link', title: 'Add a link' },
+    { cmd: 'removeFormat', label: 'Clear', title: 'Remove formatting' },
+  ];
+
+  // A body saved before the editor existed is plain text with blank lines
+  // between paragraphs. Show it as the paragraphs it is meant to be.
+  const toHtml = text => {
+    if (/<(p|h2|h3|ul|ol|li|strong|em|blockquote|br|a)\b/i.test(text)) return text;
+    return text.trim().split(/\n\s*\n/).filter(Boolean)
+      .map(block => '<p>' + block.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])).replace(/\n/g, '<br>') + '</p>')
+      .join('');
+  };
+
+  AREAS.forEach(area => {
+    const wrap = document.createElement('div');
+    wrap.className = 'richtext';
+
+    const bar = document.createElement('div');
+    bar.className = 'richtext__bar';
+
+    const surface = document.createElement('div');
+    surface.className = 'richtext__surface';
+    surface.contentEditable = 'true';
+    surface.setAttribute('role', 'textbox');
+    surface.setAttribute('aria-multiline', 'true');
+    surface.setAttribute('aria-label', (area.labels && area.labels[0] ? area.labels[0].textContent.trim() : 'Body') + ' editor');
+    surface.innerHTML = toHtml(area.value || '');
+
+    BUTTONS.forEach(spec => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'richtext__btn';
+      b.title = spec.title;
+      b.setAttribute('aria-label', spec.title);
+      if (spec.style) b.setAttribute('style', spec.style);
+      b.textContent = spec.label;
+      b.addEventListener('mousedown', e => e.preventDefault()); // keep the selection
+      b.addEventListener('click', () => {
+        surface.focus();
+        if (spec.cmd === 'createLink') {
+          const href = window.prompt('Link address', 'https://');
+          if (!href) return;
+          document.execCommand('createLink', false, href);
+        } else if (spec.value) {
+          document.execCommand(spec.cmd, false, spec.value);
+        } else {
+          document.execCommand(spec.cmd, false, null);
+        }
+        sync();
+      });
+      bar.append(b);
+    });
+
+    const sync = () => { area.value = surface.innerHTML.trim(); };
+    surface.addEventListener('input', sync);
+    surface.addEventListener('blur', sync);
+    area.form && area.form.addEventListener('submit', sync);
+
+    // Pasting from Word or a web page drags styling in; keep the words only.
+    surface.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+
+    area.classList.add('richtext__source');
+    area.setAttribute('aria-hidden', 'true');
+    area.tabIndex = -1;
+    area.after(wrap);
+    wrap.append(bar, surface);
+    sync();
+  });
+})();

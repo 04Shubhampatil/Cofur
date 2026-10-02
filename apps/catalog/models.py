@@ -60,6 +60,28 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         db_index=True,
         help_text="Order of the cards on the Catalogues page. Independent of the home page rail.",
     )
+    # The Catalogues page card is its own thing. These override the category's
+    # own name, subtitle and picture there, so the catalogue can be worded and
+    # shot differently without touching how the range reads everywhere else.
+    catalogue_title = models.CharField(
+        "Catalogue card title",
+        max_length=150,
+        blank=True,
+        help_text="Shown on the Catalogues page card. Leave empty to use the category name.",
+    )
+    catalogue_subtitle = models.CharField(
+        "Catalogue card subtitle",
+        max_length=200,
+        blank=True,
+        help_text="Small line under the title on the Catalogues page card. Leave empty to use the category subtitle.",
+    )
+    catalogue_image = models.ImageField(
+        "Catalogue card image",
+        upload_to="catalogues/",
+        blank=True,
+        null=True,
+        help_text="Shown on the Catalogues page card. Leave empty to use the category's card image.",
+    )
 
     class Meta(OrderableModel.Meta):
         verbose_name = "Category"
@@ -73,7 +95,7 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         if not self.slug:
             self.slug = unique_slugify(self, self.name)
         super().save(*args, **kwargs)
-        optimise_fields(self, "banner_image", "banner_mobile_image", "thumbnail_image", "lifestyle_image")
+        optimise_fields(self, "banner_image", "banner_mobile_image", "thumbnail_image", "lifestyle_image", "catalogue_image")
 
     def get_absolute_url(self):
         return reverse("website:category_detail", kwargs={"slug": self.slug})
@@ -85,6 +107,19 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
     @property
     def card_image(self):
         return self.thumbnail_image or self.banner_image
+
+    # --- what the Catalogues page card shows, falling back to the category ---
+    @property
+    def catalogue_card_title(self):
+        return self.catalogue_title or self.name
+
+    @property
+    def catalogue_card_subtitle(self):
+        return self.catalogue_subtitle or self.subtitle
+
+    @property
+    def catalogue_card_image(self):
+        return self.catalogue_image or self.card_image
 
     @property
     def banner_desktop(self):

@@ -2,18 +2,34 @@
   One range card, shared by the home rail and the Catalogues page.
 
   `catalogue` switches on the catalogue behaviour: the card opens a PDF preview
-  instead of navigating, and the download button appears. Without it the card is
-  a plain link to the category page, which is what the home rail wants.
-{% endcomment %}<li class="range-card"><a href="{{ category.link }}"{% if catalogue and category.catalogue_pdf %} data-pdf-preview="{% url 'website:catalogue_preview' category.slug %}" data-pdf-title="{{ category.name }} catalogue" aria-haspopup="dialog"{% endif %}>
-    {% if category.card_image %}<img src="{{ category.card_image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
-    <span class="range-card__copy">
-      <b>{{ category.name }}</b>
-      {% if category.subtitle %}<em><span>{{ category.subtitle }}</span></em>{% endif %}
-    </span>
+  instead of navigating, the download button appears, and the title, subtitle
+  and picture come from the category's catalogue fields. Those fall back to the
+  category's own, so a card reads the same until someone overrides it.
+
+  A catalogue card points at the preview endpoint rather than the category
+  page, so the URL the browser shows on hover is the one the click opens —
+  and without JavaScript the card still reaches the catalogue.
+
+  Without the flag the card is a plain link to the category page showing the
+  category's own name and picture, which is what the home rail wants.
+{% endcomment %}<li class="range-card">{% if catalogue and category.catalogue_pdf %}{% url 'website:catalogue_preview' category.slug as card_href %}{% else %}{% firstof category.link as card_href %}{% endif %}<a href="{{ card_href }}"{% if catalogue and category.catalogue_pdf %} data-pdf-preview="{% url 'website:catalogue_preview' category.slug %}" data-pdf-title="{{ category.catalogue_card_title }} catalogue" aria-haspopup="dialog"{% endif %}>
+    {% if catalogue %}
+      {% if category.catalogue_card_image %}<img src="{{ category.catalogue_card_image.url }}" alt="{{ category.catalogue_card_title }}" loading="lazy" decoding="async">{% endif %}
+      <span class="range-card__copy">
+        <b>{{ category.catalogue_card_title }}</b>
+        {% if category.catalogue_card_subtitle %}<em><span>{{ category.catalogue_card_subtitle }}</span></em>{% endif %}
+      </span>
+    {% else %}
+      {% if category.card_image %}<img src="{{ category.card_image.url }}" alt="{{ category.name }}" loading="lazy" decoding="async">{% endif %}
+      <span class="range-card__copy">
+        <b>{{ category.name }}</b>
+        {% if category.subtitle %}<em><span>{{ category.subtitle }}</span></em>{% endif %}
+      </span>
+    {% endif %}
   </a>
   {% if catalogue and category.catalogue_pdf %}
   <a class="range-card__download" href="{{ category.catalogue_pdf.url }}" download
-     aria-label="Download the {{ category.name }} catalogue (PDF)" title="Download the {{ category.name }} catalogue (PDF)">
+     aria-label="Download the {{ category.catalogue_card_title }} catalogue (PDF)" title="Download the {{ category.catalogue_card_title }} catalogue (PDF)">
     <img src="{% static 'images/icon-download.svg' %}" alt="" width="22" height="22" loading="lazy" decoding="async">
   </a>
   {% endif %}</li>
