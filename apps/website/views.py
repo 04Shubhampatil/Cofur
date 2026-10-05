@@ -11,7 +11,8 @@ from apps.catalog.models import Category, Collection, Product
 from apps.core.models import SiteSettings
 from apps.enquiries.forms import EnquiryForm
 from apps.enquiries.services import is_rate_limited, save_enquiry
-from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage
+from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage, ProjectsPage
+from apps.projects.models import Project
 from apps.stories.models import Story
 from apps.team.models import TeamMember
 
@@ -113,6 +114,37 @@ def story_detail(request, slug):
         "body_page": "story",
     }
     return render(request, "pages/story-detail.html", context)
+
+
+def projects(request):
+    """Every published project as a card, on an editable page."""
+    page = ProjectsPage.load()
+    context = {
+        "page": page,
+        "projects": Project.objects.published().prefetch_related("images"),
+        "seo": _seo(
+            request,
+            page,
+            f"{page.page_title} — {SiteSettings.load().site_name}",
+            page.heading[:160],
+            page.banner_image,
+        ),
+        "body_page": "projects",
+    }
+    return render(request, "pages/projects.html", context)
+
+
+def project_detail(request, slug):
+    project = get_object_or_404(Project.objects.published().prefetch_related("facts", "images"), slug=slug)
+    context = {
+        "project": project,
+        "carousel": list(project.carousel_images()),
+        "gallery": list(project.gallery_images()),
+        "facts": list(project.facts.all()),
+        "seo": _seo(request, project, project.title, project.meta_description, project.lead_image),
+        "body_page": "project",
+    }
+    return render(request, "pages/project-detail.html", context)
 
 
 @xframe_options_sameorigin

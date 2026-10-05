@@ -32,6 +32,14 @@
   {% for field in form.hidden_fields %}{{ field }}{% endfor %}
   {% endblock %}
 
+  {% if formsets %}
+    {% for key, entry in formsets.items %}
+    <section class="card form-section">
+      {% include "dashboard/generic/_formset.html" with formset=entry.formset title=entry.title empty_label=entry.empty_label %}
+    </section>
+    {% endfor %}
+  {% endif %}
+
   {% block after_form %}{% endblock %}
 
   <div class="form-actions form-actions--sticky">

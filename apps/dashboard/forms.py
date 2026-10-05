@@ -13,11 +13,13 @@ from apps.catalog.models import (
 )
 from apps.core.models import NavigationItem, SiteSettings
 from apps.enquiries.models import Enquiry
-from apps.stories.models import Story
+from apps.projects.models import Project, ProjectFact, ProjectImage
+from apps.stories.models import Story, StoryImage
 from apps.pages.models import (
     AboutPage,
     CataloguePage,
     ContactPage,
+    ProjectsPage,
     Differentiator,
     HomeHeroSlide,
     HomePage,
@@ -355,6 +357,15 @@ class CataloguePageForm(CMSModelForm):
         help_texts = {"heading": "Sits above the range cards."}
 
 
+class ProjectsPageForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = ProjectsPage
+        fields = [
+            "page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt",
+            "heading", "empty_message", *SEO_FIELDS,
+        ]
+
+
 class StoryForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
         model = Story
@@ -492,3 +503,89 @@ class MegaMenuItemForm(CMSModelForm):
         if commit:
             obj.save()
         return obj
+
+
+# --- Projects -------------------------------------------------------------
+class ProjectForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = Project
+        fields = [
+            "title", "slug", "status", "order", "studio",
+            "cover_image", "cover_alt",
+            "body_heading", "body", "gallery_heading",
+            *SEO_FIELDS,
+        ]
+        widgets = {
+            # the same toolbar the posts editor uses
+            "body": forms.Textarea(attrs={"rows": 14, "data-richtext": "true"}),
+        }
+
+
+class ProjectFactForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = ProjectFact
+        fields = ["label", "value", "order"]
+
+
+ProjectFactFormSet = inlineformset_factory(Project, ProjectFact, form=ProjectFactForm, extra=0, can_delete=True)
+
+
+class ProjectImageForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = ProjectImage
+        fields = ["image", "alt", "kind", "title", "caption", "link_url", "order"]
+
+    def clean_link_url(self):
+        """Refuse an internal path that leads nowhere.
+
+        A card with a dead link is worse than a card with none: it looks
+        clickable and lands the visitor on a 404. Empty stays empty — that is
+        the supported way to make a card that is not a link. External and
+        mailto/tel addresses are taken on trust; there is nothing to check
+        them against here.
+        """
+        from django.urls import Resolver404, resolve
+
+        url = (self.cleaned_data.get("link_url") or "").strip()
+        if not url or not url.startswith("/"):
+            return url
+
+        path = url.split("?", 1)[0].split("#", 1)[0]
+        try:
+            match = resolve(path)
+        except Resolver404:
+            raise forms.ValidationError("Nothing is served at that address. Check the path, or leave it empty for a card that is not a link.")
+
+        # A path can resolve to a view and still 404 on the slug, which is the
+        # mistake that actually happens: /categories/acoustics/ when the
+        # category is called acoustic-ceilings.
+        lookups = {
+            "website:category_detail": ("catalog", "Category"),
+            "website:collection_detail": ("catalog", "Collection"),
+            "website:product_detail": ("catalog", "Product"),
+            "website:project_detail": ("projects", "Project"),
+            "website:story_detail": ("stories", "Story"),
+        }
+        target = lookups.get(match.view_name)
+        slug = match.kwargs.get("slug")
+        if target and slug:
+            from django.apps import apps as django_apps
+
+            model = django_apps.get_model(*target)
+            if not model._default_manager.filter(slug=slug).exists():
+                raise forms.ValidationError(
+                    f"There is no {model._meta.verbose_name} with the address “{slug}”. Check the spelling."
+                )
+        return url
+
+
+ProjectImageFormSet = inlineformset_factory(Project, ProjectImage, form=ProjectImageForm, extra=0, can_delete=True)
+
+
+class StoryImageForm(CMSModelForm):
+    class Meta(CMSModelForm.Meta):
+        model = StoryImage
+        fields = ["image", "alt", "order"]
+
+
+StoryImageFormSet = inlineformset_factory(Story, StoryImage, form=StoryImageForm, extra=0, can_delete=True)

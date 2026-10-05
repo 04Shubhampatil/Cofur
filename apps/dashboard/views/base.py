@@ -3,8 +3,10 @@ import json
 
 from django.conf import settings
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseBadRequest, JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -138,6 +140,45 @@ class DashboardFormMixin:
     success_message = "Saved."
     list_url_name = None
     fieldsets = None  # list of (title, [field names]) rendered as tabs/sections
+    #: key -> (FormSetClass, heading, singular noun for the "Add" button)
+    formset_classes = {}
+
+    def get_formsets(self, instance, bind=False):
+        data = self.request.POST if bind else None
+        files = self.request.FILES if bind else None
+        return {
+            key: {
+                "formset": cls(data, files, prefix=key, instance=instance),
+                "title": title,
+                "empty_label": empty_label,
+            }
+            for key, (cls, title, empty_label) in self.formset_classes.items()
+        }
+
+    def form_valid(self, form):
+        if not self.formset_classes:
+            response = super().form_valid(form)
+            messages.success(self.request, self.success_message)
+            return response
+
+        # Bind the formsets to an unsaved instance so everything is validated
+        # before anything is written. Saving first and rolling back would leave
+        # the rendered error page querying a transaction already marked bad.
+        instance = form.save(commit=False)
+        bound = self.get_formsets(instance, bind=True)
+        if not all(entry["formset"].is_valid() for entry in bound.values()):
+            messages.error(self.request, "Please fix the errors below.")
+            return self.render_to_response(self.get_context_data(form=form, formsets=bound))
+
+        with transaction.atomic():
+            instance.save()
+            form.save_m2m()
+            self.object = instance
+            for entry in bound.values():
+                entry["formset"].instance = instance
+                entry["formset"].save()
+        messages.success(self.request, self.success_message)
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         if "_continue" in self.request.POST and hasattr(self, "update_url_name") and self.update_url_name:
@@ -146,17 +187,14 @@ class DashboardFormMixin:
             return reverse(self.list_url_name)
         return self.request.path
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, self.success_message)
-        return response
-
     def form_invalid(self, form):
         messages.error(self.request, "Please fix the errors below.")
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if self.formset_classes:
+            context.setdefault("formsets", self.get_formsets(getattr(self, "object", None) or self.model()))
         context.update({
             "page_title": self.page_title,
             "breadcrumbs": self.breadcrumbs,

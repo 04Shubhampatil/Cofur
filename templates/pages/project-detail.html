@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="project-page">
+    <div class="container">
+      <h1 class="project-title">{{ project.title }}</h1>
+
+      <div class="project-top">
+        {% if carousel %}
+        <section class="media-carousel" data-carousel aria-roledescription="carousel" aria-label="{{ project.title }} photographs">
+          <ul class="media-carousel__track" role="list">
+            {% for shot in carousel %}
+            <li class="media-slide{% if forloop.first %} is-active{% endif %}" role="group" aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ carousel|length }}"{% if not forloop.first %} aria-hidden="true"{% endif %}>
+              <img src="{{ shot.image.url }}" alt="{{ shot.alt_text }}"{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async">
+            </li>
+            {% endfor %}
+          </ul>
+          {% if carousel|length > 1 %}
+          <button class="media-carousel__arrow media-carousel__arrow--prev" type="button" data-carousel-prev aria-label="Previous photograph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <button class="media-carousel__arrow media-carousel__arrow--next" type="button" data-carousel-next aria-label="Next photograph">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+          <div class="media-carousel__dots" role="tablist" aria-label="Choose a photograph">
+            {% for shot in carousel %}
+            <button type="button" role="tab" data-carousel-dot="{{ forloop.counter0 }}" aria-label="Photograph {{ forloop.counter }}"{% if forloop.first %} aria-selected="true" class="is-active"{% else %} aria-selected="false"{% endif %}></button>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </section>
+        {% endif %}
+
+        {% if facts %}
+        <aside class="project-facts" aria-label="Project details">
+          <h2>Project details</h2>
+          <dl>
+            {% for fact in facts %}
+            <div class="project-facts__row">
+              <dt>{{ fact.label }}</dt>
+              <dd>{{ fact.value }}</dd>
+            </div>
+            {% endfor %}
+          </dl>
+        </aside>
+        {% endif %}
+      </div>
+
+      {% if project.body %}
+      <section class="project-body" aria-label="{{ project.body_heading|default:'About this project' }}">
+        {% if project.body_heading %}<h2 class="project-subheading">{{ project.body_heading }}</h2>{% endif %}
+        <div class="project-body__text">{{ project.body|richtext }}</div>
+      </section>
+      {% endif %}
+
+      {% if gallery %}
+      <section class="project-gallery range-rail" aria-label="{{ project.gallery_heading|default:'More photographs' }}">
+        <div class="range-rail__head">
+          {% if project.gallery_heading %}<h2 class="project-subheading">{{ project.gallery_heading }}</h2>{% endif %}
+          <div class="range-rail__nav">
+            <button class="range-rail__arrow" type="button" data-rail-prev aria-label="Previous cards">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+            </button>
+            <button class="range-rail__arrow" type="button" data-rail-next aria-label="Next cards">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </div>
+        <ul class="range-rail__track project-tiles" tabindex="0" role="list" aria-label="Project cards. Scroll sideways or use the arrows.">
+          {% for shot in gallery %}
+          <li class="project-tile">
+            {% if shot.link_url %}<a href="{{ shot.link_url }}" class="project-tile__inner">{% else %}<div class="project-tile__inner">{% endif %}
+              <span class="project-tile__media"><img src="{{ shot.image.url }}" alt="{{ shot.alt_text }}" loading="lazy" decoding="async"></span>
+              {% if shot.title %}<b class="project-tile__title">{{ shot.title }}</b>{% endif %}
+              {% if shot.caption %}<span class="project-tile__caption">{{ shot.caption }}</span>{% endif %}
+            {% if shot.link_url %}</a>{% else %}</div>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="range-rail__dots" role="tablist" aria-label="Pages of cards" data-rail-dots></div>
+      </section>
+      {% endif %}
+
+      <p class="project-back"><a href="{% url 'website:projects' %}">&larr; All projects</a></p>
+    </div>
+  </main>
+{% endblock %}

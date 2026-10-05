@@ -13,11 +13,32 @@
         {% if post.excerpt %}<p class="story-article__lead">{{ post.excerpt }}</p>{% endif %}
       </header>
 
-      {% if post.cover_image %}
-      <figure class="story-article__cover">
-        <img src="{{ post.cover_image.url }}" alt="{{ post.cover_alt|default:post.title }}" fetchpriority="high" decoding="async">
+      {% with shots=post.slides %}
+      {% if shots %}
+      <figure class="story-article__cover media-carousel"{% if shots|length > 1 %} data-carousel aria-roledescription="carousel" aria-label="{{ post.title }} photographs"{% endif %}>
+        <ul class="media-carousel__track" role="list">
+          {% for url, alt in shots %}
+          <li class="media-slide{% if forloop.first %} is-active{% endif %}"{% if shots|length > 1 %} role="group" aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ shots|length }}"{% if not forloop.first %} aria-hidden="true"{% endif %}{% endif %}>
+            <img src="{{ url }}" alt="{{ alt }}"{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async">
+          </li>
+          {% endfor %}
+        </ul>
+        {% if shots|length > 1 %}
+        <button class="media-carousel__arrow media-carousel__arrow--prev" type="button" data-carousel-prev aria-label="Previous photograph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button class="media-carousel__arrow media-carousel__arrow--next" type="button" data-carousel-next aria-label="Next photograph">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+        <div class="media-carousel__dots" role="tablist" aria-label="Choose a photograph">
+          {% for url, alt in shots %}
+          <button type="button" role="tab" data-carousel-dot="{{ forloop.counter0 }}" aria-label="Photograph {{ forloop.counter }}"{% if forloop.first %} aria-selected="true" class="is-active"{% else %} aria-selected="false"{% endif %}></button>
+          {% endfor %}
+        </div>
+        {% endif %}
       </figure>
       {% endif %}
+      {% endwith %}
 
       <div class="story-article__body">{{ post.body|richtext }}</div>
 

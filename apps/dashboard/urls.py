@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, catalogues, home, navigation, pages, people, settings, stories
+from .views import auth, catalog, catalogues, home, navigation, pages, people, projects, settings, stories
 
 app_name = "dashboard"
 
@@ -61,6 +61,15 @@ urlpatterns = [
     path("categories/<int:pk>/delete/", catalog.CategoryDeleteView.as_view(), name="category_delete"),
     path("categories/reorder/", catalog.CategoryReorderView.as_view(), name="category_reorder"),
     path("categories/<int:pk>/toggle-active/", catalog.CategoryToggleActiveView.as_view(), name="category_toggle_active"),
+
+    # Projects
+    path("content/projects/", pages.ProjectsPageEditView.as_view(), name="page_projects"),
+    path("projects/", projects.ProjectListView.as_view(), name="project_list"),
+    path("projects/add/", projects.ProjectCreateView.as_view(), name="project_create"),
+    path("projects/<int:pk>/", projects.ProjectUpdateView.as_view(), name="project_update"),
+    path("projects/<int:pk>/delete/", projects.ProjectDeleteView.as_view(), name="project_delete"),
+    path("projects/<int:pk>/toggle-publish/", projects.ProjectTogglePublishView.as_view(), name="project_toggle_publish"),
+    path("projects/reorder/", projects.ProjectReorderView.as_view(), name="project_reorder"),
 
     # Our Story
     path("stories/", stories.StoryListView.as_view(), name="story_list"),

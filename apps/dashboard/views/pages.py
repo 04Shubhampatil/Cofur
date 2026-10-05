@@ -4,12 +4,13 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import FormView
 
-from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage
+from apps.pages.models import AboutPage, CataloguePage, ContactPage, HomePage, ProjectsPage
 
 from ..forms import (
     AboutPageForm,
     CataloguePageForm,
     ContactPageForm,
+    ProjectsPageForm,
     DifferentiatorFormSet,
     HeroSlideFormSet,
     HomePageForm,
@@ -139,6 +140,24 @@ class CataloguePageEditView(SingletonPageView):
         ("hero", "Banner & heading", ["page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt", "heading"], None, None),
         ("seo", "SEO", SEO_FIELDS, None, None),
     ]
+
+
+class ProjectsPageEditView(SingletonPageView):
+    model = ProjectsPage
+    form_class = ProjectsPageForm
+    permission_required = "pages.change_projectspage"
+    page_title = "Projects page"
+    preview_url_name = "website:projects"
+    breadcrumbs = [{"label": "Projects"}, {"label": "Projects page"}]
+    tabs = [
+        ("hero", "Banner & heading", ["page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt", "heading", "empty_message"], None, None),
+        ("seo", "SEO", SEO_FIELDS, None, None),
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["help_text"] = "The projects themselves are managed under Projects › All projects."
+        return context
 
 
 class ContactPageEditView(SingletonPageView):

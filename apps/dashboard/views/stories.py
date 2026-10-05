@@ -1,5 +1,5 @@
 """CMS screens for the Our Story posts."""
-from ..forms import SEO_FIELDS, StoryForm
+from ..forms import SEO_FIELDS, StoryForm, StoryImageFormSet
 from .base import DashboardCreateView, DashboardDeleteView, DashboardListView, DashboardUpdateView
 
 from apps.stories.models import Story
@@ -11,6 +11,9 @@ STORY_FIELDSETS = [
     ("Writing", ["excerpt", "body"]),
     ("SEO", SEO_FIELDS),
 ]
+# The cover leads the slider; these follow it in order. One photograph means
+# no slider at all, so a post that never needs one is unaffected.
+STORY_FORMSETS = {"images": (StoryImageFormSet, "More photographs", "photograph")}
 
 
 class StoryListView(DashboardListView):
@@ -45,6 +48,7 @@ class StoryCreateView(DashboardCreateView):
     list_url_name = "dashboard:story_list"
     update_url_name = "dashboard:story_update"
     fieldsets = STORY_FIELDSETS
+    formset_classes = STORY_FORMSETS
     success_message = "Post created."
     breadcrumbs = [STORY_CRUMB, {"label": "Posts", "url": "dashboard:story_list"}, {"label": "New"}]
 
@@ -56,6 +60,7 @@ class StoryUpdateView(DashboardUpdateView):
     list_url_name = "dashboard:story_list"
     update_url_name = "dashboard:story_update"
     fieldsets = STORY_FIELDSETS
+    formset_classes = STORY_FORMSETS
     success_message = "Post updated."
     breadcrumbs = [STORY_CRUMB, {"label": "Posts", "url": "dashboard:story_list"}, {"label": "Edit"}]
 

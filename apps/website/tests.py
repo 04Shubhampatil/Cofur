@@ -157,10 +157,12 @@ class WebsiteViewTests(TestCase):
     def test_navigation_and_footer_from_database(self):
         from apps.core.models import NavigationItem
 
-        # any nav row will do; the point is that the bar is read from the
-        # database rather than hard-coded in the template
-        renamed = NavigationItem.objects.filter(label="Our Story").update(label="Sustainability news")
-        self.assertTrue(renamed, "expected a nav item to rename")
+        # The point is that the bar is read from the database rather than
+        # hard-coded, so take whichever row the seed produced instead of
+        # naming one — labels get renamed and this should not care.
+        item = NavigationItem.objects.filter(menu__slug="header", parent__isnull=True).first()
+        self.assertIsNotNone(item, "expected the seed to create a header menu")
+        NavigationItem.objects.filter(pk=item.pk).update(label="Sustainability news")
         response = self.client.get("/")
         self.assertContains(response, "Sustainability news")
         self.assertContains(response, "COFUR Pvt. Ltd. All rights reserved")

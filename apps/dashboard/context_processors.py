@@ -34,6 +34,10 @@ def dashboard_nav(request):
             item("Products", "dashboard:product_list", "catalog.view_product", "box"),
         ]},
         {"title": "Our Story", "items": [item("Posts", "dashboard:story_list", "stories.view_story", "edit")]},
+        {"title": "Projects", "items": [
+            item("Projects page", "dashboard:page_projects", "pages.view_projectspage", "layout"),
+            item("All projects", "dashboard:project_list", "projects.view_project", "grid"),
+        ]},
         {"title": "People", "items": [item("Team members", "dashboard:team_list", "team.view_teammember", "users")]},
         {"title": "Leads", "items": [item("Enquiries", "dashboard:enquiry_list", "enquiries.view_enquiry", "mail")]},
         {"title": "Settings", "items": [

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+  <main class="projects-page">
+    {% if page.banner_image %}
+    <section class="projects-hero page-banner">
+      <picture data-shot="banner-projects">
+        {% mobile_source page.banner_mobile_image %}
+        <img src="{{ page.banner_image.url }}" sizes="100vw" alt="{{ page.banner_alt|default:page.page_title }}"{% if page.banner_mobile_image and page.banner_mobile_alt %} data-mobile-alt="{{ page.banner_mobile_alt }}"{% endif %} fetchpriority="high" decoding="async">
+      </picture>
+      <h1>{{ page.page_title }}</h1>
+    </section>
+    {% else %}
+    <section class="container projects-head">
+      <h1>{{ page.page_title }}</h1>
+    </section>
+    {% endif %}
+
+    <section class="container" aria-label="Projects">
+      {% if page.heading %}<h2 class="projects-intro">{{ page.heading }}</h2>{% endif %}
+
+      {% if projects %}
+      <ul class="projects-grid" role="list">
+        {% for project in projects %}
+        <li class="project-card">
+          <a href="{{ project.get_absolute_url }}">
+            {% if project.cover_image %}
+            <span class="project-card__media">
+              <img src="{{ project.cover_image.url }}" alt="{{ project.cover_alt|default:project.title }}" loading="lazy" decoding="async">
+            </span>
+            {% endif %}
+            <b class="project-card__title">{{ project.title }}</b>
+            {% if project.studio %}<span class="project-card__studio">{{ project.studio }}</span>{% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="stories-empty">{{ page.empty_message }}</p>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}

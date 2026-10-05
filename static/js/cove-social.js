@@ -226,7 +226,9 @@ function initSocialProductMotion() {
     }
     scroller.classList.add('is-moving');
     const origin = scroller.scrollLeft, distance = target - origin;
-    const started = performance.now(), duration = Math.min(450, 180 + Math.abs(distance) * .25);
+    // Slower than it was (180ms + a quarter of the distance, capped at 450):
+    // one image gave way to the next almost before the eye had settled on it.
+    const started = performance.now(), duration = Math.min(950, 420 + Math.abs(distance) * .45);
     function step(now) {
       if (disposed) return;
       const p = Math.min(1, (now - started) / duration);

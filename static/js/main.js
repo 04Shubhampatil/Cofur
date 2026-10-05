@@ -23,7 +23,9 @@ function initSite(){
   // product cards already answer to. Sliding a finger means the visitor is
   // scrolling, so the card returns to its cut-out.
   if(matchMedia('(hover:none)').matches){
-    document.querySelectorAll('.cove-card').forEach(card=>{
+    // every product card type, not just the collection ones: the gesture has
+    // to do the same thing wherever a card shows a room shot on hover
+    document.querySelectorAll('.cove-card, .social-related .product-card, .related-card').forEach(card=>{
       const hold=()=>card.classList.add('is-held'),release=()=>card.classList.remove('is-held');
       card.addEventListener('touchstart',hold,{passive:true});
       ['touchend','touchcancel','touchmove'].forEach(evt=>card.addEventListener(evt,release,{passive:true}));
@@ -310,6 +312,125 @@ function initPdfPreview() {
   document.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
 }
 
+
+function initCarousels() {
+  // every carousel on the page, not just the first: the posts slider and the
+  // project carousel are the same component and a page may hold either.
+  document.querySelectorAll('[data-carousel]').forEach(initCarousel);
+}
+
+function initCarousel(stage) {
+  const slides = [...stage.querySelectorAll('.media-slide')];
+  if (slides.length < 2) return;
+  const dots = [...stage.querySelectorAll('[data-carousel-dot]')];
+  let index = 0;
+
+  const show = next => {
+    index = (next + slides.length) % slides.length;
+    slides.forEach((slide, n) => {
+      const active = n === index;
+      slide.classList.toggle('is-active', active);
+      // hidden slides stay out of the reading order, not just out of sight
+      slide.toggleAttribute('aria-hidden', !active);
+    });
+    dots.forEach((dot, n) => {
+      dot.classList.toggle('is-active', n === index);
+      dot.setAttribute('aria-selected', String(n === index));
+    });
+  };
+
+  stage.querySelector('[data-carousel-prev]')?.addEventListener('click', () => show(index - 1));
+  stage.querySelector('[data-carousel-next]')?.addEventListener('click', () => show(index + 1));
+  dots.forEach((dot, n) => dot.addEventListener('click', () => show(n)));
+
+  // Arrow keys once the carousel has focus, the way a tablist behaves.
+  stage.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') { event.preventDefault(); show(index - 1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); show(index + 1); }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initCarousels);
+
+/* Smooth scrolling ------------------------------------------------------------------
+   Inertia on the wheel: the page eases toward where the wheel has asked it to go
+   rather than jumping there, which is the feel of the reference site.
+
+   Deliberately narrow. It takes over the wheel and nothing else — dragging the
+   scrollbar, the keyboard, Page Up/Down, find-in-page and anchor jumps all stay
+   native and simply resync the loop. It stays off entirely on touch, where the
+   platform already does this better, and for anyone who has asked for reduced
+   motion.
+
+   `scroll-behavior: smooth` has to be off while this runs: it would animate every
+   frame's scrollTo on top of the easing, which reads as the page sticking. The
+   class is set from here so the stylesheet keeps its native-scrolling default for
+   anyone this does not apply to. */
+function initSmoothScroll() {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const coarse = matchMedia('(hover: none)');
+  if (reduced.matches || coarse.matches) return;
+
+  const root = document.documentElement;
+  root.classList.add('has-smooth-scroll');
+
+  const EASE = 0.12;          // how much of the remaining distance is covered per frame
+  const SETTLE = 0.4;         // below this many pixels the loop stops and hands back
+  let target = window.scrollY;
+  let running = false;
+  // The position this loop last asked for. `scroll` fires asynchronously, so a
+  // flag set and cleared around scrollTo is always false by the time the event
+  // arrives — the handler would then treat the loop's own scroll as the user's
+  // and reset the target, stopping after one frame. Comparing positions tells
+  // the two apart reliably.
+  let lastSet = -1;
+
+  const maxScroll = () => Math.max(0, root.scrollHeight - window.innerHeight);
+  // A modal locks the body; leave scrolling alone while it is up. The vertical
+  // axis is the one to read: the body already carries overflow-x: hidden, so the
+  // shorthand computes to "hidden auto" normally and matching on it is brittle.
+  const locked = () => getComputedStyle(document.body).overflowY === 'hidden';
+
+  const frame = () => {
+    const distance = target - window.scrollY;
+    if (Math.abs(distance) < SETTLE) {
+      running = false;
+      return;
+    }
+    const next = window.scrollY + distance * EASE;
+    lastSet = Math.round(next);
+    window.scrollTo(0, next);
+    window.ScrollTrigger && ScrollTrigger.update();
+    requestAnimationFrame(frame);
+  };
+
+  const start = () => {
+    if (running) return;
+    running = true;
+    requestAnimationFrame(frame);
+  };
+
+  addEventListener('wheel', event => {
+    // let the browser handle zoom, and anything scrolling its own box (the rails,
+    // the product gallery, the PDF preview)
+    if (event.ctrlKey || event.metaKey || locked()) return;
+    if (event.target.closest('.range-rail__track, .social-gallery__track, .pdf-preview, .stories-grid')) return;
+    event.preventDefault();
+    target = Math.min(maxScroll(), Math.max(0, target + event.deltaY));
+    start();
+  }, {passive: false});
+
+  // Anything that moved the page by other means becomes the new truth.
+  addEventListener('scroll', () => {
+    if (Math.abs(window.scrollY - lastSet) > 2) target = window.scrollY;
+  }, {passive: true});
+  addEventListener('resize', () => { target = window.scrollY; }, {passive: true});
+  reduced.addEventListener?.('change', e => { if (e.matches) { target = window.scrollY; root.classList.remove('has-smooth-scroll'); } });
+}
+
+document.addEventListener('DOMContentLoaded', initSmoothScroll);
+
+
 document.addEventListener('DOMContentLoaded',initSite);
 
 function initHeroSlider() {
@@ -458,8 +579,29 @@ function initHomeMotion(motion) {
       gsap.fromTo(column,{y:index===1?30:0},{y:index===1?-160:-90,ease:'none',scrollTrigger:{trigger:'.testimonial-window',start:'top bottom',end:'bottom top',scrub:1}});
     });
   });
+  // Below 900px the stage is stacked — heading, photograph, link — so all three
+  // ease in together rather than the photograph fading on its own with the
+  // words already sitting there. `.featured-title` is display:contents at this
+  // width and has no box to animate, so its children are targeted directly.
+  // power2.inOut eases at both ends, which reads as deliberate on a phone where
+  // the section arrives already most of the way up the screen.
   motion.add('(max-width: 900px) and (prefers-reduced-motion: no-preference)', () => {
-    gsap.from('.featured-stage img',{opacity:0,duration:1.2,scrollTrigger:{trigger:'.featured-stage',start:'top 85%',once:true}});
+    gsap.utils.toArray('.featured-stage').forEach(stage => {
+      const parts = [
+        stage.querySelector('.featured-title h3'),
+        stage.querySelector(':scope > picture') || stage.querySelector('img'),
+        stage.querySelector('.featured-title .text-cta'),
+      ].filter(Boolean);
+      if (!parts.length) return;
+      gsap.from(parts, {
+        opacity: 0,
+        y: 30,
+        duration: 1.1,
+        ease: 'power2.inOut',
+        stagger: 0.14,
+        scrollTrigger: {trigger: stage, start: 'top 88%', once: true},
+      });
+    });
   });
   document.querySelectorAll('.cta-outline path').forEach((path,index) => {
     const length = path.getTotalLength();
@@ -512,9 +654,12 @@ function initAboutMotion(motion) {
 (function initRangeRail(){
   document.querySelectorAll('.range-rail').forEach(rail => {
     const track=rail.querySelector('.range-rail__track');
-    const card=track?.querySelector('.range-card');
+    // the first tile, whatever it is: the project gallery uses this rail too
+    const card=track?.firstElementChild;
     const prev=rail.querySelector('[data-rail-prev]');
     const next=rail.querySelector('[data-rail-next]');
+    // Optional: a rail only gets page dots if the markup asks for them.
+    const dots=rail.querySelector('[data-rail-dots]');
     if(!track||!card||!prev||!next)return;
     // Measured rather than assumed: the card width and the gap both come from
     // clamp(), so they change with the viewport.
@@ -523,6 +668,44 @@ function initAboutMotion(motion) {
       return card.getBoundingClientRect().width+gap;
     };
     const limit=()=>Math.max(0,track.scrollWidth-track.clientWidth);
+    // A page is one visible width of the track, so the dot count follows the
+    // viewport rather than the number of cards — four cards are one page on a
+    // wide screen and four on a phone.
+    const pages=()=>Math.max(1,Math.ceil(track.scrollWidth/Math.max(1,track.clientWidth)));
+    const buildDots=room=>{
+      if(!dots)return;
+      const count=room>1?pages():0;
+      if(dots.childElementCount===count)return;
+      dots.replaceChildren();
+      for(let i=0;i<count;i++){
+        const dot=document.createElement('button');
+        dot.type='button';
+        dot.className='range-rail__dot';
+        dot.setAttribute('role','tab');
+        dot.setAttribute('aria-label','Cards '+(i+1)+' of '+count);
+        // Positioned across the scrollable range, not by multiplying the page
+        // width: when the last page is a sliver, i*clientWidth overshoots the
+        // maximum and that dot can never be reached or highlighted.
+        dot.addEventListener('click',()=>{
+          const room=limit();
+          const span=Math.max(1,dots.childElementCount-1);
+          track.scrollTo({left:room*(i/span),behavior:'smooth'});
+        });
+        dots.append(dot);
+      }
+    };
+    const syncDots=()=>{
+      if(!dots||!dots.childElementCount)return;
+      const room=limit();
+      const span=Math.max(1,dots.childElementCount-1);
+      // Which dot the current scroll position is nearest, measured as progress
+      // through the range so the last one is always reachable.
+      const active=room>0?Math.round((track.scrollLeft/room)*span):0;
+      [...dots.children].forEach((dot,i)=>{
+        dot.classList.toggle('is-active',i===active);
+        dot.setAttribute('aria-selected',String(i===active));
+      });
+    };
     let frame=0;
     const sync=()=>{
       frame=0;
@@ -532,6 +715,8 @@ function initAboutMotion(motion) {
       rail.classList.toggle('has-overflow',room>1);
       prev.disabled=track.scrollLeft<=1;
       next.disabled=track.scrollLeft>=room-1;
+      buildDots(room);
+      syncDots();
     };
     prev.addEventListener('click',()=>track.scrollBy({left:-step(),behavior:'smooth'}));
     next.addEventListener('click',()=>track.scrollBy({left:step(),behavior:'smooth'}));

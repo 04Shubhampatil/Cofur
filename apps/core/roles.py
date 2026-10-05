@@ -12,16 +12,18 @@ from django.contrib.contenttypes.models import ContentType
 
 CMS_MODELS = {
     "catalog": ["category", "collection", "product", "productimage", "productspecification", "productfeature", "productcolor"],
-    "pages": ["homepage", "homeheroslide", "homestatementline", "differentiator", "aboutpage", "contactpage"],
+    "pages": ["homepage", "homeheroslide", "homestatementline", "differentiator", "aboutpage", "contactpage", "cataloguepage", "projectspage"],
     "team": ["teammember"],
     "enquiries": ["enquiry"],
-    "stories": ["story"],
+    "stories": ["story", "storyimage"],
+    "projects": ["project", "projectfact", "projectimage"],
     "core": ["sitesettings", "navigationmenu", "navigationitem"],
 }
 
 ROLE_DEFINITIONS = {
     "Admin": {
         "stories": ["view", "add", "change", "delete"],
+        "projects": ["view", "add", "change", "delete"],
         "catalog": ["view", "add", "change", "delete"],
         "pages": ["view", "add", "change", "delete"],
         "team": ["view", "add", "change", "delete"],
@@ -30,6 +32,7 @@ ROLE_DEFINITIONS = {
     },
     "Editor": {
         "stories": ["view", "add", "change", "delete"],
+        "projects": ["view", "add", "change", "delete"],
         "catalog": ["view", "add", "change", "delete"],
         "pages": ["view", "add", "change"],
         "team": ["view", "add", "change", "delete"],
@@ -38,6 +41,7 @@ ROLE_DEFINITIONS = {
     },
     "Staff": {
         "stories": ["view"],
+        "projects": ["view"],
         "catalog": ["view"],
         "pages": ["view"],
         "team": ["view"],

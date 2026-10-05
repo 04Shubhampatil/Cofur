@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 
 from apps.core.images import optimise_fields
-from apps.core.mixins import SEOFieldsMixin, TimeStampedModel, unique_slugify
+from apps.core.mixins import OrderableModel, SEOFieldsMixin, TimeStampedModel, unique_slugify
 
 
 class StoryQuerySet(models.QuerySet):
@@ -62,6 +62,18 @@ class Story(SEOFieldsMixin, TimeStampedModel):
     #: Roughly six lines in a card before it is cut.
     SUMMARY_WORDS = 46
 
+    def slides(self):
+        """Everything the slider shows: the cover, then the extra photographs.
+
+        Returned as (url, alt) pairs so the template does not have to know
+        that two different models are involved.
+        """
+        shots = []
+        if self.cover_image:
+            shots.append((self.cover_image.url, self.cover_alt or self.title))
+        shots.extend((img.image.url, img.alt_text) for img in self.images.all())
+        return shots
+
     @property
     def summary(self):
         """Card text: the excerpt and the body together, cut on a word boundary.
@@ -80,3 +92,31 @@ class Story(SEOFieldsMixin, TimeStampedModel):
         if len(words) <= self.SUMMARY_WORDS:
             return text
         return " ".join(words[: self.SUMMARY_WORDS]) + " […]"
+
+
+class StoryImage(OrderableModel):
+    """An extra photograph for a post, shown in the slider under the heading.
+
+    The cover stays its own field: it is the card image on the listing and the
+    share image, which is a different job from illustrating the article. When
+    a post has these, the slider shows the cover first and then these in order,
+    so a post written before the slider existed still opens on its cover.
+    """
+
+    story = models.ForeignKey("stories.Story", related_name="images", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="stories/")
+    alt = models.CharField(max_length=255, blank=True, help_text="Describes the photograph. Falls back to the post title.")
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "Post image"
+
+    def __str__(self):
+        return f"{self.story.title} — image {self.order}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        optimise_fields(self, "image")
+
+    @property
+    def alt_text(self):
+        return self.alt or self.story.title

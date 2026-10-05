@@ -476,16 +476,16 @@ class Command(BaseCommand):
         # navigation an existing database reaches by migrating. "Projects" has
         # no destination yet, hence link_type="none".
         item(header, "About", 1, link_type="internal", internal_page="website:about")
-        item(header, "Our Story", 2, link_type="internal", internal_page="website:stories")
+        item(header, "Stories", 2, link_type="internal", internal_page="website:stories")
         item(header, "Catalogues", 3, link_type="internal", internal_page="website:catalogues", css_class="nav-spacer")
-        item(header, "Projects", 4, link_type="none")
+        item(header, "Projects", 4, link_type="internal", internal_page="website:projects")
         item(header, "Contact", 5, link_type="internal", internal_page="website:contact")
 
         item(footer, "Collections", 0, link_type="internal", internal_page="website:home", url_suffix="#our-products")
         item(footer, "About", 1, link_type="internal", internal_page="website:about")
-        item(footer, "Our Story", 2, link_type="internal", internal_page="website:stories")
+        item(footer, "Stories", 2, link_type="internal", internal_page="website:stories")
         item(footer, "Catalogues", 3, link_type="internal", internal_page="website:catalogues")
-        item(footer, "Projects", 4, link_type="none")
+        item(footer, "Projects", 4, link_type="internal", internal_page="website:projects")
         item(footer, "Contact", 5, link_type="internal", internal_page="website:contact")
         self.log("  navigation seeded")
 

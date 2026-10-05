@@ -188,6 +188,39 @@ class CataloguePage(SEOFieldsMixin, SingletonModel):
         optimise_fields(self, "banner_image", "banner_mobile_image")
 
 
+class ProjectsPage(SEOFieldsMixin, SingletonModel):
+    """The Projects listing: a banner and an intro over the grid of cards.
+
+    The projects themselves live in their own section; this is only the page
+    they sit on, so an editor can retitle it or put a photograph at the top
+    without touching any project.
+    """
+
+    page_title = models.CharField(max_length=120, default="Projects")
+    banner_image = models.ImageField(upload_to="projects/", blank=True, null=True)
+    banner_mobile_image = banner_mobile_image_field(upload_to="projects/")
+    banner_mobile_alt = banner_mobile_alt_field()
+    banner_alt = models.CharField(max_length=255, blank=True)
+
+    heading = models.CharField(max_length=200, blank=True, help_text="Optional line above the grid.")
+    empty_message = models.CharField(
+        max_length=200,
+        blank=True,
+        default="The first project is on its way.",
+        help_text="Shown when no project is published yet.",
+    )
+
+    class Meta:
+        verbose_name = "Projects page"
+
+    def __str__(self):
+        return "Projects page"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        optimise_fields(self, "banner_image", "banner_mobile_image")
+
+
 class ContactPage(SEOFieldsMixin, SingletonModel):
     page_title = models.CharField(max_length=120, default="Contact us")
     banner_image = models.ImageField(upload_to="contact/", blank=True, null=True)

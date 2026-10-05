@@ -115,6 +115,9 @@ class StoryDashboardTests(TestCase):
         response = self.client.post(reverse("dashboard:story_create"), {
             "title": "A new bench", "kind": Story.KIND_NEWS, "status": Story.STATUS_PUBLISHED,
             "published_at": datetime.date.today().isoformat(), "body": "Details here.", "robots": "index, follow",
+            # the photographs formset posts alongside the post itself
+            "images-TOTAL_FORMS": 0, "images-INITIAL_FORMS": 0,
+            "images-MIN_NUM_FORMS": 0, "images-MAX_NUM_FORMS": 1000,
         })
         self.assertEqual(response.status_code, 302)
         post = Story.objects.get(title="A new bench")
@@ -254,3 +257,76 @@ class RichTextAliasTests(TestCase):
         # looks_like_html must see the aliases too, or a bold-only body would
         # be treated as plain text and escaped
         self.assertIn("<strong>Bold</strong>", self.render("<b>Bold</b>"))
+
+
+class StorySliderTests(TestCase):
+    """The cover becomes a slider once a post has more photographs."""
+
+    def setUp(self):
+        self.post = make_story("Beyond Open Plan")
+
+    def test_a_post_with_only_a_cover_has_no_slider(self):
+        self.post.cover_image = "stories/cover.jpg"
+        self.post.save()
+        body = self.client.get(self.post.get_absolute_url()).content.decode()
+        self.assertIn("story-article__cover", body)
+        self.assertNotIn("data-carousel-next", body)
+        self.assertNotIn("data-carousel", body)
+
+    def test_a_post_with_no_images_renders_no_figure(self):
+        self.assertNotContains(self.client.get(self.post.get_absolute_url()), "story-article__cover")
+
+    def test_extra_images_turn_the_cover_into_a_slider(self):
+        from apps.stories.models import StoryImage
+
+        self.post.cover_image = "stories/cover.jpg"
+        self.post.save()
+        StoryImage.objects.create(story=self.post, image="stories/two.jpg", order=0)
+        StoryImage.objects.create(story=self.post, image="stories/three.jpg", order=1)
+        body = self.client.get(self.post.get_absolute_url()).content.decode()
+        self.assertIn("data-carousel", body)
+        self.assertIn("data-carousel-next", body)
+        self.assertEqual(body.count('class="media-slide'), 3)
+        self.assertEqual(body.count("data-carousel-dot"), 3)
+
+    def test_the_cover_leads_the_slider(self):
+        from apps.stories.models import StoryImage
+
+        self.post.cover_image = "stories/cover.jpg"
+        self.post.save()
+        StoryImage.objects.create(story=self.post, image="stories/second.jpg", order=0)
+        slides = self.post.slides()
+        self.assertEqual(len(slides), 2)
+        self.assertIn("cover.jpg", slides[0][0])
+        self.assertIn("second.jpg", slides[1][0])
+
+    def test_images_keep_their_order(self):
+        from apps.stories.models import StoryImage
+
+        StoryImage.objects.create(story=self.post, image="stories/b.jpg", order=1)
+        StoryImage.objects.create(story=self.post, image="stories/a.jpg", order=0)
+        self.assertEqual([u for u, _ in self.post.slides()], ["/media/stories/a.jpg", "/media/stories/b.jpg"])
+
+    def test_alt_falls_back_to_the_post_title(self):
+        from apps.stories.models import StoryImage
+
+        shot = StoryImage.objects.create(story=self.post, image="stories/a.jpg")
+        self.assertEqual(shot.alt_text, "Beyond Open Plan")
+        shot.alt = "An open plan floor"
+        self.assertEqual(shot.alt_text, "An open plan floor")
+
+    def test_only_the_first_slide_is_exposed_to_assistive_tech(self):
+        from apps.stories.models import StoryImage
+
+        self.post.cover_image = "stories/cover.jpg"
+        self.post.save()
+        StoryImage.objects.create(story=self.post, image="stories/two.jpg")
+        StoryImage.objects.create(story=self.post, image="stories/three.jpg")
+        body = self.client.get(self.post.get_absolute_url()).content.decode()
+        slides = [chunk for chunk in body.split('class="media-slide')[1:]]
+        self.assertEqual(len(slides), 3)
+        # exactly one visible, the other two hidden from the reading order
+        active = [c for c in slides if c.startswith(" is-active")]
+        hidden = [c for c in slides if 'aria-hidden="true"' in c.split("</li>")[0]]
+        self.assertEqual(len(active), 1)
+        self.assertEqual(len(hidden), 2)

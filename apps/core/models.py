@@ -91,6 +91,7 @@ class NavigationItem(OrderableModel, ActivatableModel):
         ("website:contact", "Contact"),
         ("website:collection_list", "Collections"),
         ("website:catalogues", "Catalogues"),
+        ("website:projects", "Projects"),
         ("website:stories", "Our Story"),
         ("website:enquire", "Enquire"),
     ]
