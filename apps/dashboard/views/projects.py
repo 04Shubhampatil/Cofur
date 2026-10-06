@@ -1,13 +1,12 @@
 """CMS screens for the Projects section.
 
-A project is the page plus two lists — the facts panel and the photographs —
-so both are edited inline rather than on screens of their own. An image's
-``kind`` decides whether it joins the carousel at the top or the row at the
-bottom, which keeps one list instead of two that are easy to confuse.
+A project is the page plus the facts panel, the carousel and the row of product
+cards. The facts and the carousel are edited inline; the cards are one
+multi-select on the form itself, since a card is nothing but a product.
 """
 from apps.projects.models import Project
 
-from ..forms import SEO_FIELDS, ProjectFactFormSet, ProjectForm, ProjectImageFormSet
+from ..forms import SEO_FIELDS, ProjectCarouselFormSet, ProjectFactFormSet, ProjectForm
 from .base import (
     DashboardCreateView,
     DashboardDeleteView,
@@ -22,12 +21,12 @@ PROJECT_FIELDSETS = [
     ("Project", ["title", "slug", "status", "order", "studio"]),
     ("Card", ["cover_image", "cover_alt"]),
     ("Written section", ["body_heading", "body"]),
-    ("Photograph row", ["gallery_heading"]),
+    ("More from this project", ["gallery_heading", "cards"]),
     ("SEO", SEO_FIELDS),
 ]
 PROJECT_FORMSETS = {
     "facts": (ProjectFactFormSet, "Project details", "detail"),
-    "images": (ProjectImageFormSet, "Photographs", "photograph"),
+    "carousel": (ProjectCarouselFormSet, "Carousel photographs", "photograph"),
 }
 
 

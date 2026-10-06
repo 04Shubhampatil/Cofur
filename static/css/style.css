@@ -14002,7 +14002,7 @@ body.has-pdf-preview {
 .social-related .product-card>img,
 .related-card__media img,
 .project-tile__media img {
-    transition: opacity 1s ease, transform 1.35s cubic-bezier(.22, 1, .36, 1);
+    transition: opacity 1.3s ease, transform 1.75s cubic-bezier(.22, 1, .36, 1);
 }
 
 @media (hover: none) {

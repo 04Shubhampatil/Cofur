@@ -94,7 +94,7 @@ class HomePageEditView(SingletonPageView):
         ("intro", "Intro & categories", ["intro_heading", "intro_heading_highlight", "intro_visible", "category_section_visible"], None, None),
         ("statement", "Brand statement", ["statement_heading", "statement_description", "statement_cta_text", "statement_cta_url", "statement_visible"], "lines", "Statement lines"),
         ("featured", "Featured products", ["featured_heading", "featured_cta_text", "featured_visible"], None, None),
-        ("why", "Differentiators", ["why_heading", "why_image", "why_image_alt", "why_visible"], "differentiators", "Differentiator items"),
+        ("why", "Differentiators", ["why_heading", "why_image", "why_image_alt", "why_mobile_image", "why_mobile_alt", "why_visible"], "differentiators", "Differentiator items"),
     ]
 
     def get_context_data(self, **kwargs):

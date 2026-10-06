@@ -62,7 +62,8 @@ class Project(SEOFieldsMixin, OrderableModel, TimeStampedModel):
         return self.images.filter(kind=ProjectImage.KIND_CAROUSEL)
 
     def gallery_images(self):
-        return self.images.filter(kind=ProjectImage.KIND_GALLERY)
+        # select_related: every card asks its product for a URL when rendering.
+        return self.images.filter(kind=ProjectImage.KIND_GALLERY).select_related("product")
 
     @property
     def lead_image(self):
@@ -101,15 +102,29 @@ class ProjectImage(OrderableModel):
     KIND_CHOICES = [(KIND_CAROUSEL, "Carousel (top)"), (KIND_GALLERY, "Gallery row (bottom)")]
 
     project = models.ForeignKey(Project, related_name="images", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="projects/")
+    # Optional, because a card built from a product takes the product's picture.
+    # The carousel still demands one; its form asks for it.
+    image = models.ImageField(upload_to="projects/", blank=True, null=True)
     alt = models.CharField(max_length=255, blank=True, help_text="Describes the photograph. Falls back to the project title.")
     kind = models.CharField(max_length=20, choices=KIND_CHOICES, default=KIND_CAROUSEL, db_index=True)
 
-    # Gallery-row cards carry their own words and destination. The carousel
-    # ignores these: it is one photograph at a time with nothing written on it.
+    # A card in the bottom row is a product: choosing one in the CMS is the
+    # whole edit, and the picture, name, line and link all come from it. The
+    # carousel ignores all of this — it is one photograph at a time.
+    product = models.ForeignKey(
+        "catalog.Product",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="project_cards",
+        help_text="Search for the product this card shows. Its picture, name and line are used.",
+    )
+
+    # Written before the product picker existed. Still rendered for cards that
+    # have no product, so older rows keep working; a chosen product wins.
     title = models.CharField(max_length=120, blank=True, help_text="Name shown under the card image.")
     caption = models.CharField(max_length=160, blank=True, help_text="Small line under the heading on the gallery card.")
-    link_url = models.CharField(max_length=500, blank=True, help_text="Where the card goes when clicked, e.g. /collections/cove/ or a full URL. Leave empty for a card that is not a link.")
+    link_url = models.CharField(max_length=500, blank=True, help_text="Where the card goes when it has no product.")
 
     class Meta(OrderableModel.Meta):
         verbose_name = "Project image"
@@ -124,4 +139,40 @@ class ProjectImage(OrderableModel):
     @property
     def alt_text(self):
         return self.alt or self.project.title
+
+    # ------------------------------------------------------------------ cards
+    # A card reads from its product when it has one. The stored columns are the
+    # fallback for rows written before products could be chosen, so an older
+    # project keeps its row of cards until someone picks products for it.
+
+    @property
+    def card_url(self):
+        """Where the card goes, or "" for a card that is not a link."""
+        if self.product_id:
+            return self.product.get_absolute_url()
+        return self.link_url
+
+    @property
+    def card_picture(self):
+        if self.product_id:
+            return self.product.card_picture
+        return self.image
+
+    @property
+    def card_title(self):
+        if self.product_id:
+            return self.product.name
+        return self.title
+
+    @property
+    def card_caption(self):
+        if self.product_id:
+            return self.product.tagline
+        return self.caption
+
+    @property
+    def card_alt(self):
+        if self.product_id:
+            return self.product.main_image_alt or self.product.name
+        return self.alt_text
 

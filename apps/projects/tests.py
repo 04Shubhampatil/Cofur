@@ -139,7 +139,7 @@ class ProjectDashboardTests(TestCase):
             "title": "Yandex Office", "slug": "", "status": "published", "order": 0,
             "studio": "nefa architects", "cover_alt": "", "body_heading": "", "body": "",
             "gallery_heading": "", "robots": "index, follow",
-            **self.mgmt("facts"), **self.mgmt("images"),
+            **self.mgmt("facts"), **self.mgmt("carousel"), **self.mgmt("images"),
         }
         data.update(extra)
         return data
@@ -153,9 +153,10 @@ class ProjectDashboardTests(TestCase):
         data = self.payload()
         data.update({
             "facts-TOTAL_FORMS": 1, "facts-0-label": "Client", "facts-0-value": "Yandex", "facts-0-order": 0,
-            "images-TOTAL_FORMS": 1, "images-0-alt": "Reception", "images-0-kind": "carousel", "images-0-order": 0,
+            # the section supplies the kind now, so the row never names it
+            "carousel-TOTAL_FORMS": 1, "carousel-0-alt": "Reception", "carousel-0-order": 0,
         })
-        data["images-0-image"] = make_image("shot.jpg")
+        data["carousel-0-image"] = make_image("shot.jpg")
         response = self.client.post(reverse("dashboard:project_create"), data)
         self.assertEqual(response.status_code, 302, response.context["form"].errors if response.context else "")
         created = Project.objects.get(slug="yandex-office")
@@ -310,59 +311,277 @@ class ProjectGalleryCardTests(TestCase):
         body = self.client.get(self.project.get_absolute_url()).content.decode()
         self.assertNotIn("Should not show", body)
 
-    def test_card_fields_are_on_the_admin_form(self):
+    def test_the_cards_are_one_multi_select(self):
         from django.contrib.auth import get_user_model
 
         admin = get_user_model().objects.create_superuser("gal", "g@example.com", "Admin-Pass-123!")
         self.client.force_login(admin)
         form = self.client.get(reverse("dashboard:project_update", args=[self.project.pk])).content.decode()
-        for field in ("images-__prefix__-title", "images-__prefix__-caption", "images-__prefix__-link_url"):
-            self.assertIn(field, form)
+        self.assertIn('name="cards"', form)
+        self.assertIn("data-multiselect", form)
+        # the per-row card editor is gone entirely
+        self.assertNotIn("images-__prefix__", form)
 
 
-class ProjectCardLinkValidationTests(TestCase):
-    """A card link must lead somewhere, or be empty."""
 
-    def form(self, url):
-        from apps.dashboard.forms import ProjectImageForm
+class ProjectImageSectionTests(TestCase):
+    """Carousel and cards are separate sections, and the section sets the kind."""
 
-        project = make_project()
-        return ProjectImageForm(
-            data={"alt": "", "kind": ProjectImage.KIND_GALLERY, "title": "A card",
-                  "caption": "", "link_url": url, "order": 0},
-            files={"image": make_image("card.jpg")},
-            instance=ProjectImage(project=project),
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = User.objects.create_superuser("psec", "s@example.com", "Admin-Pass-123!")
+
+    def setUp(self):
+        self.client.force_login(self.admin)
+        self.project = make_project()
+        self.url = reverse("dashboard:project_update", args=[self.project.pk])
+
+    def mgmt(self, prefix, total=0, initial=0):
+        return {
+            f"{prefix}-TOTAL_FORMS": total, f"{prefix}-INITIAL_FORMS": initial,
+            f"{prefix}-MIN_NUM_FORMS": 0, f"{prefix}-MAX_NUM_FORMS": 1000,
+        }
+
+    def post(self, **extra):
+        data = {
+            "title": self.project.title, "slug": self.project.slug, "status": "published",
+            "order": 0, "studio": "", "cover_alt": "", "body_heading": "", "body": "",
+            "gallery_heading": "", "robots": "index, follow",
+            **self.mgmt("facts"), **self.mgmt("carousel"), **self.mgmt("images"),
+        }
+        data.update(extra)
+        return self.client.post(self.url, data)
+
+    def test_each_section_stamps_its_own_kind(self):
+        from apps.catalog.models import Product
+
+        product = Product.objects.create(name="Cove Solo", status=Product.STATUS_PUBLISHED)
+        response = self.post(**{
+            **self.mgmt("carousel", total=1),
+            "carousel-0-alt": "Wide shot", "carousel-0-order": 0, "carousel-0-image": make_image("c.jpg"),
+            **self.mgmt("images", total=1),
+            "cards": [product.pk],
+        })
+        self.assertEqual(response.status_code, 302, response.context["form"].errors if response.context else "")
+        self.addCleanup(lambda: [i.image.delete(save=False) for i in self.project.images.all() if i.image])
+        self.assertEqual(self.project.carousel_images().count(), 1)
+        self.assertEqual(self.project.gallery_images().count(), 1)
+        self.assertEqual(self.project.carousel_images().first().alt, "Wide shot")
+        self.assertEqual(self.project.gallery_images().first().product, product)
+
+    def test_each_section_lists_only_its_own_rows(self):
+        ProjectImage.objects.create(
+            project=self.project, image="projects/c.jpg", kind=ProjectImage.KIND_CAROUSEL, alt="Carousel one"
+        )
+        ProjectImage.objects.create(
+            project=self.project, image="projects/g.jpg", kind=ProjectImage.KIND_GALLERY, title="Card one"
+        )
+        body = self.client.get(self.url).content.decode()
+        self.assertIn("Carousel photographs", body)
+        self.assertIn("More from this project", body)
+        # one row apiece: neither section may show the other's picture
+        self.assertIn('name="carousel-0-alt"', body)
+        self.assertNotIn('name="carousel-1-alt"', body)
+        self.assertIn('name="cards"', body)
+        self.assertNotIn("images-0-", body)
+
+    def test_the_carousel_section_drops_the_card_only_fields(self):
+        body = self.client.get(self.url).content.decode()
+        for name in ("title", "caption", "link_url", "product"):
+            self.assertNotIn(f"carousel-__prefix__-{name}", body)
+
+    def test_a_carousel_row_still_demands_a_picture(self):
+        """The column is optional for product cards; a slide is nothing without one."""
+        response = self.post(**{
+            **self.mgmt("carousel", total=1),
+            "carousel-0-alt": "No file attached", "carousel-0-order": 0,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.project.carousel_images().count(), 0)
+
+    def test_kind_is_no_longer_asked_for(self):
+        body = self.client.get(self.url).content.decode()
+        self.assertNotIn("carousel-__prefix__-kind", body)
+        self.assertNotIn("images-__prefix__-kind", body)
+
+
+class ProjectCardProductTests(TestCase):
+    """A card can point at a product chosen from the searchable dropdown."""
+
+    def setUp(self):
+        from apps.catalog.models import Collection, Product
+
+        self.project = make_project(gallery_heading="More from this project")
+        self.collection = Collection.objects.create(name="Cove", slug="cove")
+        self.product = Product.objects.create(
+            name="Cove Solo", collection=self.collection, status=Product.STATUS_PUBLISHED
         )
 
-    def test_empty_is_allowed(self):
-        form = self.form("")
-        self.assertTrue(form.is_valid(), form.errors)
+    def card(self, **extra):
+        return ProjectImage.objects.create(
+            project=self.project, image="projects/a.jpg", kind=ProjectImage.KIND_GALLERY, **extra
+        )
 
-    def test_a_real_internal_path_is_allowed(self):
-        from apps.catalog.models import Category
+    def test_the_card_links_to_the_chosen_product(self):
+        self.card(title="Cove Solo", product=self.product)
+        body = self.client.get(self.project.get_absolute_url()).content.decode()
+        self.assertIn(f'href="{self.product.get_absolute_url()}" class="project-tile__inner"', body)
 
-        Category.objects.create(name="Acoustic Ceilings", slug="acoustic-ceilings")
-        form = self.form("/categories/acoustic-ceilings/")
-        self.assertTrue(form.is_valid(), form.errors)
+    def test_a_product_wins_over_a_typed_address(self):
+        card = self.card(title="Cove Solo", product=self.product, link_url="/collections/cove/")
+        self.assertEqual(card.card_url, self.product.get_absolute_url())
 
-    def test_a_path_that_matches_no_url_is_refused(self):
-        form = self.form("/not-a-section/at-all/")
-        self.assertFalse(form.is_valid())
-        self.assertIn("Nothing is served at that address", str(form.errors["link_url"]))
+    def test_a_card_with_neither_is_still_not_a_link(self):
+        self.assertEqual(self.card(title="Just a photograph").card_url, "")
 
-    def test_a_real_url_with_a_missing_slug_is_refused(self):
-        # the exact mistake: the category is called acoustic-ceilings
-        form = self.form("/categories/acoustics/")
-        self.assertFalse(form.is_valid())
-        self.assertIn("no category with the address", str(form.errors["link_url"]).lower())
+    def test_a_removed_product_leaves_the_card_without_a_link(self):
+        card = self.card(title="Cove Solo", product=self.product)
+        self.product.delete()
+        card.refresh_from_db()
+        self.assertEqual(card.card_url, "")
 
-    def test_external_addresses_are_taken_on_trust(self):
-        for url in ("https://example.test/page/", "mailto:hello@cofur.in", "tel:+919320461618"):
-            with self.subTest(url=url):
-                self.assertTrue(self.form(url).is_valid())
+    def test_the_dropdown_offers_published_products_and_is_searchable(self):
+        from apps.catalog.models import Product
 
-    def test_a_query_string_or_anchor_does_not_confuse_it(self):
-        from apps.catalog.models import Category
+        from apps.dashboard.forms import ProjectForm
 
-        Category.objects.create(name="Phone Booth", slug="phone-booth")
-        self.assertTrue(self.form("/categories/phone-booth/?from=project#top").is_valid())
+        draft = Product.objects.create(name="Not ready", collection=self.collection)
+        field = ProjectForm().fields["cards"]
+        self.assertIn(self.product, field.queryset)
+        self.assertNotIn(draft, field.queryset)
+        self.assertEqual(field.widget.attrs.get("data-multiselect"), "true")
+
+    def test_the_card_takes_its_picture_name_and_line_from_the_product(self):
+        card = self.card(product=self.product)
+        self.assertEqual(card.card_title, "Cove Solo")
+        self.assertEqual(card.card_caption, self.product.tagline)
+        self.assertEqual(card.card_picture, self.product.card_picture)
+
+    def test_the_product_words_are_what_the_page_shows(self):
+        self.card(product=self.product)
+        body = self.client.get(self.project.get_absolute_url()).content.decode()
+        self.assertIn('<b class="project-tile__title">Cove Solo</b>', body)
+        self.assertIn(self.product.tagline, body)
+
+    def test_a_product_card_needs_no_uploaded_picture(self):
+        card = ProjectImage.objects.create(
+            project=self.project, kind=ProjectImage.KIND_GALLERY, product=self.product
+        )
+        self.assertFalse(card.image)
+        self.assertEqual(card.card_picture, self.product.card_picture)
+
+    def test_a_card_written_before_products_keeps_its_own_words(self):
+        card = self.card(title="Seminar Tables", caption="Teaching in the morning", link_url="/collections/cove/")
+        self.assertEqual(card.card_title, "Seminar Tables")
+        self.assertEqual(card.card_caption, "Teaching in the morning")
+        self.assertEqual(card.card_url, "/collections/cove/")
+
+    def test_the_chosen_order_is_offered_back_to_the_widget(self):
+        from apps.dashboard.forms import ProjectForm
+
+        second = self.card(product=self.product)
+        second.order = 1
+        second.save()
+        form = ProjectForm(instance=self.project)
+        self.assertEqual(form.fields["cards"].initial, [self.product.pk])
+        self.assertEqual(form.fields["cards"].widget.attrs["data-selected-order"], str(self.product.pk))
+
+
+class ProjectCardMultiSelectTests(TestCase):
+    """One list of products replaces the row-per-card editor."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = User.objects.create_superuser("pmulti", "m@example.com", "Admin-Pass-123!")
+
+    def setUp(self):
+        from apps.catalog.models import Collection, Product
+
+        self.client.force_login(self.admin)
+        self.project = make_project()
+        self.url = reverse("dashboard:project_update", args=[self.project.pk])
+        self.collection = Collection.objects.create(name="Cove", slug="cove")
+        self.products = {
+            name: Product.objects.create(name=name, collection=self.collection, status=Product.STATUS_PUBLISHED)
+            for name in ("Cove Solo", "Cove Duo", "Cove Team", "Grove Trio")
+        }
+
+    def mgmt(self, prefix):
+        return {
+            f"{prefix}-TOTAL_FORMS": 0, f"{prefix}-INITIAL_FORMS": 0,
+            f"{prefix}-MIN_NUM_FORMS": 0, f"{prefix}-MAX_NUM_FORMS": 1000,
+        }
+
+    def post(self, names):
+        data = {
+            "title": self.project.title, "slug": self.project.slug, "status": "published",
+            "order": 0, "studio": "", "cover_alt": "", "body_heading": "", "body": "",
+            "gallery_heading": "", "robots": "index, follow",
+            "cards": [self.products[n].pk for n in names],
+            **self.mgmt("facts"), **self.mgmt("carousel"),
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 302, response.context["form"].errors if response.context else "")
+        return response
+
+    def card_names(self):
+        return [row.product.name for row in self.project.gallery_images().order_by("order", "pk")]
+
+    def test_several_products_are_chosen_at_once(self):
+        self.post(["Cove Solo", "Cove Duo", "Cove Team"])
+        self.assertEqual(self.card_names(), ["Cove Solo", "Cove Duo", "Cove Team"])
+
+    def test_the_order_chosen_is_the_order_shown(self):
+        self.post(["Grove Trio", "Cove Solo", "Cove Duo"])
+        self.assertEqual(self.card_names(), ["Grove Trio", "Cove Solo", "Cove Duo"])
+        self.assertEqual([r.order for r in self.project.gallery_images().order_by("order")], [0, 1, 2])
+
+    def test_reordering_the_list_reorders_the_cards(self):
+        self.post(["Cove Solo", "Cove Duo"])
+        self.post(["Cove Duo", "Cove Solo"])
+        self.assertEqual(self.card_names(), ["Cove Duo", "Cove Solo"])
+
+    def test_dropping_a_product_removes_its_card(self):
+        self.post(["Cove Solo", "Cove Duo", "Cove Team"])
+        self.post(["Cove Solo", "Cove Team"])
+        self.assertEqual(self.card_names(), ["Cove Solo", "Cove Team"])
+
+    def test_clearing_the_list_removes_every_card(self):
+        self.post(["Cove Solo", "Cove Duo"])
+        self.post([])
+        self.assertEqual(self.card_names(), [])
+
+    def test_a_kept_product_keeps_its_row(self):
+        """Re-saving must not churn rows, or the cards lose their identity."""
+        self.post(["Cove Solo", "Cove Duo"])
+        pks = {row.product_id: row.pk for row in self.project.gallery_images()}
+        self.post(["Cove Duo", "Cove Solo"])
+        self.assertEqual({row.product_id: row.pk for row in self.project.gallery_images()}, pks)
+
+    def test_a_duplicate_left_by_the_old_editor_collapses(self):
+        for order in (0, 1):
+            ProjectImage.objects.create(
+                project=self.project, kind=ProjectImage.KIND_GALLERY,
+                product=self.products["Cove Team"], order=order,
+            )
+        self.assertEqual(self.project.gallery_images().count(), 2)
+        self.post(["Cove Team"])
+        self.assertEqual(self.card_names(), ["Cove Team"])
+
+    def test_the_carousel_is_untouched_by_a_card_edit(self):
+        slide = ProjectImage.objects.create(
+            project=self.project, image="projects/c.jpg", kind=ProjectImage.KIND_CAROUSEL, alt="Slide"
+        )
+        self.post(["Cove Solo"])
+        self.assertTrue(ProjectImage.objects.filter(pk=slide.pk).exists())
+        self.assertEqual(self.project.carousel_images().count(), 1)
+
+    def test_a_card_without_a_product_is_left_alone(self):
+        """Hand-written cards predate the picker and are not in the list."""
+        legacy = ProjectImage.objects.create(
+            project=self.project, image="projects/g.jpg", kind=ProjectImage.KIND_GALLERY,
+            title="Seminar Tables", link_url="/collections/cove/", order=9,
+        )
+        self.post(["Cove Solo"])
+        legacy.refresh_from_db()
+        self.assertEqual(legacy.title, "Seminar Tables")

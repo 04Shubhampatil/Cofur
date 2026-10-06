@@ -35,6 +35,12 @@ class HomePage(SEOFieldsMixin, SingletonModel):
     why_heading = models.CharField(max_length=200, blank=True, default="What makes COFUR different")
     why_image = models.ImageField(upload_to="home/", blank=True, null=True)
     why_image_alt = models.CharField(max_length=255, blank=True)
+    why_mobile_image = banner_mobile_image_field(
+        upload_to="home/",
+        verbose_name="Mobile image (optional, shown below 768px)",
+        help_text="Portrait or square crop. Leave empty to reuse the desktop image.",
+    )
+    why_mobile_alt = banner_mobile_alt_field()
     why_visible = models.BooleanField(default=True)
 
     class Meta:
@@ -45,7 +51,7 @@ class HomePage(SEOFieldsMixin, SingletonModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        optimise_fields(self, "why_image")
+        optimise_fields(self, "why_image", "why_mobile_image")
 
     def featured_products(self):
         """Published products flagged 'Featured' in the product editor, in catalogue order."""
@@ -78,6 +84,12 @@ class HomeStatementLine(OrderableModel, ActivatableModel):
     text = models.CharField(max_length=160, help_text="Rest of the sentence, e.g. 'spaces that work better.'")
     image = models.ImageField(upload_to="home/statement/", blank=True, null=True)
     alt_text = models.CharField(max_length=255, blank=True)
+    mobile_image = banner_mobile_image_field(
+        upload_to="home/statement/",
+        verbose_name="Mobile image (optional, shown below 768px)",
+        help_text="Portrait or square crop. Leave empty to reuse the desktop image.",
+    )
+    mobile_alt = banner_mobile_alt_field()
 
     class Meta(OrderableModel.Meta):
         verbose_name = "Statement line"
@@ -87,7 +99,7 @@ class HomeStatementLine(OrderableModel, ActivatableModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        optimise_fields(self, "image")
+        optimise_fields(self, "image", "mobile_image")
 
 
 class Differentiator(OrderableModel, ActivatableModel):

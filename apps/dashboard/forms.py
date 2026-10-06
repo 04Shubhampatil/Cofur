@@ -287,7 +287,7 @@ class HomePageForm(CMSModelForm):
             "intro_heading", "intro_heading_highlight", "intro_visible", "category_section_visible",
             "statement_heading", "statement_description", "statement_cta_text", "statement_cta_url", "statement_visible",
             "featured_heading", "featured_cta_text", "featured_visible",
-            "why_heading", "why_image", "why_image_alt", "why_visible",
+            "why_heading", "why_image", "why_image_alt", "why_mobile_image", "why_mobile_alt", "why_visible",
         ]
 
 
@@ -303,7 +303,7 @@ HeroSlideFormSet = inlineformset_factory(HomePage, HomeHeroSlide, form=HeroSlide
 class StatementLineForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
         model = HomeStatementLine
-        fields = ["verb", "text", "image", "alt_text", "order", "is_active"]
+        fields = ["verb", "text", "image", "alt_text", "mobile_image", "mobile_alt", "order", "is_active"]
 
 
 StatementLineFormSet = inlineformset_factory(HomePage, HomeStatementLine, form=StatementLineForm, extra=0, can_delete=True)
@@ -507,6 +507,25 @@ class MegaMenuItemForm(CMSModelForm):
 
 # --- Projects -------------------------------------------------------------
 class ProjectForm(CMSModelForm):
+    """The project page, including the row of product cards beneath it.
+
+    The cards were a formset — one row, one dropdown, one Add click each. They
+    are one field now: pick every product in a single list. The rows behind it
+    are still ``ProjectImage``, because they carry the order and sit beside the
+    carousel, but nothing about them is typed by hand any more.
+    """
+
+    cards = forms.ModelMultipleChoiceField(
+        queryset=Product.objects.none(),
+        required=False,
+        label="Products",
+        help_text="Search and pick the products shown under this project. Drag a chip to reorder; the cards follow this order.",
+        widget=forms.SelectMultiple(attrs={
+            "data-multiselect": "true",
+            "data-search-placeholder": "Search products…",
+        }),
+    )
+
     class Meta(CMSModelForm.Meta):
         model = Project
         fields = [
@@ -520,6 +539,87 @@ class ProjectForm(CMSModelForm):
             "body": forms.Textarea(attrs={"rows": 14, "data-richtext": "true"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field = self.fields["cards"]
+        # Published only: a draft product has no page to send anyone to.
+        field.queryset = Product.objects.filter(status=Product.STATUS_PUBLISHED).order_by("name")
+
+        chosen = self._current_card_product_ids()
+        field.initial = chosen
+        # The POST order decides the card order, and a browser submits options
+        # in DOM order — so the widget has to know which to float to the top.
+        field.widget.attrs["data-selected-order"] = ",".join(str(pk) for pk in chosen)
+
+    def _current_card_product_ids(self):
+        """Chosen products in card order, each appearing once.
+
+        The per-row editor allowed the same product twice; a list cannot say
+        that, so a repeat shows as the single chip it will become on save.
+        """
+        if not self.instance.pk:
+            return []
+        rows = self.instance.images.filter(
+            kind=ProjectImage.KIND_GALLERY, product__isnull=False
+        ).order_by("order", "pk")
+        seen, ordered = set(), []
+        for row in rows:
+            if row.product_id not in seen:
+                seen.add(row.product_id)
+                ordered.append(row.product_id)
+        return ordered
+
+    def _chosen_products_in_order(self):
+        """Selected products, in the order the editor arranged them.
+
+        ``cleaned_data`` holds a queryset, which has no memory of the order the
+        chips were in; the raw POST list does.
+        """
+        chosen = {p.pk: p for p in self.cleaned_data.get("cards", [])}
+        ordered, seen = [], set()
+        for raw in self.data.getlist(self.add_prefix("cards")):
+            try:
+                pk = int(raw)
+            except (TypeError, ValueError):
+                continue
+            if pk in chosen and pk not in seen:
+                seen.add(pk)
+                ordered.append(chosen[pk])
+        # Anything the POST order missed (no JS, odd client) still gets a card.
+        ordered.extend(p for pk, p in chosen.items() if pk not in seen)
+        return ordered
+
+    def _save_m2m(self):
+        """Bring the card rows in line with the chosen products.
+
+        Runs inside the view's transaction, through the normal ``save_m2m``
+        hook, so a later formset error rolls this back with everything else.
+        """
+        super()._save_m2m()
+
+        project = self.instance
+        rows = project.images.filter(
+            kind=ProjectImage.KIND_GALLERY, product__isnull=False
+        ).order_by("order", "pk")
+
+        # A list cannot say "this product twice", so a repeat left over from the
+        # old per-row editor collapses to the first of its kind on the next save.
+        existing, duplicates = {}, []
+        for row in rows:
+            if row.product_id in existing:
+                duplicates.append(row)
+            else:
+                existing[row.product_id] = row
+
+        for order, product in enumerate(self._chosen_products_in_order()):
+            row = existing.pop(product.pk, None) or ProjectImage(
+                project=project, kind=ProjectImage.KIND_GALLERY, product=product
+            )
+            row.order = order
+            row.save()
+        for dropped in [*existing.values(), *duplicates]:
+            dropped.delete()
+
 
 class ProjectFactForm(CMSModelForm):
     class Meta(CMSModelForm.Meta):
@@ -530,56 +630,49 @@ class ProjectFactForm(CMSModelForm):
 ProjectFactFormSet = inlineformset_factory(Project, ProjectFact, form=ProjectFactForm, extra=0, can_delete=True)
 
 
-class ProjectImageForm(CMSModelForm):
+class ProjectImageKindFormSet(forms.BaseInlineFormSet):
+    """An inline formset holding one ``kind`` of project image.
+
+    The carousel and the card row were one list with a ``kind`` dropdown on
+    every row, which asked the editor to remember which setting put a picture
+    where. Two sections say it instead, so the field disappears: rows are
+    filtered to this kind coming in, and stamped with it going out.
+    """
+
+    kind = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Narrow before BaseModelFormSet.get_queryset() slices and caches it;
+        # a sliced queryset cannot be filtered.
+        self.queryset = self.queryset.filter(kind=self.kind)
+
+    def save_new(self, form, commit=True):
+        form.instance.kind = self.kind
+        return super().save_new(form, commit=commit)
+
+
+class ProjectCarouselForm(CMSModelForm):
+    """A photograph in the carousel at the top: no words, no destination."""
+
     class Meta(CMSModelForm.Meta):
         model = ProjectImage
-        fields = ["image", "alt", "kind", "title", "caption", "link_url", "order"]
+        fields = ["image", "alt", "order"]
 
-    def clean_link_url(self):
-        """Refuse an internal path that leads nowhere.
-
-        A card with a dead link is worse than a card with none: it looks
-        clickable and lands the visitor on a 404. Empty stays empty — that is
-        the supported way to make a card that is not a link. External and
-        mailto/tel addresses are taken on trust; there is nothing to check
-        them against here.
-        """
-        from django.urls import Resolver404, resolve
-
-        url = (self.cleaned_data.get("link_url") or "").strip()
-        if not url or not url.startswith("/"):
-            return url
-
-        path = url.split("?", 1)[0].split("#", 1)[0]
-        try:
-            match = resolve(path)
-        except Resolver404:
-            raise forms.ValidationError("Nothing is served at that address. Check the path, or leave it empty for a card that is not a link.")
-
-        # A path can resolve to a view and still 404 on the slug, which is the
-        # mistake that actually happens: /categories/acoustics/ when the
-        # category is called acoustic-ceilings.
-        lookups = {
-            "website:category_detail": ("catalog", "Category"),
-            "website:collection_detail": ("catalog", "Collection"),
-            "website:product_detail": ("catalog", "Product"),
-            "website:project_detail": ("projects", "Project"),
-            "website:story_detail": ("stories", "Story"),
-        }
-        target = lookups.get(match.view_name)
-        slug = match.kwargs.get("slug")
-        if target and slug:
-            from django.apps import apps as django_apps
-
-            model = django_apps.get_model(*target)
-            if not model._default_manager.filter(slug=slug).exists():
-                raise forms.ValidationError(
-                    f"There is no {model._meta.verbose_name} with the address “{slug}”. Check the spelling."
-                )
-        return url
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # The model lets `image` be empty so a product card needs no upload;
+        # a carousel slide is nothing without one.
+        self.fields["image"].required = True
 
 
-ProjectImageFormSet = inlineformset_factory(Project, ProjectImage, form=ProjectImageForm, extra=0, can_delete=True)
+class _CarouselBase(ProjectImageKindFormSet):
+    kind = ProjectImage.KIND_CAROUSEL
+
+
+ProjectCarouselFormSet = inlineformset_factory(
+    Project, ProjectImage, form=ProjectCarouselForm, formset=_CarouselBase, extra=0, can_delete=True
+)
 
 
 class StoryImageForm(CMSModelForm):

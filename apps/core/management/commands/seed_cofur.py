@@ -513,6 +513,7 @@ class Command(BaseCommand):
             for key, value in defaults.items():
                 setattr(page, key, value)
         self.set_image(page, "why_image", "why-cofur-v2-d960.webp", "home")
+        self.set_image(page, "why_mobile_image", "why-cofur-v2-m768.webp", "home")
         page.save()
 
         slides = [
@@ -547,6 +548,7 @@ class Command(BaseCommand):
             for order, (verb, text, desktop, mobile, alt) in enumerate(lines):
                 line = HomeStatementLine(page=page, verb=verb, text=text, alt_text=alt, order=order)
                 self.set_image(line, "image", desktop, "home/statement")
+                self.set_image(line, "mobile_image", mobile, "home/statement")
                 line.save()
 
         if not page.differentiators.exists() or self.force:

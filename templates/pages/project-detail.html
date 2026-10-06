@@ -70,11 +70,11 @@
         <ul class="range-rail__track project-tiles" tabindex="0" role="list" aria-label="Project cards. Scroll sideways or use the arrows.">
           {% for shot in gallery %}
           <li class="project-tile">
-            {% if shot.link_url %}<a href="{{ shot.link_url }}" class="project-tile__inner">{% else %}<div class="project-tile__inner">{% endif %}
-              <span class="project-tile__media"><img src="{{ shot.image.url }}" alt="{{ shot.alt_text }}" loading="lazy" decoding="async"></span>
-              {% if shot.title %}<b class="project-tile__title">{{ shot.title }}</b>{% endif %}
-              {% if shot.caption %}<span class="project-tile__caption">{{ shot.caption }}</span>{% endif %}
-            {% if shot.link_url %}</a>{% else %}</div>{% endif %}
+            {% if shot.card_url %}<a href="{{ shot.card_url }}" class="project-tile__inner">{% else %}<div class="project-tile__inner">{% endif %}
+              <span class="project-tile__media">{% if shot.card_picture %}<img src="{{ shot.card_picture.url }}" alt="{{ shot.card_alt }}" loading="lazy" decoding="async">{% endif %}</span>
+              {% if shot.card_title %}<b class="project-tile__title">{{ shot.card_title }}</b>{% endif %}
+              {% if shot.card_caption %}<span class="project-tile__caption">{{ shot.card_caption }}</span>{% endif %}
+            {% if shot.card_url %}</a>{% else %}</div>{% endif %}
           </li>
           {% endfor %}
         </ul>

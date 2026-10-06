@@ -97,6 +97,278 @@
   }
   $$('[data-image-picker]').forEach(bindImagePicker);
 
+  /* ---------------------------------------------------------------- searchable select
+     Progressive enhancement over a real <select>: the select keeps the value and
+     submits as normal, so a failure here leaves a working dropdown rather than a
+     dead field. Options come from the page, which is why there is no request to
+     make while typing. */
+  function bindCombobox(select) {
+    if (select.dataset.comboboxBound) return;
+    select.dataset.comboboxBound = 'true';
+
+    const options = [...select.options];
+    const wrap = document.createElement('div');
+    wrap.className = 'combo';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'combo__input';
+    input.autocomplete = 'off';
+    input.placeholder = select.dataset.searchPlaceholder || 'Search…';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-expanded', 'false');
+    input.setAttribute('aria-autocomplete', 'list');
+    const list = document.createElement('ul');
+    list.className = 'combo__list';
+    list.setAttribute('role', 'listbox');
+    list.hidden = true;
+    const listId = `${select.id || select.name}-combo-list`;
+    list.id = listId;
+    input.setAttribute('aria-controls', listId);
+
+    // The label points at the select; move it to the input the editor types in.
+    const label = select.id && document.querySelector(`label[for="${select.id}"]`);
+    if (label) {
+      input.id = `${select.id}-combo`;
+      label.setAttribute('for', input.id);
+    }
+
+    select.parentNode.insertBefore(wrap, select);
+    wrap.append(input, list, select);
+    select.classList.add('combo__native');
+
+    const labelFor = value => (options.find(o => o.value === value) || {}).textContent || '';
+    const setValue = value => {
+      select.value = value;
+      input.value = value ? labelFor(value).trim() : '';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    let active = -1;
+
+    function close() {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      active = -1;
+      // Typing without choosing must not look like a selection.
+      input.value = select.value ? labelFor(select.value).trim() : '';
+    }
+
+    function render(query) {
+      const q = query.trim().toLowerCase();
+      const matches = options.filter(o => !q || o.textContent.toLowerCase().includes(q));
+      list.innerHTML = '';
+      if (!matches.length) {
+        const li = document.createElement('li');
+        li.className = 'combo__empty';
+        li.textContent = 'No matching products';
+        list.append(li);
+      }
+      matches.forEach((o, i) => {
+        const li = document.createElement('li');
+        li.className = 'combo__option';
+        li.textContent = o.textContent.trim();
+        li.setAttribute('role', 'option');
+        li.dataset.value = o.value;
+        li.setAttribute('aria-selected', String(o.value === select.value));
+        li.addEventListener('mousedown', e => { e.preventDefault(); setValue(o.value); close(); });
+        li.addEventListener('mouseenter', () => { active = i; highlight(); });
+        list.append(li);
+      });
+      active = matches.findIndex(o => o.value === select.value);
+      highlight();
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    }
+
+    function highlight() {
+      $$('.combo__option', list).forEach((li, i) => li.classList.toggle('is-active', i === active));
+      const el = $$('.combo__option', list)[active];
+      el && el.scrollIntoView({ block: 'nearest' });
+    }
+
+    input.value = select.value ? labelFor(select.value).trim() : '';
+    input.addEventListener('focus', () => render(''));
+    input.addEventListener('input', () => render(input.value));
+    input.addEventListener('blur', () => setTimeout(close, 0));
+    input.addEventListener('keydown', e => {
+      const items = $$('.combo__option', list);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (list.hidden) return render(input.value);
+        active = Math.max(0, Math.min(items.length - 1, active + (e.key === 'ArrowDown' ? 1 : -1)));
+        highlight();
+      } else if (e.key === 'Enter') {
+        if (list.hidden || !items[active]) return;
+        e.preventDefault();
+        setValue(items[active].dataset.value);
+        close();
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+  }
+  $$('select[data-searchable]').forEach(bindCombobox);
+
+  /* ---------------------------------------------------------------- multi-select
+     Chips over a real <select multiple>, so the field still submits — and still
+     works — if this never runs. Order matters: a browser submits options in DOM
+     order, so picking one moves its <option> to the end of the select, and the
+     server reads the order straight off the POST. */
+  function bindMultiSelect(select) {
+    if (select.dataset.multiselectBound) return;
+    select.dataset.multiselectBound = 'true';
+
+    const options = [...select.options];
+    const byValue = new Map(options.map(o => [o.value, o]));
+    const labelOf = value => (byValue.get(value) || {}).textContent.trim();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'multi';
+    const box = document.createElement('div');
+    box.className = 'multi__box';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'multi__input';
+    input.autocomplete = 'off';
+    input.placeholder = select.dataset.searchPlaceholder || 'Search…';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-expanded', 'false');
+    const list = document.createElement('ul');
+    list.className = 'multi__list';
+    list.setAttribute('role', 'listbox');
+    list.hidden = true;
+
+    const label = select.id && document.querySelector(`label[for="${select.id}"]`);
+    if (label) { input.id = `${select.id}-multi`; label.setAttribute('for', input.id); }
+
+    select.parentNode.insertBefore(wrap, select);
+    box.append(input);
+    wrap.append(box, list, select);
+    select.classList.add('multi__native');
+
+    // Server-rendered order wins; fall back to whatever the select says.
+    let chosen = (select.dataset.selectedOrder || '').split(',').filter(Boolean);
+    if (!chosen.length) chosen = options.filter(o => o.selected).map(o => o.value);
+    chosen = [...new Set(chosen.filter(v => byValue.has(v)))];
+
+    let active = -1, dragging = null;
+
+    function syncNative() {
+      options.forEach(o => { o.selected = false; });
+      chosen.forEach(v => { const o = byValue.get(v); o.selected = true; select.append(o); });
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function renderChips() {
+      $$('.multi__chip', box).forEach(c => c.remove());
+      chosen.forEach(value => {
+        const chip = document.createElement('span');
+        chip.className = 'multi__chip';
+        chip.draggable = true;
+        chip.dataset.value = value;
+        const name = document.createElement('b');
+        name.textContent = labelOf(value);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'multi__remove';
+        remove.setAttribute('aria-label', `Remove ${labelOf(value)}`);
+        remove.textContent = '×';
+        remove.addEventListener('click', () => { chosen = chosen.filter(v => v !== value); apply(); });
+        chip.append(name, remove);
+
+        chip.addEventListener('dragstart', e => { dragging = value; chip.classList.add('is-dragging'); e.dataTransfer.effectAllowed = 'move'; });
+        chip.addEventListener('dragend', () => { dragging = null; chip.classList.remove('is-dragging'); });
+        chip.addEventListener('dragover', e => { if (dragging && dragging !== value) e.preventDefault(); });
+        chip.addEventListener('drop', e => {
+          e.preventDefault();
+          if (!dragging || dragging === value) return;
+          const rest = chosen.filter(v => v !== dragging);
+          rest.splice(rest.indexOf(value), 0, dragging);
+          chosen = rest;
+          apply();
+        });
+
+        box.insertBefore(chip, input);
+      });
+    }
+
+    function renderList(query) {
+      const q = query.trim().toLowerCase();
+      const left = options.filter(o => o.value && !chosen.includes(o.value) && (!q || o.textContent.toLowerCase().includes(q)));
+      list.innerHTML = '';
+      if (!left.length) {
+        const li = document.createElement('li');
+        li.className = 'multi__empty';
+        li.textContent = q ? 'No matching products' : 'Every product is already chosen';
+        list.append(li);
+      }
+      left.forEach((o, i) => {
+        const li = document.createElement('li');
+        li.className = 'multi__option';
+        li.textContent = o.textContent.trim();
+        li.setAttribute('role', 'option');
+        li.dataset.value = o.value;
+        li.addEventListener('mousedown', e => {
+          e.preventDefault();
+          chosen.push(o.value);
+          input.value = '';
+          apply();
+          input.focus();
+        });
+        li.addEventListener('mouseenter', () => { active = i; highlight(); });
+        list.append(li);
+      });
+      active = left.length ? 0 : -1;
+      highlight();
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    }
+
+    function highlight() {
+      $$('.multi__option', list).forEach((li, i) => li.classList.toggle('is-active', i === active));
+    }
+
+    function close() {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      active = -1;
+    }
+
+    function apply() {
+      renderChips();
+      syncNative();
+      if (!list.hidden) renderList(input.value);
+    }
+
+    input.addEventListener('focus', () => renderList(input.value));
+    input.addEventListener('input', () => renderList(input.value));
+    input.addEventListener('blur', () => setTimeout(close, 0));
+    input.addEventListener('keydown', e => {
+      const items = $$('.multi__option', list);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (list.hidden) return renderList(input.value);
+        active = Math.max(0, Math.min(items.length - 1, active + (e.key === 'ArrowDown' ? 1 : -1)));
+        highlight();
+      } else if (e.key === 'Enter') {
+        if (list.hidden || !items[active]) return;
+        e.preventDefault();
+        chosen.push(items[active].dataset.value);
+        input.value = '';
+        apply();
+      } else if (e.key === 'Backspace' && !input.value && chosen.length) {
+        chosen.pop();
+        apply();
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+    box.addEventListener('click', e => { if (e.target === box) input.focus(); });
+
+    renderChips();
+    syncNative();
+  }
+  $$('select[data-multiselect]').forEach(bindMultiSelect);
+
   /* ---------------------------------------------------------------- formsets */
   $$('[data-formset]').forEach(formset => {
     const prefix = formset.dataset.prefix, rows = $('[data-formset-rows]', formset), total = $(`#id_${prefix}-TOTAL_FORMS`), tpl = $('[data-formset-empty]', formset), note = $('[data-formset-empty-note]', formset);
@@ -110,6 +382,7 @@
       total.value = index + 1;
       note && note.remove();
       $$('[data-image-picker]', row).forEach(bindImagePicker);
+      $$('select[data-searchable]', row).forEach(bindCombobox);
       bindRow(row);
       renumberOrder();
       const first = $('input:not([type=hidden]), select, textarea', row); first && first.focus();

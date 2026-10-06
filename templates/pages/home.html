@@ -50,7 +50,8 @@
         <div class="statement-images">
           {% for line in statement_lines %}
           <picture data-shot="statement-{{ forloop.counter }}">
-            <img src="{% if line.image %}{{ line.image.url }}{% endif %}" sizes="100vw" alt="{{ line.alt_text }}" loading="lazy" decoding="async">
+            {% mobile_source line.mobile_image %}
+            <img src="{% if line.image %}{{ line.image.url }}{% endif %}" sizes="100vw" alt="{{ line.alt_text }}"{% if line.mobile_image and line.mobile_alt %} data-mobile-alt="{{ line.mobile_alt }}"{% endif %} loading="lazy" decoding="async">
           </picture>
           {% endfor %}
         </div>
@@ -98,7 +99,8 @@
         <div class="why-copy">
           {% if page.why_image %}
           <picture class="reveal" data-shot="why-cofur">
-            <img src="{{ page.why_image.url }}" sizes="(max-width:900px) 100vw, 46vw" alt="{{ page.why_image_alt }}" loading="lazy" decoding="async">
+            {% mobile_source page.why_mobile_image %}
+            <img src="{{ page.why_image.url }}" sizes="(max-width:900px) 100vw, 46vw" alt="{{ page.why_image_alt }}"{% if page.why_mobile_image and page.why_mobile_alt %} data-mobile-alt="{{ page.why_mobile_alt }}"{% endif %} loading="lazy" decoding="async">
           </picture>
           {% endif %}
           <h2 class="section-title">{{ page.why_heading }}</h2>
