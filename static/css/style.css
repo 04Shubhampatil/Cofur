@@ -13624,11 +13624,35 @@ body.has-pdf-preview {
     margin-right: auto;
 }
 
+/* A rail rather than a fixed pair: two posts are in view and the rest scroll
+   behind the arrows. `flex`, not grid, because the track has to be wider than
+   its box for there to be anything to page through. */
 .story-more .stories-grid {
     columns: auto;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    grid-template-columns: none;
     gap: clamp(20px, 2.6vw, 38px);
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.story-more .stories-grid::-webkit-scrollbar {
+    display: none;
+}
+
+/* Two across, so the pair reads as it did before anything had to scroll. */
+.story-more .story-card {
+    flex: 0 0 calc((100% - clamp(20px, 2.6vw, 38px)) / 2);
+}
+
+/* The heading is centred with its own rule, so the arrows sit above the track
+   on their own line rather than beside it. */
+.story-more__nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: clamp(16px, 1.8vw, 24px);
 }
 
 .story-more .story-card {
@@ -13641,8 +13665,9 @@ body.has-pdf-preview {
 }
 
 @media (max-width: 900px) {
-    .story-more .stories-grid {
-        grid-template-columns: 1fr;
+    /* One card in view on a phone; the rail still carries the rest. */
+    .story-more .story-card {
+        flex-basis: 100%;
     }
 }
 

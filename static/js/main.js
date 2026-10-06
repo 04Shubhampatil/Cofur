@@ -671,7 +671,12 @@ function initAboutMotion(motion) {
     // A page is one visible width of the track, so the dot count follows the
     // viewport rather than the number of cards — four cards are one page on a
     // wide screen and four on a phone.
-    const pages=()=>Math.max(1,Math.ceil(track.scrollWidth/Math.max(1,track.clientWidth)));
+    // Never more dots than there are items: the gaps make scrollWidth round up
+    // to an extra page that is only a sliver of a card wide.
+    const pages=()=>Math.min(
+      Math.max(1,track.childElementCount),
+      Math.max(1,Math.ceil(track.scrollWidth/Math.max(1,track.clientWidth)))
+    );
     const buildDots=room=>{
       if(!dots)return;
       const count=room>1?pages():0;

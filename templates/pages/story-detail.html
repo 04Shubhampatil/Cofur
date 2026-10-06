@@ -46,10 +46,18 @@
     </article>
 
     {% if recent_posts %}
-    <section class="container story-more" aria-label="More posts">
+    <section class="container story-more range-rail" aria-label="More posts">
       <h2 class="about-rule"><span>More from COFUR</span></h2>
-      <ul class="stories-grid" role="list">
-        {% for other in recent_posts|slice:":2" %}
+      <div class="range-rail__nav story-more__nav">
+        <button class="range-rail__arrow" type="button" data-rail-prev aria-label="Previous posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button class="range-rail__arrow" type="button" data-rail-next aria-label="Next posts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+      <ul class="stories-grid range-rail__track" tabindex="0" role="list" aria-label="More posts. Scroll sideways or use the arrows.">
+        {% for other in recent_posts %}
         <li class="story-card">
           <a href="{{ other.get_absolute_url }}">
             <span class="story-card__media">
@@ -64,6 +72,7 @@
         </li>
         {% endfor %}
       </ul>
+      <div class="range-rail__dots" role="tablist" aria-label="Pages of posts" data-rail-dots></div>
     </section>
     {% endif %}
   </main>

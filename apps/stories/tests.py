@@ -140,10 +140,15 @@ class StoryDashboardTests(TestCase):
 class StoryRelatedPostsTests(TestCase):
     """The 'More from COFUR' row under an article: two cards, side by side."""
 
-    def test_shows_two_other_posts_however_many_exist(self):
+    def test_the_rail_carries_the_recent_posts(self):
+        # two are in view; the rest scroll behind the arrows, so the markup
+        # holds every post the view supplies rather than just the visible pair
         posts = [make_story(f"Post {n}", days_ago=n) for n in range(8)]
-        response = self.client.get(posts[0].get_absolute_url())
-        self.assertEqual(response.content.decode().count('class="story-card"'), 2)
+        body = self.client.get(posts[0].get_absolute_url()).content.decode()
+        self.assertEqual(body.count('class="story-card"'), 5)
+        self.assertIn("range-rail__track", body)
+        self.assertIn("data-rail-prev", body)
+        self.assertIn("data-rail-dots", body)
 
     def test_never_includes_the_post_being_read(self):
         posts = [make_story(f"Post {n}", days_ago=n) for n in range(8)]
