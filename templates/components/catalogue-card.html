@@ -1,0 +1,24 @@
+{% load static %}{% comment %}
+  One catalogue card on the Catalogues page.
+
+  Its own component, because a catalogue is its own record: the words and the
+  picture are the catalogue's, not a range's. The card points at the preview
+  endpoint rather than opening a panel by JavaScript alone, so the URL shown on
+  hover is the one the click opens and the catalogue is still reachable without
+  JavaScript.
+
+  A catalogue with no PDF is not a link: there is nothing to open, so the card
+  shows no destination on hover and does not divert anywhere else.
+{% endcomment %}<li class="range-card">{% if catalogue.card_url %}<a href="{{ catalogue.card_url }}"{% if catalogue.pdf %} data-pdf-preview="{{ catalogue.get_absolute_url }}" data-pdf-title="{{ catalogue.title }} catalogue" aria-haspopup="dialog"{% endif %}>{% else %}<div class="range-card__inner">{% endif %}
+    {% if catalogue.image %}<img src="{{ catalogue.image.url }}" alt="{{ catalogue.title }}" loading="lazy" decoding="async">{% endif %}
+    <span class="range-card__copy">
+      <b>{{ catalogue.title }}</b>
+      {% if catalogue.subtitle %}<em><span>{{ catalogue.subtitle }}</span></em>{% endif %}
+    </span>
+  {% if catalogue.card_url %}</a>{% else %}</div>{% endif %}
+  {% if catalogue.pdf %}
+  <a class="range-card__download" href="{{ catalogue.pdf.url }}" download
+     aria-label="Download the {{ catalogue.title }} catalogue (PDF)" title="Download the {{ catalogue.title }} catalogue (PDF)">
+    <img src="{% static 'images/icon-download.svg' %}" alt="" width="22" height="22" loading="lazy" decoding="async">
+  </a>
+  {% endif %}</li>

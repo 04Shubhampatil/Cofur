@@ -21,6 +21,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.catalog.models import (
+    Catalogue,
     Category,
     Collection,
     Product,
@@ -80,6 +81,7 @@ class Command(BaseCommand):
             self.seed_roles_and_admin(options)
             self.seed_site_settings()
             categories = self.seed_categories()
+            self.seed_catalogues(categories)
             collections = self.seed_collections(categories)
             products = self.seed_products(collections)
             self.seed_navigation(categories, collections)
@@ -218,6 +220,30 @@ class Command(BaseCommand):
             item["slug"]: self.upsert(Category, {"slug": item["slug"]}, item["defaults"], item["images"], "categories")
             for item in data
         }
+
+    def seed_catalogues(self, categories):
+        """One catalogue per range to start with, each its own record.
+
+        A catalogue is no longer a view of a category, so the section would be
+        empty on a fresh install without this. The words and picture are copied
+        from the range as a sensible first draft — they are the catalogue's own
+        from here, and editing one leaves the range alone. No PDFs ship with the
+        project, so each card starts pointing at its range until one is added.
+        """
+        for order, (slug, category) in enumerate(categories.items()):
+            catalogue, created = Catalogue.objects.get_or_create(
+                slug=slug,
+                defaults={
+                    "title": category.name,
+                    "subtitle": category.subtitle,
+                    "category": category,
+                    "order": order,
+                },
+            )
+            if (created or self.force) and not catalogue.image:
+                source = category.thumbnail_image.name or category.banner_image.name
+                if source:
+                    Catalogue.objects.filter(pk=catalogue.pk).update(image=source)
 
     def seed_collections(self, categories):
         seating = categories["soft-seating"]

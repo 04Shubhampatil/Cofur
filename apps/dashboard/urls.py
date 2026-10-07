@@ -17,10 +17,12 @@ urlpatterns = [
     path("content/catalogues/", pages.CataloguePageEditView.as_view(), name="page_catalogues"),
 
     # Catalogues page: the card rail
-    path("catalogues/cards/", catalogues.CatalogueCardListView.as_view(), name="catalogue_card_list"),
-    path("catalogues/cards/<int:pk>/", catalogues.CatalogueCardUpdateView.as_view(), name="catalogue_card_update"),
-    path("catalogues/cards/<int:pk>/toggle/", catalogues.CatalogueCardToggleView.as_view(), name="catalogue_card_toggle"),
-    path("catalogues/cards/reorder/", catalogues.CatalogueCardReorderView.as_view(), name="catalogue_card_reorder"),
+    path("catalogues/cards/", catalogues.CatalogueListView.as_view(), name="catalogue_list"),
+    path("catalogues/cards/new/", catalogues.CatalogueCreateView.as_view(), name="catalogue_create"),
+    path("catalogues/cards/reorder/", catalogues.CatalogueReorderView.as_view(), name="catalogue_reorder"),
+    path("catalogues/cards/<int:pk>/", catalogues.CatalogueUpdateView.as_view(), name="catalogue_update"),
+    path("catalogues/cards/<int:pk>/delete/", catalogues.CatalogueDeleteView.as_view(), name="catalogue_delete"),
+    path("catalogues/cards/<int:pk>/toggle/", catalogues.CatalogueToggleView.as_view(), name="catalogue_toggle"),
     path("content/footer/", settings.FooterSettingsView.as_view(), name="footer_settings"),
 
     # Collections mega menu

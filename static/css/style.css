@@ -14239,3 +14239,287 @@ html.has-smooth-scroll {
     outline: 2px solid var(--ink);
     outline-offset: 3px;
 }
+
+/* ==========================================================================
+   Catalogue card with nothing to open
+
+   A catalogue without a PDF is not a link: no destination in the status bar on
+   hover, nothing to click. The card still has to read as a card, and all of
+   the geometry — the 3:4 box, the clipping, the ground colour, the corner and
+   the gradient the title sits on — hangs off `.range-card a`. The inner <div>
+   that stands in for the link takes the same box, minus the hover reveal,
+   which would promise something the card cannot do.
+   ========================================================================== */
+.range-card__inner {
+    position: relative;
+    display: block;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #ece9e2;
+    color: #fff;
+}
+
+.range-card__inner:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, .55) 100%);
+}
+
+/* ==========================================================================
+   A portrait panel in a landscape frame
+
+   The product stages are a fixed 4:3 (overview) and 1:1 (specifications), and
+   `contain` fits the whole picture inside rather than cropping it. That is
+   right for a cut-out sofa, which is wider than it is tall. A wall panel is
+   not: a grooved panel is 1697x2400, so in a 4:3 box it can only ever paint
+   across half the width, leaving an empty band beside it the width of the
+   panel again.
+
+   So the frame follows the picture instead of the other way round. The height
+   is free and the image grows to whatever the column and the cap allow, so a
+   wide cut-out stays exactly as it was — it was bound by the column's width
+   before and still is — while a tall panel stops being a stripe in a field of
+   nothing. No floor under the height: the picture always brings its own, and a
+   floor only put empty bands back on a phone.
+
+   Block flow, not flex or grid: as a flex item the picture was handed a cross
+   size by the row it sat in and came out stretched wide and short on a phone.
+   In normal flow it is bound by the column's width alone and brings its own
+   height, which is the whole point here.
+   ========================================================================== */
+.product-page .product-overview__stage,
+.product-page .product-specs__stage {
+    aspect-ratio: auto;
+    display: block;
+    text-align: center;
+}
+
+.product-page .product-overview__stage>img,
+.product-page .product-specs__stage>img {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: min(78vh, 660px);
+    /* The specifications image still carries `.finish-detail` from the old
+       finish grid, which pins it to a 882/522 box below 900px. That box is
+       landscape, so it squashed a panel back to a stripe exactly where there
+       was least room to lose. The picture's own shape decides here. */
+    aspect-ratio: auto;
+}
+
+/* The specifications image sticks under the product bar as the accordion is
+   read, so it has to clear the bar and still fit the viewport. */
+.product-page .product-specs__stage>img {
+    max-height: min(66vh, 540px);
+}
+
+/* ==========================================================================
+   Collection cards: the whole panel, not the top of it
+
+   `.cove-card-media` is a grid whose single row is implicit, so it sizes to
+   its content. A percentage height against a content-sized row is cyclic, so
+   the image's `height: 100%` fell back to `auto`: a 1414x2000 panel took its
+   natural height inside a 350px box and the card clipped the rest. Products
+   wider than they are tall never showed it, because the width bound them
+   first.
+
+   Naming the row makes the height definite, which is all `object-fit: contain`
+   was ever waiting for. The panel now fits inside the card whole. Scoped to
+   the collection grid: the home rail and the related row have their own
+   framing and are untouched.
+   ========================================================================== */
+body[data-page="cove-collection"] .cove-card-media {
+    grid-template-rows: minmax(0, 1fr);
+}
+
+/* ==========================================================================
+   Specifications: one frame, around the picture
+
+   The card drew its border around the grid column while the picture inside
+   was bound by the viewport cap, so a 1:2 panel sat in 115px of empty card
+   on either side — a box with a panel adrift in it, inside a second box,
+   because `.finish-detail` already frames the image itself.
+
+   The card cannot shrink to fit: the image's max-content width is its natural
+   876px, so `fit-content` still resolves to the full column. Dropping the
+   outer frame leaves the one that already hugs the picture. A product whose
+   image fills the column looks the same either way — the two borders were
+   coincident there, which is why this only ever showed on a panel.
+   ========================================================================== */
+.product-page .product-specs__stage {
+    border: 0;
+    background: none;
+}
+
+/* ==========================================================================
+   Product details and Gallery: the frame follows the picture
+
+   The details mosaic is a fixed grid — every tile two rows tall — with the
+   image set to `cover`, so a tall picture was shown as a 340px band out of a
+   1264px render: a quarter of it. Even the landscape room shots were losing
+   their top and bottom, because the tile is wider than any of them.
+
+   The tile takes its height from its picture now, capped so one image cannot
+   push the rest of the page away. Gallery slides keep the fixed width the
+   carousel scrolls by, but lose the forced 2:4 box: the height follows the
+   picture, which is where the empty band above and below came from.
+   ========================================================================== */
+/* The rows are a fixed 110-175px each, which is what the two-row span was
+   sizing against. Freeing the rows is what lets a tile be as tall as its
+   picture; dropping the span without this just made the tile one row. */
+.product-page .product-mosaic {
+    grid-auto-rows: auto;
+    align-items: start;
+}
+
+.product-page .product-mosaic__tile {
+    grid-row: auto;
+    aspect-ratio: auto;
+    display: block;
+    text-align: center;
+}
+
+.product-page .product-mosaic__tile>img {
+    display: inline-block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: min(70vh, 600px);
+    object-fit: contain;
+}
+
+.product-page .social-gallery .gallery-slide {
+    aspect-ratio: auto;
+}
+
+.product-page .social-gallery .gallery-slide>img {
+    width: 100%;
+    height: auto;
+    max-height: min(82vh, 860px);
+    object-fit: contain;
+}
+
+/* The details tile framed the column too: a tall picture sat in 245px of
+   empty card either side. Same answer as the specifications card — the frame
+   goes onto the picture, which is the only thing that knows how wide it is.
+   The tile cannot shrink to it: a replaced element's max-content width is its
+   natural width, so `fit-content` still resolves to the full column. */
+.product-page .product-mosaic__tile {
+    border: 0;
+    background: none;
+}
+
+.product-page .product-mosaic__tile>img {
+    background: #fff;
+    border: 1px solid #ece9e2;
+}
+
+/* ==========================================================================
+   Fabric options: the swatch stays in its square
+
+   Same cyclic percentage as the collection cards. The swatch button is a grid
+   whose row is implicit, so the image's `height: 100%` was measured against a
+   row that sizes to the image — indefinite, so it fell back to `auto`. A tall
+   panel then ran 43-102px past the bottom of its own square.
+
+   Naming the row makes the height definite, and `object-fit: cover` crops the
+   sample to the square it is supposed to be. Swatches that were already square
+   never showed this: their natural height matched the row either way.
+   ========================================================================== */
+.product-page .product-accordion .swatch-grid button {
+    grid-template-rows: minmax(0, 1fr);
+}
+
+/* The finish image sat hard against the top and bottom of its frame while
+   carrying all its spare room at the sides — the frame hugs the picture now,
+   so the only air it had was horizontal. Padding inside the border puts the
+   breathing room where it was missing and keeps the sides tight; border-box
+   means the frame does not grow to pay for it, so the picture stays within
+   the cap that keeps it inside the viewport. */
+.product-page .product-specs__stage>img {
+    box-sizing: border-box;
+    padding: 20px 12px;
+}
+
+/* ==========================================================================
+   Error pages
+
+   404 and 403 keep the site's chrome, so the layout only has to centre a short
+   message in the space between header and footer. 500 carries its own styling
+   inline — it has to render when the database the navigation reads from is the
+   thing that failed.
+   ========================================================================== */
+.error-page {
+    display: grid;
+    place-items: center;
+    min-height: 62vh;
+    padding: clamp(56px, 8vw, 120px) 0;
+}
+
+.error-page__inner {
+    max-width: 620px;
+    text-align: center;
+}
+
+.error-page__code {
+    margin: 0;
+    font: 400 var(--font-caption)/1 var(--sans);
+    letter-spacing: .18em;
+    color: var(--muted, #6b6b6b);
+}
+
+.error-page h1 {
+    margin: 14px 0 0;
+    font: 400 clamp(30px, 4.4vw, 46px)/1.2 var(--serif);
+    letter-spacing: var(--ls-heading);
+}
+
+.error-page__lead {
+    margin: 18px auto 0;
+    max-width: 48ch;
+    font: 400 var(--font-body)/var(--lh-body) var(--sans);
+    color: #4a4a4a;
+}
+
+.error-page__actions {
+    margin-top: 34px;
+    display: flex;
+    gap: clamp(16px, 2vw, 28px);
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-page__links {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #ece9e2;
+    display: flex;
+    gap: clamp(14px, 2vw, 30px);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.error-page__links a {
+    font: 400 var(--font-caption)/1 var(--sans);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted, #6b6b6b);
+    text-decoration: none;
+}
+
+.error-page__links a:hover {
+    color: var(--ink);
+}
+
+/* The swatch sat flush against its own frame once the row was pinned down.
+   Padding inside the border lifts the sample off the edge; border-box keeps
+   the square the size the grid laid out, so the row of swatches does not
+   shift. More above and below than at the sides, as with the finish image. */
+.product-page .product-accordion .swatch-grid button>img {
+    box-sizing: border-box;
+    padding: 10px 6px;
+}

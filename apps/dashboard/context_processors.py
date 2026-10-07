@@ -26,7 +26,7 @@ def dashboard_nav(request):
         ]},
         {"title": "Catalogues", "items": [
             item("Catalogues page", "dashboard:page_catalogues", "pages.view_cataloguepage", "layout"),
-            item("Catalogue cards", "dashboard:catalogue_card_list", "catalog.view_category", "box"),
+            item("Catalogues", "dashboard:catalogue_list", "catalog.view_catalogue", "box"),
         ]},
         {"title": "Products Master", "items": [
             item("Categories", "dashboard:category_list", "catalog.view_category", "grid"),

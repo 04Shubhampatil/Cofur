@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.catalog.models import Category, Collection, Product, ProductImage
+from apps.catalog.models import Catalogue, Category, Collection, Product, ProductImage
 from apps.core.models import NavigationItem, NavigationMenu, SiteSettings
 from apps.core.roles import ensure_roles
 from apps.core.tests import make_image
@@ -761,129 +761,124 @@ class MegaMenuTests(DashboardTestCase):
 
 
 class CatalogueSectionTests(DashboardTestCase):
-    """The Catalogues page section: its own visibility and its own order.
-
-    The rail is built from Category rows shared with the home rail, so the
-    point of these is that changing one side leaves the other alone.
-    """
+    """Catalogues are their own records: add, edit, reorder, hide, delete."""
 
     def setUp(self):
         super().setUp()
         self.client.force_login(self.superuser)
-        self.booth = Category.objects.create(name="Phone Booth", order=1, catalogue_order=1)
-        self.storage = Category.objects.create(name="Storage", order=2, catalogue_order=2)
+        self.booth = Catalogue.objects.create(title="Phone Booth", order=1)
+        self.storage = Catalogue.objects.create(title="Storage", order=2)
 
-    def test_list_shows_every_range(self):
-        response = self.client.get(reverse("dashboard:catalogue_card_list"))
+    def test_list_shows_every_catalogue(self):
+        response = self.client.get(reverse("dashboard:catalogue_list"))
         self.assertEqual(response.status_code, 200)
-        for name in ("Soft Seating", "Phone Booth", "Storage"):
-            self.assertContains(response, name)
+        for title in ("Phone Booth", "Storage"):
+            self.assertContains(response, title)
 
-    def test_edit_form_is_scoped_to_the_card(self):
-        response = self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk]))
+    def test_a_catalogue_can_be_added(self):
+        response = self.client.post(reverse("dashboard:catalogue_create"), {
+            "title": "Full 2026 Catalogue", "slug": "", "subtitle": "Every range, one PDF",
+            "order": 3, "is_active": "on",
+        })
+        self.assertEqual(response.status_code, 302, response.context["form"].errors if response.context else "")
+        added = Catalogue.objects.get(title="Full 2026 Catalogue")
+        self.assertEqual(added.slug, "full-2026-catalogue")
+        self.assertIn("Full 2026 Catalogue", self.client.get(reverse("website:catalogues")).content.decode())
+
+    def test_a_new_catalogue_needs_no_product_range(self):
+        """The point of the split: adding one invents no category."""
+        before = set(Category.objects.values_list("pk", flat=True))
+        self.client.post(reverse("dashboard:catalogue_create"), {
+            "title": "Standalone", "slug": "", "subtitle": "", "order": 0, "is_active": "on",
+        })
+        self.assertIsNone(Catalogue.objects.get(title="Standalone").category)
+        self.assertEqual(before, set(Category.objects.values_list("pk", flat=True)))
+
+    def test_a_catalogue_can_be_deleted(self):
+        self.client.post(reverse("dashboard:catalogue_delete", args=[self.storage.pk]))
+        self.assertFalse(Catalogue.objects.filter(pk=self.storage.pk).exists())
+
+    def test_the_editor_owns_the_catalogues_own_fields(self):
+        response = self.client.get(reverse("dashboard:catalogue_update", args=[self.booth.pk]))
         self.assertEqual(response.status_code, 200)
-        for field in ("catalogue_title", "catalogue_subtitle", "catalogue_image",
-                      "catalogue_pdf", "show_on_catalogues", "catalogue_order"):
+        for field in ("title", "subtitle", "image", "pdf", "category", "is_active"):
             self.assertContains(response, f'name="{field}"')
-        # the Categories editor owns these; this screen must not offer them
-        self.assertNotContains(response, 'name="slug"')
-        self.assertNotContains(response, 'name="banner_image"')
 
-    def test_hiding_a_card_removes_it_from_the_page_only(self):
-        self.client.post(reverse("dashboard:catalogue_card_toggle", args=[self.booth.pk]))
+    def test_hiding_a_catalogue_takes_it_off_the_page(self):
+        self.client.post(reverse("dashboard:catalogue_toggle", args=[self.booth.pk]))
         self.booth.refresh_from_db()
-        self.assertFalse(self.booth.show_on_catalogues)
-        # read the rendered queryset, not the raw HTML: the toggle leaves a
-        # "Phone Booth updated." flash on the next page that would match too
-        rail = [c.name for c in self.client.get(reverse("website:catalogues")).context["categories"]]
+        self.assertFalse(self.booth.is_active)
+        rail = [c.title for c in self.client.get(reverse("website:catalogues")).context["catalogues"]]
         self.assertNotIn("Phone Booth", rail)
-        # still on the home rail, which has its own switch
-        self.assertTrue(self.booth.show_on_home)
-        home = [c.name for c in self.client.get(reverse("website:home")).context["categories"]]
-        self.assertIn("Phone Booth", home)
 
-    def test_reordering_the_catalogue_rail_leaves_the_home_rail_alone(self):
+    def test_reordering_catalogues_leaves_the_home_rail_alone(self):
         home_before = list(Category.objects.order_by("pk").values_list("pk", "order"))
-        ids = list(Category.objects.order_by("catalogue_order", "pk").values_list("pk", flat=True))
+        ids = list(Catalogue.objects.order_by("order", "pk").values_list("pk", flat=True))
         response = self.client.post(
-            reverse("dashboard:catalogue_card_reorder"),
+            reverse("dashboard:catalogue_reorder"),
             data=json.dumps({"order": list(reversed(ids))}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        new_order = list(Category.objects.order_by("catalogue_order", "pk").values_list("pk", flat=True))
+        new_order = list(Catalogue.objects.order_by("order", "pk").values_list("pk", flat=True))
         self.assertEqual(new_order, list(reversed(ids)))
         self.assertEqual(home_before, list(Category.objects.order_by("pk").values_list("pk", "order")))
 
-    def test_catalogues_page_renders_in_catalogue_order(self):
-        # push everything else back so Storage is uniquely first; ties on
-        # catalogue_order fall back to pk, which would hide the effect
-        Category.objects.exclude(pk=self.storage.pk).update(catalogue_order=9)
-        self.storage.catalogue_order = 0
-        self.storage.save(update_fields=["catalogue_order"])
-        names = [c.name for c in self.client.get(reverse("website:catalogues")).context["categories"]]
-        self.assertEqual(names[0], "Storage")
+    def test_catalogues_page_renders_in_order(self):
+        Catalogue.objects.exclude(pk=self.storage.pk).update(order=9)
+        Catalogue.objects.filter(pk=self.storage.pk).update(order=0)
+        titles = [c.title for c in self.client.get(reverse("website:catalogues")).context["catalogues"]]
+        self.assertEqual(titles[0], "Storage")
 
     def test_staff_cannot_change_the_section(self):
         self.client.force_login(self.staffer)
-        self.assertEqual(self.client.post(reverse("dashboard:catalogue_card_toggle", args=[self.booth.pk])).status_code, 403)
-        self.assertEqual(self.client.get(reverse("dashboard:catalogue_card_update", args=[self.booth.pk])).status_code, 403)
+        self.assertEqual(self.client.post(reverse("dashboard:catalogue_toggle", args=[self.booth.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("dashboard:catalogue_update", args=[self.booth.pk])).status_code, 403)
+        self.assertEqual(self.client.get(reverse("dashboard:catalogue_create")).status_code, 403)
 
 
-class CatalogueCardContentTests(DashboardTestCase):
-    """The card's own title, subtitle and picture.
-
-    The point of these fields is separation: the Catalogues page can read
-    differently from the category without the category changing.
-    """
+class CatalogueContentTests(DashboardTestCase):
+    """A catalogue's words and picture are its own, not a category's."""
 
     def setUp(self):
         super().setUp()
         self.client.force_login(self.superuser)
         self.category.subtitle = "Lounge, modular & breakout"
         self.category.save(update_fields=["subtitle"])
+        self.catalogue = Catalogue.objects.create(
+            title="Seating Catalogue 2026", subtitle="48 pages, every finish", category=self.category
+        )
 
-    def test_card_falls_back_to_the_category_when_nothing_is_overridden(self):
-        self.assertEqual(self.category.catalogue_card_title, "Soft Seating")
-        self.assertEqual(self.category.catalogue_card_subtitle, "Lounge, modular & breakout")
-        response = self.client.get(reverse("website:catalogues"))
-        self.assertContains(response, "Soft Seating")
-
-    def test_title_and_subtitle_override_the_catalogues_page_only(self):
-        self.category.catalogue_title = "Seating Catalogue 2026"
-        self.category.catalogue_subtitle = "48 pages, every finish"
-        self.category.save(update_fields=["catalogue_title", "catalogue_subtitle"])
-
+    def test_the_catalogue_reads_differently_from_its_range(self):
         catalogues = self.client.get(reverse("website:catalogues")).content.decode()
         self.assertIn("Seating Catalogue 2026", catalogues)
         self.assertIn("48 pages, every finish", catalogues)
 
-        # the category itself is untouched: home rail and category page still
-        # read "Soft Seating"
         self.category.refresh_from_db()
         self.assertEqual(self.category.name, "Soft Seating")
         home = self.client.get(reverse("website:home")).content.decode()
         self.assertIn("Soft Seating", home)
         self.assertNotIn("Seating Catalogue 2026", home)
 
-    def test_image_overrides_the_catalogues_page_only(self):
+    def test_the_picture_is_the_catalogues_own(self):
         self.category.thumbnail_image = make_image("range.jpg")
-        self.category.catalogue_image = make_image("catalogue-cover.jpg")
         self.category.save()
-        self.addCleanup(self.category.catalogue_image.delete, save=False)
+        self.catalogue.image = make_image("catalogue-cover.jpg")
+        self.catalogue.save()
+        self.addCleanup(self.catalogue.image.delete, save=False)
         self.addCleanup(self.category.thumbnail_image.delete, save=False)
 
-        self.assertEqual(self.category.catalogue_card_image, self.category.catalogue_image)
-        self.assertIn(self.category.catalogue_image.url, self.client.get(reverse("website:catalogues")).content.decode())
+        catalogues = self.client.get(reverse("website:catalogues")).content.decode()
+        self.assertIn(self.catalogue.image.url, catalogues)
         home = self.client.get(reverse("website:home")).content.decode()
         self.assertIn(self.category.thumbnail_image.url, home)
-        self.assertNotIn(self.category.catalogue_image.url, home)
+        self.assertNotIn(self.catalogue.image.url, home)
 
-    def test_the_card_editor_cannot_rename_the_category(self):
-        response = self.client.get(reverse("dashboard:catalogue_card_update", args=[self.category.pk]))
-        form = response.content.decode()
-        for field in ("catalogue_title", "catalogue_subtitle", "catalogue_image"):
-            self.assertIn(f'name="{field}"', form)
-        # the category's own identity stays in the Categories editor
-        for field in ("name", "slug", "thumbnail_image"):
-            self.assertNotIn(f'name="{field}"', form)
+    def test_renaming_a_catalogue_does_not_rename_the_range(self):
+        self.client.post(reverse("dashboard:catalogue_update", args=[self.catalogue.pk]), {
+            "title": "Renamed", "slug": self.catalogue.slug, "subtitle": "", "order": 0,
+            "category": self.category.pk, "is_active": "on",
+        })
+        self.category.refresh_from_db()
+        self.assertEqual(self.category.name, "Soft Seating")
+        self.assertEqual(Catalogue.objects.get(pk=self.catalogue.pk).title, "Renamed")

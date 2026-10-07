@@ -38,50 +38,8 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         blank=True,
         help_text="Optional. Send visitors somewhere else than the category page, e.g. /contact/?collection=acoustic-lights",
     )
-    catalogue_pdf = models.FileField(
-        "Catalogue (PDF)",
-        upload_to="catalogues/",
-        blank=True,
-        null=True,
-        validators=[FileExtensionValidator(["pdf"])],
-        help_text="Offered on the Catalogues page card, to preview and download. Leave empty to hide the card's download button.",
-    )
     card_link_text = models.CharField(max_length=40, blank=True, default="View items")
     show_on_home = models.BooleanField(default=True, db_index=True)
-    show_on_catalogues = models.BooleanField(
-        "Show on the Catalogues page",
-        default=True,
-        db_index=True,
-        help_text="Uncheck to keep this range off the Catalogues page without hiding it elsewhere.",
-    )
-    catalogue_order = models.PositiveIntegerField(
-        "Catalogues page position",
-        default=0,
-        db_index=True,
-        help_text="Order of the cards on the Catalogues page. Independent of the home page rail.",
-    )
-    # The Catalogues page card is its own thing. These override the category's
-    # own name, subtitle and picture there, so the catalogue can be worded and
-    # shot differently without touching how the range reads everywhere else.
-    catalogue_title = models.CharField(
-        "Catalogue card title",
-        max_length=150,
-        blank=True,
-        help_text="Shown on the Catalogues page card. Leave empty to use the category name.",
-    )
-    catalogue_subtitle = models.CharField(
-        "Catalogue card subtitle",
-        max_length=200,
-        blank=True,
-        help_text="Small line under the title on the Catalogues page card. Leave empty to use the category subtitle.",
-    )
-    catalogue_image = models.ImageField(
-        "Catalogue card image",
-        upload_to="catalogues/",
-        blank=True,
-        null=True,
-        help_text="Shown on the Catalogues page card. Leave empty to use the category's card image.",
-    )
 
     class Meta(OrderableModel.Meta):
         verbose_name = "Category"
@@ -95,7 +53,7 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
         if not self.slug:
             self.slug = unique_slugify(self, self.name)
         super().save(*args, **kwargs)
-        optimise_fields(self, "banner_image", "banner_mobile_image", "thumbnail_image", "lifestyle_image", "catalogue_image")
+        optimise_fields(self, "banner_image", "banner_mobile_image", "thumbnail_image", "lifestyle_image")
 
     def get_absolute_url(self):
         return reverse("website:category_detail", kwargs={"slug": self.slug})
@@ -107,19 +65,6 @@ class Category(SEOFieldsMixin, OrderableModel, ActivatableModel, TimeStampedMode
     @property
     def card_image(self):
         return self.thumbnail_image or self.banner_image
-
-    # --- what the Catalogues page card shows, falling back to the category ---
-    @property
-    def catalogue_card_title(self):
-        return self.catalogue_title or self.name
-
-    @property
-    def catalogue_card_subtitle(self):
-        return self.catalogue_subtitle or self.subtitle
-
-    @property
-    def catalogue_card_image(self):
-        return self.catalogue_image or self.card_image
 
     @property
     def banner_desktop(self):
@@ -513,3 +458,64 @@ class ProductColor(OrderableModel):
 
     def __str__(self):
         return self.name
+
+
+class Catalogue(OrderableModel, ActivatableModel, TimeStampedModel):
+    """A downloadable brochure, shown as one card on the Catalogues page.
+
+    A catalogue is its own record, not a view of a category. The two were the
+    same row once, which meant a catalogue could only exist where a product
+    range existed, and adding one meant inventing a range. They are separate
+    things: a range organises products, a catalogue is a PDF someone takes away.
+
+    ``category`` is an optional label, recording which range a catalogue covers
+    so the CMS list can be read and sorted. It is not a destination: nothing
+    about the card's words, picture or link comes from it.
+    """
+
+    title = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=180, unique=True, db_index=True, blank=True)
+    subtitle = models.CharField(max_length=200, blank=True, help_text="Short line under the title, e.g. 'Lounge, modular & breakout'.")
+    image = models.ImageField(upload_to="catalogues/", blank=True, null=True, help_text="Picture on the card.")
+    pdf = models.FileField(
+        "Catalogue PDF",
+        upload_to="catalogues/",
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(["pdf"])],
+        help_text="The brochure itself. The card opens it in a preview and offers a download.",
+    )
+    category = models.ForeignKey(
+        Category,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="catalogues",
+        help_text="Optional. Which range this catalogue covers, for sorting the list here. It does not change where the card goes.",
+    )
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = "Catalogue"
+        verbose_name_plural = "Catalogues"
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = unique_slugify(self, self.title)
+        super().save(*args, **kwargs)
+        optimise_fields(self, "image")
+
+    def get_absolute_url(self):
+        return reverse("website:catalogue_preview", kwargs={"slug": self.slug})
+
+    @property
+    def card_url(self):
+        """The PDF, or nothing.
+
+        A catalogue card exists to hand over a brochure. Without one there is
+        nothing to open, so the card is not a link at all — it does not quietly
+        divert to the range, and nothing shows in the status bar on hover.
+        """
+        return self.get_absolute_url() if self.pdf else ""

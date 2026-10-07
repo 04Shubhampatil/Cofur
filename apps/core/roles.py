@@ -11,7 +11,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 CMS_MODELS = {
-    "catalog": ["category", "collection", "product", "productimage", "productspecification", "productfeature", "productcolor"],
+    "catalog": ["catalogue", "category", "collection", "product", "productimage", "productspecification", "productfeature", "productcolor"],
     "pages": ["homepage", "homeheroslide", "homestatementline", "differentiator", "aboutpage", "contactpage", "cataloguepage", "projectspage"],
     "team": ["teammember"],
     "enquiries": ["enquiry"],

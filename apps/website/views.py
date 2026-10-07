@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_http_methods
 
-from apps.catalog.models import Category, Collection, Product
+from apps.catalog.models import Catalogue, Category, Collection, Product
 from apps.core.models import SiteSettings
 from apps.enquiries.forms import EnquiryForm
 from apps.enquiries.services import is_rate_limited, save_enquiry
@@ -149,18 +149,18 @@ def project_detail(request, slug):
 
 @xframe_options_sameorigin
 def catalogue_preview(request, slug):
-    """Serve a category's catalogue so it can be framed by our own pages.
+    """Serve a catalogue PDF so it can be framed by our own pages.
 
     The site sends X-Frame-Options: DENY everywhere, which is why the PDF came
     up blank inside the preview panel — the browser refused to render a framed
     document. Rather than relax that site-wide, this one response opts in to
     same-origin framing. Everything else stays DENY.
     """
-    category = get_object_or_404(Category, slug=slug, is_active=True)
-    if not category.catalogue_pdf:
-        raise Http404("No catalogue for this category")
-    response = FileResponse(category.catalogue_pdf.open("rb"), content_type="application/pdf")
-    response["Content-Disposition"] = f'inline; filename="{category.slug}-catalogue.pdf"'
+    catalogue = get_object_or_404(Catalogue, slug=slug, is_active=True)
+    if not catalogue.pdf:
+        raise Http404("No PDF for this catalogue")
+    response = FileResponse(catalogue.pdf.open("rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{catalogue.slug}-catalogue.pdf"'
     return response
 
 
@@ -169,7 +169,7 @@ def catalogues(request):
     page = CataloguePage.load()
     context = {
         "page": page,
-        "categories": Category.objects.filter(is_active=True, show_on_catalogues=True).order_by("catalogue_order", "pk"),
+        "catalogues": Catalogue.objects.filter(is_active=True).select_related("category").order_by("order", "pk"),
         "seo": _seo(request, page, f"Catalogues — {SiteSettings.load().site_name}", page.heading[:160], page.banner_image),
         "body_page": "catalogues",
     }

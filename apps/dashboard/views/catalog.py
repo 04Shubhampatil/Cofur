@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -113,7 +113,6 @@ class CategoryToggleActiveView(ToggleFieldView):
 CATEGORY_FIELDSETS = [
     ("Basic information", ["name", "slug", "subtitle", "description", "card_link_text", "link_override", "show_on_home", "order", "is_active"]),
     ("Images", ["thumbnail_image", "banner_image", "banner_mobile_image", "banner_mobile_alt", "lifestyle_image"]),
-    ("Catalogue", ["catalogue_pdf"]),
     ("SEO", ["seo_title", "meta_description", "meta_keywords", "og_title", "og_description", "og_image", "canonical_url", "robots"]),
 ]
 
@@ -333,19 +332,45 @@ class ProductFormMixin:
             context["gallery_upload_url"] = reverse("dashboard:product_gallery_upload", args=[instance.pk])
         return context
 
+    def _slug_conflict(self, form, formsets):
+        """Re-render with a usable slug suggestion instead of a 500."""
+        from apps.core.mixins import unique_slugify
+
+        proposed = form.cleaned_data.get("slug") or form.cleaned_data.get("name") or ""
+        suggestion = unique_slugify(Product(), proposed)
+        form.add_error(
+            "slug",
+            f"Another product already uses this web address. Try “{suggestion}”, or give this one a different name.",
+        )
+        # The rolled-back instance carries a primary key that no longer exists;
+        # leaving it set would make the page render as an edit screen.
+        form.instance.pk = None
+        self.object = None
+        messages.error(self.request, "Please fix the errors below.")
+        return self.render_to_response(self.get_context_data(form=form, formsets=formsets))
+
     def form_valid(self, form):
         instance = self.object if getattr(self, "object", None) and self.object.pk else None
         formsets = self.get_formsets(instance)
         # For a new product the formsets have no instance yet; bind after save.
-        with transaction.atomic():
-            self.object = form.save()
-            all_valid = True
-            for key, formset in formsets.items():
-                formset.instance = self.object
-                if not formset.is_valid():
-                    all_valid = False
-            if not all_valid:
-                transaction.set_rollback(True)
+        try:
+            with transaction.atomic():
+                self.object = form.save()
+                all_valid = True
+                for key, formset in formsets.items():
+                    formset.instance = self.object
+                    if not formset.is_valid():
+                        all_valid = False
+                if not all_valid:
+                    transaction.set_rollback(True)
+        except IntegrityError:
+            # The slug is unique and is filled in during save() when the editor
+            # leaves it blank, so the form's own uniqueness check has nothing to
+            # look at and the clash only surfaces at the INSERT — a 500 on a
+            # mistake the editor can fix in one keystroke. Two saves of the same
+            # name moments apart reach it the same way, each generating its slug
+            # before the other has committed.
+            return self._slug_conflict(form, formsets)
         if not all_valid:
             if instance is None:
                 self.object = Product(**{f.name: getattr(form.instance, f.name) for f in Product._meta.concrete_fields if f.name != "id"})

@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.catalog.models import Category, Product
+from apps.catalog.models import Catalogue, Category, Product
 from apps.core.models import NavigationItem
 from apps.core.tests import make_image
 from apps.pages.models import CataloguePage
@@ -276,28 +276,29 @@ class HomeCategoryCardTests(TestCase):
 
     def test_home_card_links_to_the_category_even_with_a_catalogue(self):
         category = Category.objects.filter(show_on_home=True).first()
-        category.catalogue_pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
-        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        catalogue = Catalogue.objects.filter(category=category).first()
+        catalogue.pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(catalogue.pdf.delete, save=True)
         response = self.client.get(reverse("website:home"))
         self.assertContains(response, f'href="{category.link}"')
-        # an uploaded catalogue must not turn the home card into a download or a preview
+        # a catalogue must not turn the home card into a download or a preview
         self.assertNotContains(response, "range-card__download")
         self.assertNotContains(response, "data-pdf-preview")
 
     def test_catalogues_page_card_offers_the_download(self):
-        category = Category.objects.filter(show_on_catalogues=True).first()
-        category.catalogue_pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
-        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        catalogue = Catalogue.objects.filter(is_active=True).first()
+        catalogue.pdf.save("soft-seating.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(catalogue.pdf.delete, save=True)
         response = self.client.get(reverse("website:catalogues"))
         self.assertContains(response, "range-card__download")
-        self.assertContains(response, category.catalogue_pdf.url)
-        self.assertContains(response, f"Download the {category.name} catalogue (PDF)")
+        self.assertContains(response, catalogue.pdf.url)
+        self.assertContains(response, f"Download the {catalogue.title} catalogue (PDF)")
 
     def test_catalogue_must_be_a_pdf(self):
-        category = Category.objects.first()
-        category.catalogue_pdf = "catalogues/not-a-catalogue.exe"
+        catalogue = Catalogue.objects.first()
+        catalogue.pdf = "catalogues/not-a-catalogue.exe"
         with self.assertRaises(ValidationError):
-            category.full_clean()
+            catalogue.full_clean()
 
 
 class CataloguePageTests(TestCase):
@@ -307,13 +308,13 @@ class CataloguePageTests(TestCase):
     def setUpTestData(cls):
         call_command("seed_cofur", skip_images=True, verbosity=0)
 
-    def test_page_lists_every_active_category(self):
+    def test_page_lists_every_live_catalogue(self):
         response = self.client.get(reverse("website:catalogues"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "range-rail__track")
-        self.assertEqual(len(response.context["categories"]), Category.objects.filter(is_active=True).count())
-        for category in Category.objects.filter(is_active=True):
-            self.assertContains(response, category.name)
+        self.assertEqual(len(response.context["catalogues"]), Catalogue.objects.filter(is_active=True).count())
+        for catalogue in Catalogue.objects.filter(is_active=True):
+            self.assertContains(response, catalogue.title)
 
     def test_heading_falls_back_to_a_plain_header_without_a_banner(self):
         response = self.client.get(reverse("website:catalogues"))
@@ -328,14 +329,14 @@ class CataloguePageTests(TestCase):
         self.assertContains(response, "catalogue-hero")
         self.assertNotContains(response, "catalogue-head")
 
-    def test_cards_offer_the_catalogue_where_one_is_uploaded(self):
-        category = Category.objects.filter(is_active=True).first()
+    def test_cards_offer_the_catalogue_where_a_pdf_is_uploaded(self):
+        catalogue = Catalogue.objects.filter(is_active=True).first()
         self.assertNotContains(self.client.get(reverse("website:catalogues")), "range-card__download")
-        category.catalogue_pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
-        self.addCleanup(category.catalogue_pdf.delete, save=True)
+        catalogue.pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(catalogue.pdf.delete, save=True)
         response = self.client.get(reverse("website:catalogues"))
         self.assertContains(response, "range-card__download")
-        self.assertContains(response, category.catalogue_pdf.url)
+        self.assertContains(response, catalogue.pdf.url)
 
     def test_header_catalogues_link_points_at_the_page(self):
         item = NavigationItem.objects.get(label="Catalogues", parent__isnull=True, menu__slug="header")
@@ -418,14 +419,14 @@ class CataloguePreviewTests(TestCase):
         call_command("seed_cofur", skip_images=True, verbosity=0)
 
     def with_catalogue(self):
-        category = Category.objects.filter(is_active=True).first()
-        category.catalogue_pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
-        self.addCleanup(Category.objects.filter(pk=category.pk).update, catalogue_pdf="")
-        return category
+        catalogue = Catalogue.objects.filter(is_active=True).first()
+        catalogue.pdf.save("range.pdf", ContentFile(b"%PDF-1.4 test"), save=True)
+        self.addCleanup(Catalogue.objects.filter(pk=catalogue.pk).update, pdf="")
+        return catalogue
 
     def test_preview_is_framable_by_our_own_pages(self):
-        category = self.with_catalogue()
-        response = self.client.get(reverse("website:catalogue_preview", args=[category.slug]))
+        catalogue = self.with_catalogue()
+        response = self.client.get(reverse("website:catalogue_preview", args=[catalogue.slug]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertEqual(response["X-Frame-Options"], "SAMEORIGIN")
@@ -434,34 +435,39 @@ class CataloguePreviewTests(TestCase):
     def test_every_other_page_still_refuses_framing(self):
         self.assertEqual(self.client.get(reverse("website:home"))["X-Frame-Options"], "DENY")
 
-    def test_category_without_a_catalogue_has_no_preview(self):
-        category = Category.objects.filter(is_active=True, catalogue_pdf="").first()
-        self.assertEqual(self.client.get(reverse("website:catalogue_preview", args=[category.slug])).status_code, 404)
+    def test_catalogue_without_a_pdf_has_no_preview(self):
+        catalogue = Catalogue.objects.filter(is_active=True, pdf="").first()
+        self.assertEqual(self.client.get(reverse("website:catalogue_preview", args=[catalogue.slug])).status_code, 404)
 
-    def _catalogue_card(self, response, category):
-        """The one range card for this category, so assertions cannot match the nav."""
+    def _catalogue_card(self, response, catalogue):
+        """The one card for this catalogue, so assertions cannot match the nav."""
         chunks = response.content.decode().split('<li class="range-card"')[1:]
         for chunk in chunks:
             card = chunk.split("</li>")[0]
-            if f"/{category.slug}/" in card:
+            if catalogue.title in card:
                 return card
         return ""
 
     def test_card_href_matches_what_the_click_opens(self):
-        category = self.with_catalogue()
-        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), category)
-        preview = f"/catalogues/{category.slug}/preview/"
+        catalogue = self.with_catalogue()
+        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), catalogue)
+        preview = f"/catalogues/{catalogue.slug}/preview/"
         # hovering must not advertise a destination the click does not go to
         self.assertIn(f'href="{preview}"', card)
         self.assertIn(f'data-pdf-preview="{preview}"', card)
-        # still an ordinary link, for crawlers, new tabs and no-JS
-        self.assertNotIn(f'href="{category.link}"', card)
 
-    def test_card_without_a_catalogue_links_to_the_category(self):
-        category = Category.objects.filter(is_active=True, catalogue_pdf="").first()
-        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), category)
-        self.assertIn(f'href="{category.link}"', card)
+    def test_card_without_a_pdf_is_not_a_link_at_all(self):
+        """Nothing to open means nothing to click, and nothing on hover."""
+        catalogue = Catalogue.objects.filter(is_active=True, pdf="").exclude(category=None).first()
+        card = self._catalogue_card(self.client.get(reverse("website:catalogues")), catalogue)
+        self.assertIn("range-card__inner", card)
+        self.assertNotIn("<a ", card)
         self.assertNotIn("data-pdf-preview", card)
+        # and it must not quietly divert to the range it is filed under
+        self.assertNotIn(f'href="{catalogue.category.link}"', card)
+
+    def test_a_catalogue_without_a_pdf_has_no_card_url(self):
+        self.assertEqual(Catalogue.objects.create(title="Nowhere Yet", order=99).card_url, "")
 
     def test_home_rail_never_opens_the_preview(self):
         self.with_catalogue()

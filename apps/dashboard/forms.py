@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.forms import inlineformset_factory
 
 from apps.catalog.models import (
+    Catalogue,
     Category,
     Collection,
     Product,
@@ -67,7 +68,7 @@ class CategoryForm(CMSModelForm):
         }
         fields = [
             "name", "slug", "subtitle", "description", "thumbnail_image", "banner_image", "banner_mobile_image", "banner_mobile_alt",
-            "lifestyle_image", "catalogue_pdf", "link_override", "card_link_text", "show_on_home",
+            "lifestyle_image", "link_override", "card_link_text", "show_on_home",
             "order", "is_active", *SEO_FIELDS,
         ]
 
@@ -103,20 +104,26 @@ class QuickCategoryForm(CMSModelForm):
         widgets = {"thumbnail_image": forms.ClearableFileInput()}
 
 
-class CatalogueCardForm(CMSModelForm):
-    """The Catalogues page card for one range.
+class CatalogueForm(CMSModelForm):
+    """One catalogue: its own words, picture and PDF.
 
-    Scoped to what the Catalogues page shows. The title, subtitle and image
-    here are the card's own — they override the category's on this page only
-    and leave it untouched everywhere else. Blank means "use the category's".
+    Nothing here reads from a category. ``category`` is only a label for
+    sorting the list, which is why it sits last and is optional.
     """
 
     class Meta(CMSModelForm.Meta):
-        model = Category
-        fields = [
-            "catalogue_title", "catalogue_subtitle", "catalogue_image",
-            "catalogue_pdf", "show_on_catalogues", "catalogue_order",
-        ]
+        model = Catalogue
+        fields = ["title", "slug", "subtitle", "image", "pdf", "category", "order", "is_active"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["slug"].required = False
+        self.fields["slug"].help_text = "Used in the catalogue's web address. Leave empty to build it from the title."
+        category = self.fields["category"]
+        category.queryset = Category.objects.order_by("name")
+        category.empty_label = "— No range —"
+        category.widget.attrs["data-searchable"] = "true"
+        category.widget.attrs["data-search-placeholder"] = "Search ranges…"
 
 
 class QuickCollectionForm(CMSModelForm):

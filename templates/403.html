@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% comment %}
+  Shown when a permission check refuses the request — the CMS raises this for a
+  signed-in user without the right role, and CSRF failures land here too.
+{% endcomment %}
+
+{% block content %}
+  <main class="error-page">
+    <div class="container error-page__inner">
+      <p class="error-page__code">403</p>
+      <h1>You do not have access to this</h1>
+      <p class="error-page__lead">{% if exception %}{{ exception }}{% else %}This page is restricted. If you were signing in to the CMS, your session may have expired — sign in again and retry.{% endif %}</p>
+      <div class="error-page__actions">
+        <a class="btn" href="{% url 'website:home' %}">Back to the home page</a>
+      </div>
+    </div>
+  </main>
+{% endblock %}

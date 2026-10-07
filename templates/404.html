@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% comment %}
+  Django picks this up by name — no handler needed. A 404 is rendered with a
+  request context, so the navigation and footer are available and the page can
+  carry the site's own chrome: someone who mistypes a URL should land somewhere
+  they can navigate out of, not on a dead end.
+{% endcomment %}
+
+{% block content %}
+  <main class="error-page">
+    <div class="container error-page__inner">
+      <p class="error-page__code">404</p>
+      <h1>This page has moved on</h1>
+      <p class="error-page__lead">The address you followed does not lead anywhere on the site. It may have been renamed, or the link that brought you here may be out of date.</p>
+      <div class="error-page__actions">
+        <a class="btn" href="{% url 'website:home' %}">Back to the home page</a>
+        <a class="text-cta" href="{% url 'website:contact' %}"><span>Ask us where it went</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 18H9a5 5 0 0 1 0-10h11m-3-3 3 3-3 3" /></svg></a>
+      </div>
+      <nav class="error-page__links" aria-label="Popular sections">
+        <a href="{% url 'website:collection_list' %}">Collections</a>
+        <a href="{% url 'website:catalogues' %}">Catalogues</a>
+        <a href="{% url 'website:projects' %}">Projects</a>
+        <a href="{% url 'website:stories' %}">Stories</a>
+      </nav>
+    </div>
+  </main>
+{% endblock %}

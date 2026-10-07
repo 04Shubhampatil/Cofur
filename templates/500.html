@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+{% comment %}
+  Deliberately standalone: it inherits nothing, loads no tag libraries and
+  touches no context processors. Django renders this with an empty context, and
+  the usual reason for a 500 is that something the base template needs — the
+  database the navigation and site settings are read from — is the very thing
+  that failed. A page inheriting the site's chrome would raise a second error
+  while reporting the first, and the visitor would get Django's bare fallback
+  instead.
+
+  So the styling is inline and the markup self-contained, matching the site by
+  hand rather than by include.
+
+  (A multi-line {# #} will not do here: that syntax is single-line, so the tags
+  named in this note would be parsed as real ones.)
+{% endcomment %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Something went wrong — Cofur</title>
+  <style>
+    :root { --ink: #132241; --muted: #6b6b6b; --paper: #faf8f3; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 40px 24px;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 17px/1.6 "Inter", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 540px; text-align: center; }
+    .mark { font: 700 26px/1 Georgia, "Times New Roman", serif; letter-spacing: .14em; text-transform: uppercase; }
+    .mark small { display: block; margin-top: 6px; font: 400 11px/1 inherit; letter-spacing: .08em; color: var(--muted); text-transform: none; }
+    .code { margin: 44px 0 0; font: 400 15px/1 inherit; letter-spacing: .18em; color: var(--muted); }
+    h1 { margin: 14px 0 0; font: 400 clamp(28px, 4.4vw, 40px)/1.25 Georgia, "Times New Roman", serif; letter-spacing: .01em; }
+    p { margin: 18px 0 0; color: #4a4a4a; }
+    .actions { margin-top: 34px; }
+    a.btn {
+      display: inline-block;
+      padding: 14px 30px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    a.btn:hover { background: #0c1830; }
+    .tel { margin-top: 22px; font-size: 15px; color: var(--muted); }
+    .tel a { color: var(--ink); }
+    @media (prefers-color-scheme: dark) {
+      body { background: #11131a; color: #eceaf2; }
+      h1 { color: #eceaf2; }
+      p { color: #b9b6c4; }
+      a.btn { background: #eceaf2; color: #11131a; }
+      .tel a { color: #eceaf2; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="mark">Cofur<small>Change the way you work.</small></div>
+    <p class="code">500</p>
+    <h1>Something went wrong at our end</h1>
+    <p>This one is not your fault. The page could not be built just now — our team has been notified. Trying again in a moment usually does it.</p>
+    <div class="actions"><a class="btn" href="/">Back to the home page</a></div>
+    <p class="tel">If it keeps happening, email <a href="mailto:info@cofur.in">info@cofur.in</a>.</p>
+  </div>
+</body>
+
+</html>
