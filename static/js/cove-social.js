@@ -171,6 +171,11 @@ function initSocialProductMotion() {
   const desktop = matchMedia('(min-width: 901px)');
   const media = [];
   const scroller = page.querySelector('.social-gallery__scroller');
+  // The gallery section is only rendered when the product has gallery images,
+  // and most do not. Without this the next line threw on every such page —
+  // inside DOMContentLoaded, so everything registered after this call (the
+  // section-image motion, the fabric swatches, the enquiry form) never ran.
+  if (!scroller) return () => {};
   const track = scroller.querySelector('.social-gallery__track');
   const slides = [...track.querySelectorAll('.gallery-slide')];
   const previous = page.querySelector('.gallery-arrow--prev');
