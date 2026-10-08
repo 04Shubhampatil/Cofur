@@ -14655,11 +14655,13 @@ body[data-page="cove-collection"] .cove-card-media {
     }
 }
 
-/* The two headings on a project page are the same rank — the write-up and the
-   card rail — but only the rail's picked up the heading size, because
-   `.range-rail__head h2` outranks `.project-subheading`. The write-up's
-   heading takes the same variable so the pair match, and keep matching at
-   every width rather than at one hard-coded size. */
-.project-body .project-subheading {
-    font-size: var(--font-heading);
+/* The rail heading on a project page was the odd one out: `.range-rail__head h2`
+   sizes it from --font-heading (40px), while the write-up heading beside it
+   uses the .project-subheading clamp (28.8px). The pair now read at the same
+   size, taking the smaller of the two.
+
+   Scoped to .project-gallery, which only exists on a project page — the rails
+   on the home page, catalogues and product pages keep their own heading size. */
+.project-gallery .project-subheading {
+    font-size: clamp(22px, 2vw, 32px);
 }
