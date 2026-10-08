@@ -73,7 +73,6 @@
             {% if shot.card_url %}<a href="{{ shot.card_url }}" class="project-tile__inner">{% else %}<div class="project-tile__inner">{% endif %}
               <span class="project-tile__media">{% if shot.card_picture %}<img src="{{ shot.card_picture.url }}" alt="{{ shot.card_alt }}" loading="lazy" decoding="async">{% endif %}</span>
               {% if shot.card_title %}<b class="project-tile__title">{{ shot.card_title }}</b>{% endif %}
-              {% if shot.card_caption %}<span class="project-tile__caption">{{ shot.card_caption }}</span>{% endif %}
             {% if shot.card_url %}</a>{% else %}</div>{% endif %}
           </li>
           {% endfor %}

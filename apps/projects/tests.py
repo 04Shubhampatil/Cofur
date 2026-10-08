@@ -272,11 +272,12 @@ class ProjectGalleryCardTests(TestCase):
             project=self.project, image="projects/a.jpg", kind=ProjectImage.KIND_GALLERY, **extra
         )
 
-    def test_card_renders_its_words(self):
+    def test_card_renders_its_name_without_its_caption(self):
+        """Cards carry names only; a caption stored on the card is not shown."""
         self.card(title="Cove Solo", caption="Your personal sanctuary at work")
         body = self.client.get(self.project.get_absolute_url()).content.decode()
         self.assertIn('<b class="project-tile__title">Cove Solo</b>', body)
-        self.assertIn("Your personal sanctuary at work", body)
+        self.assertNotIn("Your personal sanctuary at work", body)
 
     def test_the_name_sits_under_the_picture(self):
         self.card(title="Cove Solo")
@@ -457,11 +458,15 @@ class ProjectCardProductTests(TestCase):
         self.assertEqual(card.card_caption, self.product.tagline)
         self.assertEqual(card.card_picture, self.product.card_picture)
 
-    def test_the_product_words_are_what_the_page_shows(self):
+    def test_the_card_shows_the_product_name_and_nothing_else(self):
+        """The cards carry names only: the tagline belongs on the product page."""
+        self.product.tagline = "Comfort better shared"
+        self.product.save(update_fields=["tagline"])
         self.card(product=self.product)
         body = self.client.get(self.project.get_absolute_url()).content.decode()
         self.assertIn('<b class="project-tile__title">Cove Solo</b>', body)
-        self.assertIn(self.product.tagline, body)
+        self.assertNotIn("Comfort better shared", body)
+        self.assertNotIn("project-tile__caption", body)
 
     def test_a_product_card_needs_no_uploaded_picture(self):
         card = ProjectImage.objects.create(
