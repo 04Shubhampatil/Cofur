@@ -361,7 +361,7 @@ function initCarousel(stage) {
      for a visitor who has asked for reduced motion, for whom movement they
      did not ask for is the problem.
      ------------------------------------------------------------------------ */
-  const DELAY = 5000;
+  const DELAY = 3000;
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let timer = null, onScreen = true, held = false;
 
