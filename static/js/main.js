@@ -348,6 +348,50 @@ function initCarousel(stage) {
     if (event.key === 'ArrowLeft') { event.preventDefault(); show(index - 1); }
     if (event.key === 'ArrowRight') { event.preventDefault(); show(index + 1); }
   });
+
+  /* ---- advance on its own -------------------------------------------------
+     The carousel moves by itself, and stops the moment the visitor shows any
+     interest in it: a pointer over it, keyboard focus inside it, a finger on
+     it, or the tab going to the background. Autoplay that keeps moving while
+     someone is reading a caption or reaching for an arrow is the thing people
+     complain about, so every one of those pauses it and leaving resumes it.
+
+     It also stays still while off-screen — there is no sense paying for a
+     timer and a repaint on a slide nobody can see — and never starts at all
+     for a visitor who has asked for reduced motion, for whom movement they
+     did not ask for is the problem.
+     ------------------------------------------------------------------------ */
+  const DELAY = 5000;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  let timer = null, onScreen = true, held = false;
+
+  const stop = () => { clearInterval(timer); timer = null; };
+  const play = () => {
+    if (timer || held || !onScreen || still.matches || document.hidden) return;
+    timer = setInterval(() => show(index + 1), DELAY);
+  };
+  // A manual move restarts the clock, so the next slide is not cut short by
+  // whatever was left of the previous interval.
+  const restart = () => { stop(); play(); };
+  const hold = () => { held = true; stop(); };
+  const release = () => { held = false; play(); };
+
+  ['mouseenter', 'focusin', 'touchstart', 'pointerdown'].forEach(evt =>
+    stage.addEventListener(evt, hold, {passive: true}));
+  ['mouseleave', 'focusout', 'touchend', 'touchcancel'].forEach(evt =>
+    stage.addEventListener(evt, release, {passive: true}));
+  stage.addEventListener('click', restart);
+  stage.addEventListener('keydown', restart);
+  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : play()));
+  still.addEventListener?.('change', () => (still.matches ? stop() : play()));
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      onScreen ? play() : stop();
+    }, {threshold: .35}).observe(stage);
+  }
+  play();
 }
 
 document.addEventListener('DOMContentLoaded', initCarousels);

@@ -234,6 +234,14 @@ def product_detail(request, slug):
         "detail_images": product.detail_images(),
         "dimension_images": product.dimension_images(),
         "gallery_images": product.gallery_images(),
+        # Wall products are flat, repeating panels: a carousel shows one at a
+        # time when the point is comparing finishes side by side. They get a
+        # grid instead. Nothing else does, so every other product keeps the
+        # carousel it has.
+        "gallery_grid": any(
+            "wall" in (slug or "")
+            for slug in (getattr(product.collection, "slug", ""), getattr(product.category, "slug", ""), product.slug)
+        ),
         "features": product.features(),
         "care_items": product.care_items(),
         "specifications": product.specifications.all(),

@@ -160,6 +160,25 @@
     </section>
 
     {% if gallery_images %}
+    {% if gallery_grid %}
+    <!-- Wall panels: every image laid out at once, four to a row. No carousel,
+         so no scroller, arrows or status line are rendered at all — the
+         gallery script looks for the scroller and exits when it is absent. -->
+    <section id="gallery" class="social-section social-gallery social-gallery--grid container" aria-label="{{ product.name }} gallery">
+      <div class="gallery-heading">
+        <h2 class="about-rule" data-static-title><span>{{ product.gallery_heading }}</span></h2>
+      </div>
+      <ul class="social-gallery__grid" role="list">
+        {% for image in gallery_images %}{% if image.image %}
+        <li>
+          <figure class="gallery-slide"><img src="{{ image.image.url }}" alt="{{ image.alt_text }}"{% if image.width %} width="{{ image.width }}" height="{{ image.height }}"{% endif %} loading="lazy" decoding="async">
+            <figcaption>{{ image.caption|default:image.alt_text }}</figcaption>
+          </figure>
+        </li>
+        {% endif %}{% endfor %}
+      </ul>
+    </section>
+    {% else %}
     <section id="gallery" class="social-section social-gallery container" aria-roledescription="carousel" aria-label="{{ product.name }} gallery">
       <div class="gallery-heading">
         <h2 class="about-rule" data-static-title><span>{{ product.gallery_heading }}</span></h2>
@@ -185,6 +204,7 @@
       </div>
       <p class="gallery-status" aria-live="polite"></p>
     </section>
+    {% endif %}
     {% endif %}
 
     {% if related_products %}
