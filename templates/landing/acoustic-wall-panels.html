@@ -1,0 +1,614 @@
+{% extends "landing/base.html" %}
+{% load cofur_tags %}
+{% comment %}
+Acoustic Wall Panels marketing landing page — /acoustic-wall-panels-for-offices/.
+Unlinked from site navigation on purpose (campaign landing page).
+The enquiry form is COFUR's own: posts to this URL and lands in Dashboard > Leads > Enquiries.
+{% endcomment %}
+
+{% block title %}Acoustic Wall Panels for Offices | COFUR India{% endblock %}
+{% block description %}Explore COFUR acoustic wall panel designs for commercial offices, meeting rooms and workplace interiors. Enquire about grooved, printed and fluted wall panels for your project.{% endblock %}
+{% block og_title %}Acoustic Wall Panels for Offices | COFUR India{% endblock %}
+{% block og_description %}Grooved, printed and fluted acoustic wall panels for commercial interiors. Share your project brief with COFUR.{% endblock %}
+{% block stylesheet %}{% static_v 'css/landing-acoustic-wall-panels.css' %}{% endblock %}
+
+{% block body %}
+<div class="top">
+  Design-led acoustic wall panel options for commercial interiors · Project enquiries welcome
+</div>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/">
+      COFUR
+      <span>WORKPLACE SOLUTIONS</span>
+    </a>
+
+    <nav class="navlinks" aria-label="Main navigation">
+      <a href="#products">Wall Panel Products</a>
+      <a href="#applications">Applications</a>
+      <a href="#faq">FAQs</a>
+      <a class="btn" href="#enquiry">Request Project Quote</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="wrap hero-grid">
+
+    <div>
+      <p class="eyebrow">Acoustic wall panels · Commercial interiors</p>
+
+      <h1>Acoustic Wall Panels for Commercial Offices</h1>
+
+      <p class="lead">
+        Explore COFUR’s grooved, printed and fluted wall panel designs
+        for corporate workplaces, meeting rooms and contemporary
+        commercial interiors. Share your project requirements to
+        discuss suitable options.
+      </p>
+
+      <ul class="checks">
+        <li>Three wall panel product ranges to explore</li>
+        <li>Applications across corporate, institutional and hospitality spaces</li>
+        <li>Enquiries for architects, interior designers and project teams</li>
+      </ul>
+
+      <div class="actions">
+        <a class="btn" href="#enquiry">Request a Project Quote →</a>
+        <a class="btn alt" href="#products">Explore Wall Panels</a>
+      </div>
+    </div>
+
+    <div class="hero-img">
+      <img
+        src="/media/products/ChatGPT_Image_Aug_12_2026_12_24_54_PM.webp"
+        alt="COFUR fluted wall panel with vertical wood-look slats"
+        fetchpriority="high"
+      >
+
+      <div class="img-note">
+        <strong>Explore COFUR Acoustic Wall Panels</strong>
+        <br>
+        Grooved · Printed · Fluted
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<div class="trust">
+  <div class="wrap trust-grid">
+    <div>
+      Corporate Spaces
+      <small>Workplace applications</small>
+    </div>
+
+    <div>
+      Institutional Spaces
+      <small>Project-based enquiries</small>
+    </div>
+
+    <div>
+      Hospitality Spaces
+      <small>Interior design options</small>
+    </div>
+
+    <div>
+      Design Consultation
+      <small>Discuss your brief</small>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="wrap">
+
+    <div class="section-head">
+      <p class="eyebrow">Explore the collection</p>
+      <h2>COFUR Acoustic Wall Panel Products</h2>
+      <p>
+        View the three products listed in COFUR’s Acoustic Wall Panels
+        collection. Open a product page for further details or enquire
+        about your project.
+      </p>
+    </div>
+
+    <div class="cards">
+
+      <!-- GROOVED WALL PANELS -->
+      <article class="card">
+        <a href="/products/grooved-wall-panels/">
+          <img
+            src="/media/products/4.webp"
+            alt="Grooved Wall Panels by COFUR with a geometric grooved surface"
+            loading="lazy"
+          >
+        </a>
+
+        <div class="card-body">
+          <h3>Grooved Wall Panels</h3>
+
+          <p>
+            Grooved wall panel design for corporate, institutional
+            and hospitality interiors. Discuss available options
+            for your space.
+          </p>
+
+          <a
+            class="small-link"
+            href="/products/grooved-wall-panels/"
+          >
+            VIEW PRODUCT DETAILS →
+          </a>
+
+          <br><br>
+
+          <a
+            class="btn"
+            href="#enquiry"
+            data-product="grooved-wall-panels"
+          >
+            Enquire About This Product
+          </a>
+        </div>
+      </article>
+
+      <!-- PRINTED WALL PANELS -->
+      <article class="card">
+        <a href="/products/printed-wall-panels/">
+          <img
+            src="/media/products/WhatsApp_Image_2026-08-04_at_11.38.15_AM.webp"
+            alt="Printed Wall Panels by COFUR featuring a botanical and geometric printed design"
+            loading="lazy"
+          >
+        </a>
+
+        <div class="card-body">
+          <h3>Printed Wall Panels</h3>
+
+          <p>
+            Printed wall panel design for corporate, institutional
+            and hospitality spaces. Enquire about options for your
+            interior project.
+          </p>
+
+          <a
+            class="small-link"
+            href="/products/printed-wall-panels/"
+          >
+            VIEW PRODUCT DETAILS →
+          </a>
+
+          <br><br>
+
+          <a
+            class="btn"
+            href="#enquiry"
+            data-product="printed-wall-panels"
+          >
+            Enquire About This Product
+          </a>
+        </div>
+      </article>
+
+      <!-- FLUTED WALL PANELS -->
+      <article class="card">
+        <a href="/products/fluted-wood-wall-panels/">
+          <img
+            src="/media/products/ChatGPT_Image_Aug_12_2026_12_24_54_PM.webp"
+            alt="Fluted Wall Panels by COFUR with vertical wood-look slats"
+            loading="lazy"
+          >
+        </a>
+
+        <div class="card-body">
+          <h3>Fluted Wall Panels</h3>
+
+          <p>
+            Vertical fluted wall panel design for corporate,
+            institutional and hospitality interiors. Share your
+            requirements with COFUR.
+          </p>
+
+          <a
+            class="small-link"
+            href="/products/fluted-wood-wall-panels/"
+          >
+            VIEW PRODUCT DETAILS →
+          </a>
+
+          <br><br>
+
+          <a
+            class="btn"
+            href="#enquiry"
+            data-product="fluted-wood-wall-panels"
+          >
+            Enquire About This Product
+          </a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS / DESIGNS -->
+<section style="background:#ffffff;">
+  <div class="wrap">
+
+    <div class="section-head">
+      <p class="eyebrow">For commercial projects</p>
+      <h2>Wall Panel Options for Modern Interiors</h2>
+      <p>
+        Choose a panel style to complement your design brief.
+        Ask COFUR about product details, finishes and suitability
+        for your project.
+      </p>
+    </div>
+
+    <div class="benefits">
+
+      <div class="benefit">
+        <div class="symbol">▥</div>
+        <h3>Grooved Wall Design</h3>
+        <p>
+          A patterned surface treatment for workplace and
+          commercial interior schemes.
+        </p>
+      </div>
+
+      <div class="benefit">
+        <div class="symbol">▧</div>
+        <h3>Printed Wall Design</h3>
+        <p>
+          A visually distinctive option for interiors where
+          wall graphics and design are part of the brief.
+        </p>
+      </div>
+
+      <div class="benefit">
+        <div class="symbol">▤</div>
+        <h3>Fluted Wall Design</h3>
+        <p>
+          A linear, vertical design that can complement
+          contemporary commercial interiors.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="applications" id="applications">
+  <div class="wrap">
+
+    <div class="section-head">
+      <p class="eyebrow">Applications</p>
+      <h2>Where Can COFUR Wall Panels Be Considered?</h2>
+      <p>
+        COFUR lists these wall panel products for corporate,
+        institutional and hospitality spaces.
+      </p>
+    </div>
+
+    <div class="app-grid">
+      <div class="app">Corporate Offices</div>
+      <div class="app">Meeting &amp; Conference Areas</div>
+      <div class="app">Institutional Interiors</div>
+      <div class="app">Hospitality Spaces</div>
+      <div class="app">Reception &amp; Common Areas</div>
+      <div class="app">Commercial Interior Projects</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- DARK CTA BAND -->
+<section class="band">
+  <div class="wrap band-grid">
+
+    <div>
+      <h2>Planning a Commercial Interior Project?</h2>
+      <p>
+        Tell us which wall panel range you’re considering, along
+        with your project location and timeline. COFUR’s team can
+        follow up to discuss your requirements.
+      </p>
+    </div>
+
+    <a class="btn pale" href="#enquiry">
+      Discuss Your Project →
+    </a>
+
+  </div>
+</section>
+
+<!-- TARGET AUDIENCE -->
+<section>
+  <div class="wrap audience">
+
+    <div>
+      <p class="eyebrow">For professional project teams</p>
+      <h2>For Architects, Interior Designers and Businesses</h2>
+
+      <p>
+        Share your project brief when planning wall treatments
+        for a workplace, institution or hospitality interior.
+        If available, include drawings, approximate quantities
+        and preferred finishes during follow-up.
+      </p>
+
+      <a class="btn" href="#enquiry">
+        Request Project Consultation
+      </a>
+    </div>
+
+    <div class="audience-grid">
+      <div>Architects</div>
+      <div>Interior Designers</div>
+      <div>Corporate Procurement</div>
+      <div>Facility Managers</div>
+      <div>Contractors</div>
+      <div>Commercial Project Teams</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ENQUIRY FORM — COFUR enquiry form (Dashboard > Leads > Enquiries) -->
+<section class="form-section" id="enquiry">
+  <div class="wrap form-grid">
+
+    <div class="intro">
+      <p class="eyebrow">Project enquiry</p>
+      <h2>Enquire About Acoustic Wall Panels</h2>
+
+      <p>
+        Send your contact details and project information so
+        the COFUR team can understand your requirements.
+      </p>
+
+      <ul>
+        <li>Choose Grooved, Printed or Fluted Wall Panels</li>
+        <li>Share your project city and project stage</li>
+        <li>Include quantity, finish or timeline if known</li>
+      </ul>
+    </div>
+
+    <form class="formbox" id="enquiry-form" method="post" action="{{ request.path }}#enquiry">
+      {% csrf_token %}
+      {{ form.website }}
+      {{ form.form_started }}
+
+      <h3>Tell Us About Your Project</h3>
+      <p class="form-sub">Fields marked * are required.</p>
+
+      {% if sent %}<p class="formnote ok" role="status">{{ success_message }}</p>{% endif %}
+      {% if form.non_field_errors %}<p class="formnote err" role="alert">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+
+      <div class="fields">
+
+        <div class="field">
+          <label for="lp-name">Full name *</label>
+          <input id="lp-name" name="name" autocomplete="name" required maxlength="150"
+                 placeholder="Your full name" value="{{ form.name.value|default:'' }}">
+          {% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="lp-company">Company *</label>
+          <input id="lp-company" name="company" autocomplete="organization" required
+                 placeholder="Company name" value="{{ form.company.value|default:'' }}">
+          {% for error in form.company.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="lp-email">Business email *</label>
+          <input id="lp-email" name="email" type="email" autocomplete="email" required
+                 placeholder="name@company.com" value="{{ form.email.value|default:'' }}">
+          {% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="lp-phone">Phone number *</label>
+          <input id="lp-phone" name="phone" type="tel" autocomplete="tel" required
+                 pattern="[0-9 +()\-]{7,20}" placeholder="Contact number" value="{{ form.phone.value|default:'' }}">
+          {% for error in form.phone.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="lp-city">Project city *</label>
+          <input id="lp-city" name="city" autocomplete="address-level2" required
+                 placeholder="City / area" value="{{ form.city.value|default:'' }}">
+          {% for error in form.city.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="product">Product of interest</label>
+          <select id="product" name="product_slug">
+            <option value="">Select a product</option>
+            {% for slug, label in panel_choices %}
+            <option value="{{ slug }}"{% if form.product_slug.value == slug %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+            <option value="">Not sure — need guidance</option>
+          </select>
+          {% for error in form.product_slug.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="lp-size">Approx. project size</label>
+          <select id="lp-size" name="project_size">
+            <option value="">Select size</option>
+            {% for option in size_choices %}
+            <option{% if posted.project_size == option %} selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="lp-stage">Project stage</label>
+          <select id="lp-stage" name="project_stage">
+            <option value="">Select stage</option>
+            {% for option in stage_choices %}
+            <option{% if posted.project_stage == option %} selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="lp-message">Project details *</label>
+          <textarea id="lp-message" name="message" required minlength="5"
+                    placeholder="Quantity, preferred finish, timeline or other requirements">{{ form.message.value|default:'' }}</textarea>
+          {% for error in form.message.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+
+      </div>
+
+      <button class="btn submit" type="submit">
+        Submit Project Enquiry →
+      </button>
+
+      <p class="fine">
+        Your details reach the COFUR team directly. We use them only to respond to this enquiry.
+      </p>
+
+    </form>
+
+  </div>
+</section>
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+
+    <div class="section-head">
+      <p class="eyebrow">Frequently asked questions</p>
+      <h2>Acoustic Wall Panels FAQs</h2>
+      <p>Information for commercial project enquiries.</p>
+    </div>
+
+    <div class="faq">
+
+      <details>
+        <summary>Which acoustic wall panel products does COFUR list?</summary>
+        <p>
+          The collection lists Grooved Wall Panels, Printed Wall Panels
+          and Fluted Wall Panels. Visit each product page for the
+          available details.
+        </p>
+      </details>
+
+      <details>
+        <summary>Which spaces are these wall panels intended for?</summary>
+        <p>
+          COFUR lists corporate, institutional and hospitality spaces
+          as application areas for these wall panel products. Discuss
+          your specific site and use case with the team.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I request a quote for a commercial project?</summary>
+        <p>
+          Yes. Use the enquiry form to share your contact information,
+          project city, product interest and project stage.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can architects and interior designers enquire?</summary>
+        <p>
+          Yes. Architects, interior designers, contractors and project
+          teams can share their project brief through the enquiry form.
+        </p>
+      </details>
+
+      <details>
+        <summary>Do the panels have specified acoustic performance ratings?</summary>
+        <p>
+          Check the relevant product documentation or confirm with COFUR
+          before relying on any particular acoustic rating or technical
+          performance claim.
+        </p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final">
+  <div class="wrap">
+
+    <p class="eyebrow">Start your project discussion</p>
+
+    <h2>Looking for Wall Panels for a Commercial Interior?</h2>
+
+    <p>
+      Explore Grooved, Printed and Fluted Wall Panels by COFUR
+      and discuss which options suit your project brief.
+    </p>
+
+    <a class="btn" href="#enquiry">
+      Get a Project Quote →
+    </a>
+
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap foot">
+
+    <div>
+      <strong>COFUR</strong> · Commercial workplace and acoustic solutions
+    </div>
+
+    <div>
+      <a href="/collections/acoustic-wall-panels/">
+        View Acoustic Wall Panels Collection
+      </a>
+      ·
+      <a href="/">cofur.in</a>
+    </div>
+
+  </div>
+</footer>
+
+<!-- MOBILE STICKY CTA -->
+<div class="mobile">
+  <a class="btn alt" href="#products">View Products</a>
+  <a class="btn" href="#enquiry">Get Quote</a>
+</div>
+
+<script>
+/* Pre-select a panel in the enquiry form when a product card's button is used */
+document.querySelectorAll("[data-product]").forEach(function (link) {
+  link.addEventListener("click", function () {
+    var select = document.getElementById("product");
+    if (select) { select.value = this.getAttribute("data-product"); }
+  });
+});
+</script>
+{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Acoustic Wall Panels for Offices | COFUR India",
+  "description": "Explore COFUR Grooved, Printed and Fluted Wall Panels for commercial interiors.",
+  "url": "{{ canonical_url }}"
+}
+</script>
+{% endblock %}

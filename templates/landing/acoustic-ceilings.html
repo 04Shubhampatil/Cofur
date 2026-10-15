@@ -1,0 +1,1263 @@
+{% extends "landing/base.html" %}
+{% load cofur_tags %}
+{% comment %}
+Acoustic Ceilings marketing landing page — /acoustic-ceilings-for-offices/.
+Unlinked from site navigation on purpose (campaign landing page).
+The enquiry form is COFUR's own: posts to this URL and lands in Dashboard > Leads > Enquiries.
+Image placeholders (hero + 7 designs) are intentional: drop real photography in when available.
+{% endcomment %}
+
+{% block title %}Acoustic Ceilings for Commercial Offices | COFUR{% endblock %}
+{% block description %}Acoustic ceilings for commercial offices, corporate workplaces and modern interiors. Explore Wave, Petal, Blade, Planks, Grid, Waffle and Hive acoustic ceiling designs by COFUR.{% endblock %}
+{% block og_title %}Acoustic Ceilings for Commercial Offices | COFUR{% endblock %}
+{% block og_description %}Design-led acoustic ceiling solutions for corporate workplaces and commercial interiors. Discuss your project with COFUR.{% endblock %}
+{% block stylesheet %}{% static_v 'css/landing-acoustic-ceilings.css' %}{% endblock %}
+
+{% block body %}
+
+<header class="lp-header">
+<div class="container lp-header-inner">
+
+<a class="lp-logo" href="/">
+COFUR
+<span>WORKPLACE SOLUTIONS</span>
+</a>
+
+<nav class="lp-nav" aria-label="Page navigation">
+<a href="#products">Ceiling Designs</a>
+<a href="#project-enquiry" class="btn btn-primary">REQUEST PROJECT QUOTE</a>
+</nav>
+
+</div>
+</header>
+
+<main>
+<!-- =========================================================
+     HERO
+========================================================= -->
+
+<section class="hero">
+
+<div class="container">
+
+<div class="hero-grid">
+
+<div>
+
+<span class="hero-label">
+Commercial Acoustic Ceiling Solutions
+</span>
+
+<h1>
+Acoustic Ceilings for Commercial Offices
+</h1>
+
+<p class="hero-text">
+Design-led acoustic ceiling solutions for modern corporate workplaces,
+meeting rooms, collaborative spaces and commercial interiors.
+</p>
+
+<ul class="hero-points">
+
+<li>Designed for modern commercial workplaces</li>
+
+<li>Multiple acoustic ceiling design options</li>
+
+<li>Suitable for corporate and commercial projects</li>
+
+<li>Project consultation for architects and design teams</li>
+
+</ul>
+
+<a href="#project-enquiry" class="btn btn-primary">
+REQUEST PROJECT QUOTE
+</a>
+
+<a href="#products" class="btn btn-light">
+EXPLORE DESIGNS
+</a>
+
+</div>
+
+
+<div class="hero-image">
+
+<!--
+REPLACE THIS BLOCK WITH YOUR ACTUAL COFUR
+ACOUSTIC CEILING HERO IMAGE.
+
+Recommended:
+Large professional office interior showing
+COFUR acoustic ceiling installation.
+-->
+
+<strong>
+COFUR ACOUSTIC CEILING<br>
+HERO IMAGE
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     TRUST BAR
+========================================================= -->
+
+<section class="trust">
+
+<div class="container">
+
+<div class="trust-grid">
+
+<div class="trust-item">
+Commercial Workspaces
+</div>
+
+<div class="trust-item">
+Corporate Projects
+</div>
+
+<div class="trust-item">
+Architect Support
+</div>
+
+<div class="trust-item">
+Project Consultation
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     INTRO / BENEFITS
+========================================================= -->
+
+<section class="section">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Acoustic Ceiling Solutions for Modern Workplaces
+</h2>
+
+<p>
+Create a more considered workplace environment by combining acoustic
+ceiling solutions with contemporary commercial interior design.
+</p>
+
+</div>
+
+
+<div class="card-grid">
+
+<div class="card">
+
+<h3>
+Acoustic Considerations
+</h3>
+
+<p>
+Acoustic ceiling solutions can help address acoustic requirements
+within modern workplace environments.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Design-Led Solutions
+</h3>
+
+<p>
+Choose from different forms and design directions to complement
+your commercial interior concept.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Commercial Applications
+</h3>
+
+<p>
+Suitable for corporate offices, meeting spaces, collaborative areas,
+breakout zones and other commercial workplaces.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Project Support
+</h3>
+
+<p>
+Discuss your requirements with the COFUR team for your commercial
+workplace project.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================================================
+     LEAD FORM — COFUR enquiry form (Dashboard > Leads > Enquiries)
+========================================================= -->
+
+<section class="section form-section" id="project-enquiry">
+
+<div class="container">
+
+<div class="form-grid">
+
+
+<div class="form-content">
+
+<h2>
+Discuss Your Acoustic Ceiling Project
+</h2>
+
+<p>
+Planning an office, corporate workplace or commercial interior project?
+Share your requirements with COFUR.
+</p>
+
+<ul class="form-list">
+
+<li>
+Architects &amp; Interior Designers
+</li>
+
+<li>
+Corporate Procurement Teams
+</li>
+
+<li>
+Facility &amp; Workplace Teams
+</li>
+
+<li>
+Commercial Contractors
+</li>
+
+<li>
+Office &amp; Commercial Projects
+</li>
+
+</ul>
+
+</div>
+
+
+<div class="form-box">
+
+<h3>
+Request Project Quote
+</h3>
+
+<form method="post" action="{{ request.path }}#project-enquiry" id="enquiry-form">
+{% csrf_token %}
+{{ form.website }}
+{{ form.form_started }}
+
+{% if sent %}<p class="formnote ok" role="status">{{ success_message }}</p>{% endif %}
+{% if form.non_field_errors %}<p class="formnote err" role="alert">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+
+<input type="text" name="name" aria-label="Name" placeholder="Name *" autocomplete="name"
+maxlength="150" required value="{{ form.name.value|default:'' }}">
+{% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+<input type="text" name="company" aria-label="Company name" placeholder="Company Name *"
+autocomplete="organization" required value="{{ form.company.value|default:'' }}">
+{% for error in form.company.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+<input type="email" name="email" aria-label="Business email" placeholder="Business Email *"
+autocomplete="email" required value="{{ form.email.value|default:'' }}">
+{% for error in form.email.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+<input type="tel" name="phone" aria-label="Phone number" placeholder="Phone Number *"
+autocomplete="tel" required pattern="[0-9 +()\-]{7,20}" value="{{ form.phone.value|default:'' }}">
+{% for error in form.phone.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+<input type="text" name="city" aria-label="Project location" placeholder="Project Location *"
+autocomplete="address-level2" required value="{{ form.city.value|default:'' }}">
+{% for error in form.city.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+
+<select name="project_type" aria-label="Project type" required>
+
+<option value="">
+Select Project Type
+</option>
+
+{% for option in type_choices %}
+<option{% if posted.project_type == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}
+
+</select>
+
+
+<select name="project_size" aria-label="Approximate project size" required>
+
+<option value="">
+Approx. Project Size
+</option>
+
+{% for option in size_choices %}
+<option{% if posted.project_size == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}
+
+</select>
+
+
+<select name="project_stage" aria-label="Project stage" required>
+
+<option value="">
+Project Stage
+</option>
+
+{% for option in stage_choices %}
+<option{% if posted.project_stage == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}
+
+</select>
+
+
+<select name="requirement" aria-label="Requirement">
+
+<option value="">
+Select Requirement
+</option>
+
+{% for option in requirement_choices %}
+<option{% if posted.requirement == option %} selected{% endif %}>{{ option }}</option>
+{% endfor %}
+
+</select>
+
+
+<textarea name="message" aria-label="Project details" required minlength="5"
+placeholder="Tell us about your project, quantity or requirements *">{{ form.message.value|default:'' }}</textarea>
+{% for error in form.message.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+
+
+<button type="submit">
+REQUEST PROJECT QUOTE
+</button>
+
+<p class="form-fine">
+Your details reach the COFUR team directly. We use them only to respond to this enquiry.
+</p>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     PRODUCTS
+========================================================= -->
+
+<section class="section" id="products">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Explore COFUR Acoustic Ceiling Designs
+</h2>
+
+<p>
+Explore different acoustic ceiling forms designed for contemporary
+commercial workplace environments.
+</p>
+
+</div>
+
+
+<div class="product-grid">
+
+
+<!-- WAVE -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<!-- Replace with Wave product image -->
+
+<strong>
+WAVE IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Wave
+</h3>
+
+<p>
+A flowing acoustic ceiling design for contemporary workplace interiors.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- PETAL -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+PETAL IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Petal
+</h3>
+
+<p>
+An organic-inspired ceiling form for visually refined commercial spaces.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- BLADE -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+BLADE IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Blade
+</h3>
+
+<p>
+A linear design direction suitable for modern commercial workplace interiors.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- PLANKS -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+PLANKS IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Planks
+</h3>
+
+<p>
+A layered linear ceiling concept for contemporary workplace environments.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- GRID -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+GRID IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Grid
+</h3>
+
+<p>
+A structured ceiling design for modern commercial interiors.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- WAFFLE -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+WAFFLE IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Waffle
+</h3>
+
+<p>
+An architectural ceiling pattern for distinctive workplace environments.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+<!-- HIVE -->
+
+<div class="product-card">
+
+<div class="product-image">
+
+<strong>
+HIVE IMAGE
+</strong>
+
+</div>
+
+<div class="product-content">
+
+<h3>
+Hive
+</h3>
+
+<p>
+A geometric ceiling design inspired by honeycomb forms.
+</p>
+
+<a href="/collections/acoustic-ceilings/"
+class="product-link">
+VIEW PRODUCT →
+</a>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     APPLICATIONS
+========================================================= -->
+
+<section class="section section-light">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Acoustic Ceilings for Commercial Workplace Applications
+</h2>
+
+<p>
+Suitable for different areas within modern corporate and commercial
+workplace environments.
+</p>
+
+</div>
+
+
+<div class="application-grid">
+
+
+<div class="application">
+
+<h3>
+Open-Plan Offices
+</h3>
+
+<p>
+Acoustic ceiling solutions for contemporary open-plan workplace environments.
+</p>
+
+</div>
+
+
+<div class="application">
+
+<h3>
+Meeting Rooms
+</h3>
+
+<p>
+Consider acoustic ceiling solutions for professional meeting environments.
+</p>
+
+</div>
+
+
+<div class="application">
+
+<h3>
+Conference Rooms
+</h3>
+
+<p>
+Design-led acoustic ceiling solutions for corporate conference spaces.
+</p>
+
+</div>
+
+
+<div class="application">
+
+<h3>
+Collaborative Areas
+</h3>
+
+<p>
+Create a visually coordinated environment for teamwork and interaction.
+</p>
+
+</div>
+
+
+<div class="application">
+
+<h3>
+Breakout Spaces
+</h3>
+
+<p>
+Suitable for informal workplace areas designed for interaction and relaxation.
+</p>
+
+</div>
+
+
+<div class="application">
+
+<h3>
+Reception & Common Areas
+</h3>
+
+<p>
+Coordinate acoustic considerations with the design of shared commercial spaces.
+</p>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     WHO WE SERVE
+========================================================= -->
+
+<section class="section">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Built for Commercial Workplace Projects
+</h2>
+
+<p>
+COFUR acoustic ceiling solutions are relevant to professionals involved
+in designing, specifying and executing workplace projects.
+</p>
+
+</div>
+
+
+<div class="audience-grid">
+
+<div class="audience">
+Architects
+</div>
+
+<div class="audience">
+Interior Designers
+</div>
+
+<div class="audience">
+Corporate Procurement
+</div>
+
+<div class="audience">
+Facility Managers
+</div>
+
+<div class="audience">
+Contractors
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     PROCESS
+========================================================= -->
+
+<section class="section section-light">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+How Your Project Works
+</h2>
+
+<p>
+A simple project-focused process from initial requirement to quotation.
+</p>
+
+</div>
+
+
+<div class="process-grid">
+
+
+<div class="process">
+
+<div class="number">
+1
+</div>
+
+<h3>
+Share Your Requirement
+</h3>
+
+<p>
+Tell us about your workplace project, location and requirements.
+</p>
+
+</div>
+
+
+<div class="process">
+
+<div class="number">
+2
+</div>
+
+<h3>
+Discuss the Project
+</h3>
+
+<p>
+Discuss your requirements and suitable acoustic ceiling options with COFUR.
+</p>
+
+</div>
+
+
+<div class="process">
+
+<div class="number">
+3
+</div>
+
+<h3>
+Project Proposal
+</h3>
+
+<p>
+Review relevant product information and project-based requirements.
+</p>
+
+</div>
+
+
+<div class="process">
+
+<div class="number">
+4
+</div>
+
+<h3>
+Move Forward
+</h3>
+
+<p>
+Coordinate the next steps for your commercial workplace project.
+</p>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     WHY COFUR
+========================================================= -->
+
+<section class="section">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Why Work With COFUR?
+</h2>
+
+</div>
+
+
+<div class="why-grid">
+
+
+<div class="why">
+
+<h3>
+Design-Led Workplace Solutions
+</h3>
+
+<p>
+Acoustic ceiling solutions designed to complement modern commercial interiors.
+</p>
+
+</div>
+
+
+<div class="why">
+
+<h3>
+Multiple Design Options
+</h3>
+
+<p>
+Explore different forms and design directions for workplace projects.
+</p>
+
+</div>
+
+
+<div class="why">
+
+<h3>
+Commercial Project Focus
+</h3>
+
+<p>
+Solutions positioned for corporate and commercial workplace environments.
+</p>
+
+</div>
+
+
+<div class="why">
+
+<h3>
+Architect & Designer Support
+</h3>
+
+<p>
+Discuss product requirements with professionals involved in workplace design.
+</p>
+
+</div>
+
+
+<div class="why">
+
+<h3>
+Project Consultation
+</h3>
+
+<p>
+Share your project requirements and discuss the appropriate solution.
+</p>
+
+</div>
+
+
+<div class="why">
+
+<h3>
+Integrated Workplace Solutions
+</h3>
+
+<p>
+Combine acoustic ceilings with acoustic lighting, wall solutions and office furniture.
+</p>
+
+</div>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     PRODUCT SPECIFICATION
+========================================================= -->
+
+<section class="section section-light">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Need Product Specifications?
+</h2>
+
+<p>
+Product specifications can vary by acoustic ceiling design and project
+requirements. Contact COFUR for project-specific information.
+</p>
+
+</div>
+
+
+<div class="card-grid">
+
+<div class="card">
+
+<h3>
+Design & Dimensions
+</h3>
+
+<p>
+Discuss available designs, dimensions and configurations for your project.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Materials & Finishes
+</h3>
+
+<p>
+Explore available finishes and design options based on your workplace concept.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Project Requirements
+</h3>
+
+<p>
+Share your ceiling area, layout and project requirements with the COFUR team.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Quotation Support
+</h3>
+
+<p>
+Request project-specific information and a quotation based on your requirements.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     FAQ
+========================================================= -->
+
+<section class="section">
+
+<div class="container">
+
+<div class="section-heading">
+
+<h2>
+Frequently Asked Questions
+</h2>
+
+</div>
+
+
+<div class="faq">
+
+
+<details>
+
+<summary>
+What are acoustic ceilings?
+</summary>
+
+<p>
+Acoustic ceilings are ceiling solutions designed to address acoustic
+considerations while also contributing to the visual design of an interior space.
+</p>
+
+</details>
+
+
+<details>
+
+<summary>
+Are acoustic ceilings suitable for commercial offices?
+</summary>
+
+<p>
+Yes. Acoustic ceiling solutions can be considered for corporate offices,
+commercial workplaces, meeting rooms, collaborative areas and other
+professional environments.
+</p>
+
+</details>
+
+
+<details>
+
+<summary>
+What acoustic ceiling designs does COFUR offer?
+</summary>
+
+<p>
+The COFUR acoustic ceiling collection includes Wave, Petal, Blade,
+Planks, Grid, Waffle and Hive designs.
+</p>
+
+</details>
+
+
+<details>
+
+<summary>
+Can architects and interior designers contact COFUR?
+</summary>
+
+<p>
+Yes. Architects, interior designers, procurement teams, contractors
+and workplace professionals can contact COFUR regarding commercial projects.
+</p>
+
+</details>
+
+
+<details>
+
+<summary>
+Can acoustic ceilings be combined with acoustic lighting?
+</summary>
+
+<p>
+Yes. Acoustic ceiling solutions can be considered alongside acoustic
+lighting and other workplace acoustic solutions depending on the project.
+</p>
+
+</details>
+
+
+<details>
+
+<summary>
+How can I request an acoustic ceiling quotation?
+</summary>
+
+<p>
+Submit your company and project details through the enquiry form.
+The COFUR team can then discuss your requirements and quotation.
+</p>
+
+</details>
+
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     FINAL CTA
+========================================================= -->
+
+<section class="final-cta">
+
+<div class="container">
+
+<h2>
+Planning an Office or Commercial Project?
+</h2>
+
+<p>
+Discuss your acoustic ceiling requirements with COFUR and explore
+design-led solutions for your workplace.
+</p>
+
+<a href="#project-enquiry" class="btn btn-primary">
+REQUEST PROJECT QUOTE
+</a>
+
+{% if site.phone_number %}<a href="{{ site.phone_href }}" class="btn btn-light">
+CALL COFUR
+</a>{% endif %}
+
+</div>
+
+</section>
+
+</main>
+
+<footer class="lp-footer">
+<div class="container lp-footer-inner">
+
+<div>
+<strong>COFUR</strong> · Commercial workplace and acoustic solutions
+</div>
+
+<div>
+<a href="/collections/acoustic-ceilings/">View Acoustic Ceilings Collection</a>
+·
+<a href="/">cofur.in</a>
+{% if site.phone_number %}·
+<a href="{{ site.phone_href }}">{{ site.phone_number }}</a>{% endif %}
+</div>
+
+</div>
+</footer>
+{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Acoustic Ceilings for Commercial Offices | COFUR",
+  "description": "Wave, Petal, Blade, Planks, Grid, Waffle and Hive acoustic ceiling designs by COFUR for commercial interiors.",
+  "url": "{{ canonical_url }}"
+}
+</script>
+{% endblock %}

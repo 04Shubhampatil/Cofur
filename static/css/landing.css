@@ -1,0 +1,1245 @@
+/* ==========================================================================
+   COFUR marketing landing pages
+   /acoustic-wall-panels-for-offices/  and  /acoustic-ceilings-for-offices/
+
+   Layout follows the supplied designs. Every colour and face comes from the
+   site's own tokens in style.css (Baskervville for headings, Inter for text,
+   ink / paper / sand / sky), so the pages read as COFUR, not as a third party.
+   Everything is scoped under .lp so nothing here can reach the rest of the site.
+   ========================================================================== */
+
+.lp {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--font-body);
+    line-height: var(--lh-body);
+}
+
+.lp *,
+.lp *:before,
+.lp *:after {
+    box-sizing: border-box;
+}
+
+.lp img {
+    display: block;
+    max-width: 100%;
+}
+
+.lp a:not([class]) {
+    color: inherit;
+}
+
+.lp p {
+    margin: 0;
+}
+
+.lp h1,
+.lp h2,
+.lp h3,
+.lp h4 {
+    /* The site's global main h1/h2/h3 rules uppercase and shadow headings; cancel both here. */
+    text-transform: none;
+    text-shadow: none;
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: var(--ls-heading);
+    line-height: var(--lh-heading);
+    color: var(--ink);
+    margin: 0;
+}
+
+.lp h1 {
+    font-size: clamp(36px, 4.6vw, 60px);
+    line-height: 1.06;
+    margin-bottom: 20px;
+}
+
+.lp h2 {
+    font-size: var(--font-heading);
+}
+
+.lp h3 {
+    font-size: var(--font-subheading);
+    line-height: var(--lh-subheading);
+}
+
+.lp .wrap {
+    width: min(var(--measure), calc(100% - 58px));
+    margin: auto;
+}
+
+/* ---- Sections -------------------------------------------------------- */
+.lp section {
+    padding: clamp(56px, 7vw, 108px) 0;
+    background: var(--paper);
+}
+
+.lp .lp-sec-tint {
+    background: #f4f2ed;
+}
+
+.lp .lp-sec-sky {
+    background: var(--sky);
+}
+
+.lp .lp-sec-ink {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.lp .lp-sec-ink h2,
+.lp .lp-sec-ink h3 {
+    color: var(--paper);
+}
+
+.lp .lp-sec-ink p {
+    color: rgba(251, 249, 243, .78);
+}
+
+.lp .lp-head {
+    max-width: var(--reading-measure);
+    margin: 0 auto clamp(34px, 4.5vw, 60px);
+    text-align: center;
+}
+
+.lp .lp-head p:not(.lp-eyebrow) {
+    color: rgba(19, 34, 65, .78);
+    margin-top: 16px;
+}
+
+/* Eyebrow: the site's square mark, set inline so it sits on the text line. */
+.lp .lp-eyebrow {
+    display: block;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+    color: rgba(19, 34, 65, .6);
+    margin: 0 0 16px;
+}
+
+.lp .lp-eyebrow:before {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: 0 9px 1px 0;
+    vertical-align: middle;
+    background: var(--sand);
+    border-radius: 0 3px;
+}
+
+.lp .lp-sec-ink .lp-eyebrow {
+    color: rgba(251, 249, 243, .66);
+}
+
+.lp .lp-head .lp-eyebrow {
+    display: block;
+}
+
+/* ---- Buttons --------------------------------------------------------- */
+/* .btn and .btn--light come from style.css. Only the extra pale variant and
+   the row that holds them are defined here. */
+.lp .lp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: clamp(26px, 3vw, 36px);
+}
+
+.lp .btn {
+    text-decoration: none;
+}
+
+.lp .btn--light:hover,
+.lp .btn--light:focus-visible {
+    background: var(--ink);
+    color: #fff;
+}
+
+.lp .btn--pale {
+    background: var(--paper);
+    border-color: var(--paper);
+    color: var(--ink);
+}
+
+.lp .btn--pale:hover,
+.lp .btn--pale:focus-visible {
+    background: var(--sand);
+    border-color: var(--sand);
+}
+
+.lp .lp-link {
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+    color: #9d7936;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+}
+
+.lp .lp-link:hover,
+.lp .lp-link:focus-visible {
+    color: var(--ink);
+}
+
+/* ---- Announcement bar + header + footer (wall panels page only) ------- */
+.lp-top {
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+    padding: 9px 14px;
+    font-size: var(--font-tiny);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+}
+
+.lp-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--line);
+}
+
+.lp-bar .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 76px;
+}
+
+.lp-logo {
+    display: block;
+    flex: none;
+    line-height: 0;
+}
+
+.lp-logo img {
+    width: clamp(150px, 15vw, 200px);
+    height: auto;
+}
+
+.lp-logo span {
+    display: block;
+    font-family: var(--sans);
+    font-size: 9px;
+    letter-spacing: .22em;
+    margin-top: 4px;
+}
+
+.lp-nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+}
+
+.lp-nav a {
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.lp-nav a:not(.btn):hover {
+    color: #9d7936;
+}
+
+.lp-foot {
+    background: var(--ink);
+    color: rgba(251, 249, 243, .78);
+    padding: 27px 0;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+}
+
+.lp-foot .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.lp-foot strong {
+    color: var(--paper);
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: .14em;
+}
+
+.lp-foot a {
+    color: var(--paper);
+}
+
+/* ---- Hero ------------------------------------------------------------ */
+.lp .lp-hero {
+    padding: clamp(40px, 6vw, 88px) 0;
+}
+
+.lp .lp-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr);
+    gap: clamp(32px, 5vw, 70px);
+    align-items: center;
+}
+
+.lp .lp-lead {
+    font-size: calc(var(--font-body) * 1.08);
+    line-height: 1.62;
+    color: rgba(19, 34, 65, .8);
+    max-width: 52ch;
+}
+
+.lp .lp-checks {
+    list-style: none;
+    padding: 0;
+    margin: clamp(22px, 2.6vw, 30px) 0 0;
+    display: grid;
+    gap: 11px;
+}
+
+.lp .lp-checks li {
+    position: relative;
+    padding-left: 28px;
+    color: rgba(19, 34, 65, .82);
+}
+
+.lp .lp-checks li:before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: .52em;
+    width: 11px;
+    height: 6px;
+    border-left: 1.5px solid var(--sand);
+    border-bottom: 1.5px solid var(--sand);
+    transform: rotate(-45deg);
+}
+
+/* ---- Trust strip ----------------------------------------------------- */
+.lp .lp-trust {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0;
+}
+
+.lp .lp-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: rgba(251, 249, 243, .16);
+}
+
+.lp .lp-trust-grid > div {
+    background: var(--ink);
+    padding: clamp(20px, 2.4vw, 30px) 16px;
+    text-align: center;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+}
+
+.lp .lp-trust-grid small {
+    display: block;
+    margin-top: 7px;
+    font-size: var(--font-tiny);
+    letter-spacing: .02em;
+    text-transform: none;
+    color: rgba(251, 249, 243, .62);
+}
+
+/* ---- Lists as grids -------------------------------------------------- */
+.lp .lp-grid {
+    display: grid;
+    gap: clamp(16px, 2vw, 26px);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.lp .lp-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lp .lp-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lp .lp-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.lp .lp-grid-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+/* ---- Panels (benefit / text cards) ----------------------------------- */
+.lp .lp-panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: clamp(22px, 2.6vw, 32px);
+}
+
+.lp .panel--tint {
+    background: var(--paper);
+}
+
+.lp .lp-panel h3 {
+    margin-bottom: 12px;
+}
+
+.lp .lp-panel p {
+    color: rgba(19, 34, 65, .8);
+}
+
+.lp .lp-mark {
+    font-family: var(--serif);
+    font-size: 26px;
+    line-height: 1;
+    color: var(--sand);
+    margin-bottom: 14px;
+}
+
+/* ---- Product tiles --------------------------------------------------- */
+.lp .lp-product {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.lp .lp-tile {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    background: #efece4;
+    border-bottom: 1px solid var(--line);
+}
+
+.lp .lp-product__media {
+    display: block;
+    background: #efece4;
+    overflow: hidden;
+}
+
+.lp .lp-product__media img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform .6s cubic-bezier(.22, .61, .36, 1);
+}
+
+.lp .lp-product__media:hover img {
+    transform: scale(1.04);
+}
+
+.lp .lp-product__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: clamp(20px, 2.2vw, 28px);
+}
+
+.lp .lp-product__body h3 {
+    margin-bottom: 10px;
+}
+
+.lp .lp-product__body p {
+    color: rgba(19, 34, 65, .8);
+    margin-bottom: 18px;
+}
+
+.lp .lp-product__foot {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+}
+
+/* ---- Applications ---------------------------------------------------- */
+.lp .lp-app {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: clamp(22px, 2.6vw, 30px);
+    min-height: 150px;
+}
+
+.lp .lp-app h3 {
+    font-size: calc(var(--font-body) * 1.3);
+    line-height: 1.3;
+}
+
+.lp .lp-app p {
+    margin-top: 10px;
+    color: rgba(19, 34, 65, .8);
+}
+
+/* ---- Audience -------------------------------------------------------- */
+.lp .lp-audience {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(32px, 5vw, 70px);
+    align-items: center;
+}
+
+.lp .lp-audience p {
+    color: rgba(19, 34, 65, .8);
+    margin: 16px 0 0;
+}
+
+.lp .lp-audience .lp-actions {
+    margin-top: 26px;
+}
+
+.lp .lp-chip {
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 15px;
+    text-align: center;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+    color: rgba(19, 34, 65, .82);
+    background: #fff;
+}
+
+.lp .lp-chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+/* ---- Process --------------------------------------------------------- */
+.lp .lp-process {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    list-style: none;
+    counter-increment: lp-step;
+}
+
+.lp .lp-process-grid {
+    counter-reset: lp-step;
+}
+
+.lp .lp-process:before {
+    content: "0" counter(lp-step);
+    display: block;
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1;
+    color: var(--sand);
+    margin-bottom: 14px;
+}
+
+.lp .lp-process h3 {
+    font-size: calc(var(--font-body) * 1.22);
+    line-height: 1.3;
+    margin-bottom: 9px;
+}
+
+.lp .lp-process p {
+    color: rgba(19, 34, 65, .8);
+}
+
+/* ---- Dark band ------------------------------------------------------- */
+.lp .lp-band {
+    background: var(--ink);
+    color: var(--paper);
+    padding: clamp(44px, 5.5vw, 84px) 0;
+}
+
+.lp .lp-band-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(26px, 4vw, 60px);
+    align-items: center;
+}
+
+.lp .lp-band h2 {
+    font-size: var(--font-subheading);
+    line-height: var(--lh-subheading);
+    color: var(--paper);
+    margin-bottom: 12px;
+}
+
+.lp .lp-band p {
+    color: rgba(251, 249, 243, .76);
+    max-width: 62ch;
+}
+
+/* ---- Enquiry section ------------------------------------------------- */
+.lp .lp-form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+    gap: clamp(30px, 4vw, 64px);
+    align-items: start;
+}
+
+.lp .lp-form-grid h2 {
+    margin-bottom: 18px;
+}
+
+.lp .lp-form-grid > div > p {
+    color: rgba(19, 34, 65, .8);
+}
+
+.lp .lp-sec-ink .lp-form-grid > div > p {
+    color: rgba(251, 249, 243, .8);
+}
+
+.lp .lp-form-list {
+    list-style: none;
+    margin: clamp(22px, 2.6vw, 30px) 0 0;
+    padding: 0;
+    display: grid;
+}
+
+.lp .lp-form-list li {
+    border-top: 1px solid rgba(251, 249, 243, .18);
+    padding: 13px 0;
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+    color: rgba(251, 249, 243, .72);
+}
+
+.lp .lp-form-list li:last-child {
+    border-bottom: 1px solid rgba(251, 249, 243, .18);
+}
+
+.lp .lp-form-list li:before {
+    content: "✓";
+    margin-right: 10px;
+    color: var(--sand);
+}
+
+/* The enquiry form itself is the site's contact-form styling, unchanged.
+   The panel sits on white even inside a dark section, so its own text must
+   take the ink colour back rather than inherit the section's light text. */
+.lp .contact-form-panel,
+.lp .lp-sec-ink .contact-form-panel {
+    color: var(--ink);
+}
+
+.lp .contact-form-panel h2,
+.lp .contact-form-panel .contact-form-title,
+.lp .lp-sec-ink .contact-form-panel h2 {
+    color: var(--ink);
+}
+
+.lp .contact-form-panel p,
+.lp .lp-sec-ink .contact-form-panel p {
+    color: rgba(19, 34, 65, .78);
+}
+
+.lp .lp-required {
+    font-size: var(--font-caption);
+    color: rgba(19, 34, 65, .55);
+    margin: 0 0 clamp(22px, 2.6vw, 32px);
+}
+
+.lp .form-errors {
+    background: #fdf2f2;
+    border: 1px solid #e4bcbc;
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin: 0 0 22px;
+}
+
+.lp .form-errors ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.lp .field-error {
+    color: #9c2f2f;
+    font-size: var(--font-tiny);
+}
+
+/* ---- FAQ ------------------------------------------------------------- */
+.lp .lp-faq {
+    width: min(var(--reading-measure), 100%);
+    margin: auto;
+    border-top: 1px solid var(--line);
+}
+
+.lp .lp-faq details {
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.lp .lp-faq summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    cursor: pointer;
+    list-style: none;
+    padding: 22px 0;
+    font-family: var(--serif);
+    font-size: calc(var(--font-body) * 1.2);
+    line-height: 1.35;
+    font-weight: 400;
+}
+
+.lp .lp-faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.lp .lp-faq summary:after {
+    content: "+";
+    flex: none;
+    font-family: var(--sans);
+    font-size: 20px;
+    line-height: 1;
+    color: var(--sand);
+}
+
+.lp .lp-faq details[open] summary:after {
+    content: "–";
+}
+
+.lp .lp-faq summary:focus-visible {
+    outline: 2px solid var(--sand);
+    outline-offset: 3px;
+}
+
+.lp .lp-faq details p {
+    font-size: var(--font-body);
+    line-height: var(--lh-body);
+    color: rgba(19, 34, 65, .8);
+    margin: 0 0 24px;
+    max-width: 72ch;
+}
+
+/* ---- Closing CTA ----------------------------------------------------- */
+.lp .lp-final {
+    text-align: center;
+}
+
+.lp .lp-final h2 {
+    max-width: 24ch;
+    margin: 0 auto 16px;
+}
+
+.lp .lp-final p {
+    color: rgba(19, 34, 65, .8);
+    max-width: 58ch;
+    margin: 0 auto;
+}
+
+.lp .lp-final .lp-actions {
+    justify-content: center;
+}
+
+/* ---- Mobile sticky bar (wall panels page) ---------------------------- */
+.lp-sticky {
+    display: none;
+}
+
+/* ---- Scroll reveal --------------------------------------------------- */
+/* Hidden only once the script has confirmed it can bring them back. */
+.lp-js [data-lp-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .7s cubic-bezier(.22, .61, .36, 1), transform .7s cubic-bezier(.22, .61, .36, 1);
+}
+
+.lp-js [data-lp-reveal].is-in {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---- Responsive ------------------------------------------------------ */
+@media(max-width:1100px) {
+    .lp .lp-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media(max-width:1080px) {
+    .lp-nav a:not(.btn) {
+        display: none;
+    }
+}
+
+@media(max-width:900px) {
+    .lp .lp-hero-grid,
+    .lp .lp-form-grid,
+    .lp .lp-audience,
+    .lp .lp-band-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .lp .lp-grid-3,
+    .lp .lp-grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lp .lp-trust-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lp .lp-process-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media(max-width:640px) {
+    .lp .lp-grid-2,
+    .lp .lp-grid-3,
+    .lp .lp-grid-4,
+    .lp .lp-grid-5,
+    .lp .lp-chips,
+    .lp .lp-process-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lp .lp-actions .btn {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+
+    .lp-nav a:not(.btn) {
+        display: none;
+    }
+
+    .lp-logo {
+        font-size: 22px;
+    }
+
+    .lp-sticky {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 40;
+        display: flex;
+        gap: 10px;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(251, 249, 243, .96);
+        border-top: 1px solid var(--line);
+        backdrop-filter: blur(6px);
+    }
+
+    .lp-sticky .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 13px 14px;
+    }
+
+    /* Keep the last section clear of the sticky bar. */
+    .lp .lp-final {
+        padding-bottom: 120px;
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .lp-js [data-lp-reveal] {
+        transform: none;
+        transition: opacity .3s;
+    }
+
+    .lp .lp-product__media img,
+    .lp .lp-product__media:hover img {
+        transition: none;
+        transform: none;
+    }
+}
+
+/* ---- Hero image card --------------------------------------------------
+   A framed card in the same language as the product tiles: white, hairline
+   border, small radius. The photo fills the frame edge to edge; the caption
+   sits below it on paper, not over the picture. */
+.lp .lp-hero-media {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0;
+}
+
+.lp .lp-hero-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.lp .lp-hero-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px 24px 22px;
+    border-top: 1px solid var(--line);
+}
+
+.lp .lp-hero-caption__title {
+    font-family: var(--serif);
+    font-size: var(--font-subheading);
+    line-height: var(--lh-subheading);
+    color: var(--ink);
+}
+
+.lp .lp-hero-caption__meta {
+    font-size: var(--font-caption);
+    letter-spacing: var(--ls-caption);
+    text-transform: uppercase;
+    color: #9d7936;
+}
+
+.lp .lp-hero-media--empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--line);
+}
+
+/* ---- Compact application tiles and enquiry form ----------------------
+   Application tiles are short cards with a bold sans label, as in the
+   reference. The enquiry form is set smaller so it reads as a form, not a
+   billboard. Field styling is still the site's contact-form styling. */
+.lp .lp-app {
+    min-height: 0;
+    padding: 18px 22px;
+    border-radius: 0;
+}
+
+.lp .lp-app h3 {
+    font-family: var(--serif);
+    font-size: calc(var(--font-body) * 1.3);
+    font-weight: 400;
+    letter-spacing: var(--ls-heading);
+    line-height: 1.3;
+    color: var(--ink);
+}
+
+.lp .lp-app p {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 6px;
+}
+
+.lp .contact-form-panel {
+    padding: clamp(20px, 2.2vw, 28px);
+    border-radius: 12px;
+}
+
+.lp .contact-form-panel .contact-form-title {
+    font-size: 22px;
+    line-height: 1.2;
+    margin: 0 0 6px;
+}
+
+.lp .lp-required {
+    font-size: 12px;
+    margin-bottom: 16px;
+}
+
+.lp .contact-grid {
+    gap: 12px 16px;
+}
+
+.lp .cfield {
+    gap: 5px;
+}
+
+.lp .contact-form label {
+    font-size: 12px;
+}
+
+.lp .contact-form input,
+.lp .contact-form select {
+    padding: 9px 12px;
+    font-size: 14px;
+}
+
+.lp .contact-form textarea {
+    min-height: 92px;
+    padding: 9px 12px;
+    font-size: 14px;
+}
+
+.lp .contact-submit {
+    margin-top: 18px;
+}
+
+.lp .contact-button {
+    padding: 12px 24px;
+}
+
+/* ---- Enquiry form width ---------------------------------------------
+   The form column reads as a form rather than a block: narrower column,
+   panel capped in width and set to the right of the intro. */
+.lp .lp-form-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
+}
+
+.lp .lp-form-grid > .contact-form-panel {
+    width: 100%;
+    max-width: 520px;
+    justify-self: end;
+}
+
+@media(max-width:900px) {
+    .lp .lp-form-grid > .contact-form-panel {
+        max-width: none;
+        justify-self: stretch;
+    }
+}
+
+/* ---- Hero card alignment --------------------------------------------
+   On wide screens the card stretches to the full height of the text column,
+   so its top edge lines up with the eyebrow and its bottom edge with the
+   buttons. The photo fills the space above the caption. */
+.lp .lp-hero-grid {
+    align-items: stretch;
+}
+
+.lp .lp-hero-media {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.lp .lp-hero-media img {
+    flex: 1 1 0;
+    height: 0;
+    min-height: 0;
+    aspect-ratio: auto;
+}
+
+.lp .lp-hero-media {
+    min-height: 360px;
+}
+
+.lp .lp-hero-media--empty {
+    flex: 1 1 auto;
+    min-height: 360px;
+    aspect-ratio: auto;
+}
+
+@media(max-width:900px) {
+    .lp .lp-hero-grid {
+        align-items: start;
+    }
+
+    .lp .lp-hero-media {
+        height: auto;
+    }
+
+    .lp .lp-hero-media img {
+        flex: none;
+        min-height: 0;
+        aspect-ratio: 4 / 3;
+    }
+
+    .lp .lp-hero-media--empty {
+        flex: none;
+        min-height: 0;
+        aspect-ratio: 4 / 3;
+    }
+}
+
+/* ---- Application tiles with photographs ---------------------------- */
+.lp .lp-app {
+    padding: 0;
+    overflow: hidden;
+}
+
+.lp .lp-app__media {
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #efece4;
+}
+
+.lp .lp-app__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.lp .lp-app h3 {
+    padding: 16px 20px 0;
+}
+
+.lp .lp-app p {
+    padding: 0 20px 18px;
+}
+
+.lp .lp-app:not(:has(p)) h3 {
+    padding-bottom: 18px;
+}
+
+/* ---- Audience photo ---------------------------------------------------- */
+.lp .lp-audience__side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.lp .lp-audience__media {
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #efece4;
+}
+
+.lp .lp-audience__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ---- Audience photo grid -----------------------------------------------
+   Four photographs in the right half of the audience row: two columns, two
+   images in each. Images fill their frames; the frames share one aspect ratio. */
+.lp .lp-audience__gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.lp .lp-audience__col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lp .lp-audience__photo {
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+}
+
+.lp .lp-audience__photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #efece4;
+}
+
+.lp .lp-audience__photo figcaption {
+    padding: 14px 18px 16px;
+    font-family: var(--serif);
+    font-size: calc(var(--font-body) * 1.2);
+    line-height: 1.3;
+    color: var(--ink);
+}
+
+/* ---- Enquiry list on a light section --------------------------------
+   The list is styled for the dark enquiry band by default. On the sky
+   background it needs ink text and hairlines, or it disappears. */
+.lp .lp-sec-sky .lp-form-list li {
+    color: rgba(19, 34, 65, .82);
+    border-top-color: var(--line);
+}
+
+.lp .lp-sec-sky .lp-form-list li:last-child {
+    border-bottom-color: var(--line);
+}
+
+/* ---- Application cards, reference styling ----------------------------
+   Hairline card with a large arched top-right corner. The title is
+   uppercase serif in two tones: the first word light, the rest in ink.
+   The photograph sits at the foot of the card. */
+.lp .lp-app {
+    display: flex;
+    flex-direction: column;
+    background: #fdfcf8;
+    border: 1px solid var(--line);
+    border-radius: 4px 170px 4px 4px;
+    overflow: hidden;
+}
+
+.lp .lp-app h3 {
+    order: -1;
+    padding: 26px 84px 0 26px;
+    font-size: calc(var(--font-body) * 1.85);
+    line-height: 1.08;
+    letter-spacing: -.005em;
+    text-transform: uppercase;
+    color: var(--ink);
+}
+
+.lp .lp-app h3 em {
+    font-style: normal;
+    color: #b9b9b4;
+}
+
+.lp .lp-app__media {
+    order: 1;
+    margin: auto 22px 22px;
+    aspect-ratio: 4 / 3;
+    border: 0;
+    background: transparent;
+}
+
+.lp .lp-app p {
+    order: 2;
+    padding: 0 26px 22px;
+}
+
+/* ---- Enquiry form spacing -------------------------------------------
+   Room between the form title, the required-fields note and the first
+   row of fields, so the form does not run into its heading. */
+.lp .contact-form-panel .contact-form-title {
+    margin-bottom: 14px;
+}
+
+.lp .lp-required {
+    margin-bottom: 24px;
+}
+
+.lp .lp-form__required {
+    font-size: var(--font-caption);
+    color: rgba(19, 34, 65, .55);
+    margin: 0 0 24px;
+}
+
+/* ---- Card illustrations ---------------------------------------------- */
+.lp .lp-illus {
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+    color: var(--ink);
+}
+
+/* ---- Role cards with titles (ceilings: Built for...) ---------------
+   Rounded tile with a hairline frame, photograph inside, title beneath in
+   serif, as in the reference. */
+.lp .lp-card-photo {
+    margin: 0;
+}
+
+.lp .lp-card-photo__frame {
+    aspect-ratio: 1 / 1;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fbfaf6;
+    overflow: hidden;
+}
+
+.lp .lp-card-photo__frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.lp .lp-card-photo figcaption {
+    margin-top: 14px;
+    font-family: var(--serif);
+    font-size: calc(var(--font-body) * 1.3);
+    line-height: 1.25;
+    color: var(--ink);
+}

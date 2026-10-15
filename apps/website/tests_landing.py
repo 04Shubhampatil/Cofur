@@ -1,0 +1,117 @@
+"""Tests for the two campaign landing pages.
+
+What matters about these pages is as much what they do *not* have — site
+chrome, and any link pointing at them — as what they render.
+"""
+import time
+
+from django.core.cache import cache
+from django.core.management import call_command
+from django.test import TestCase
+from django.urls import reverse
+
+from apps.enquiries.models import Enquiry
+
+LANDING_PATHS = [
+    "/acoustic-wall-panels-for-offices/",
+    "/acoustic-ceilings-for-offices/",
+]
+
+
+def enquiry_payload(**overrides):
+    data = {
+        "name": "Asha Mehta",
+        "email": "asha@studio.example",
+        "phone": "+91 98200 11223",
+        "company": "Mehta Design Studio",
+        "city": "Pune",
+        "message": "Looking at panels for a 4,000 sq ft office fit-out in March.",
+        # The form rejects anything submitted within two seconds of loading.
+        "form_started": str(time.time() - 30),
+        "website": "",
+        "product_slug": "",
+    }
+    data.update(overrides)
+    return data
+
+
+class LandingPageTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_cofur", skip_images=True, verbosity=0)
+
+    def setUp(self):
+        # The enquiry rate limiter counts per IP in the cache, which outlives a
+        # test's transaction. Without this, whoever ran first spends the quota.
+        cache.clear()
+
+    def test_both_pages_render_their_own_copy(self):
+        wall = self.client.get(LANDING_PATHS[0])
+        self.assertEqual(wall.status_code, 200)
+        self.assertContains(wall, "Acoustic Wall Panels for Commercial Offices")
+        self.assertContains(wall, "Enquire About Acoustic Wall Panels")
+        self.assertContains(wall, "Grooved Wall Panels")
+
+        ceiling = self.client.get(LANDING_PATHS[1])
+        self.assertEqual(ceiling.status_code, 200)
+        self.assertContains(ceiling, "Acoustic Ceilings for Commercial Offices")
+        self.assertContains(ceiling, "Discuss Your Acoustic Ceiling Project")
+        for design in ["Wave", "Petal", "Blade", "Planks", "Grid", "Waffle", "Hive"]:
+            self.assertContains(ceiling, design)
+
+    def test_pages_carry_the_site_theme_but_no_header_or_footer(self):
+        for path in LANDING_PATHS:
+            with self.subTest(path=path):
+                body = self.client.get(path).content.decode()
+                # The brand: the site's own stylesheet, so fonts, tokens and
+                # the enquiry form look exactly like the rest of COFUR.
+                self.assertIn("css/style.css", body)
+                self.assertIn("css/landing.css", body)
+                # No chrome.
+                self.assertNotIn("site-header", body)
+                self.assertNotIn("mega-menu", body)
+                self.assertNotIn("site-footer", body)
+                self.assertNotIn("All rights reserved", body)
+
+    def test_nothing_on_the_website_links_to_them(self):
+        reachable = ["website:home", "website:about", "website:contact", "website:projects", "website:catalogues"]
+        for name in reachable:
+            body = self.client.get(reverse(name)).content.decode()
+            for path in LANDING_PATHS:
+                with self.subTest(page=name, target=path):
+                    self.assertNotIn(path, body)
+
+    def test_the_form_is_the_real_cofur_enquiry_form(self):
+        body = self.client.get(LANDING_PATHS[0]).content.decode()
+        self.assertIn("csrfmiddlewaretoken", body)
+        self.assertIn('name="collection" value="Acoustic Wall Panels (campaign page)"', body)
+        self.assertIn('name="website"', body)  # honeypot
+        self.assertIn('name="form_started"', body)
+        for field in ["name", "email", "phone", "company", "city", "product", "message"]:
+            self.assertIn(f'name="{field}"', body)
+
+    def test_a_submission_lands_in_the_enquiry_inbox_and_stays_on_the_page(self):
+        response = self.client.post(LANDING_PATHS[1], enquiry_payload())
+        self.assertRedirects(response, f"{LANDING_PATHS[1]}?sent=1#enquiry", fetch_redirect_response=False)
+
+        enquiry = Enquiry.objects.get()
+        self.assertEqual(enquiry.name, "Asha Mehta")
+        self.assertEqual(enquiry.city, "Pune")
+        # The campaign page the lead came from, visible in the dashboard.
+        self.assertEqual(enquiry.collection_ref, "Acoustic Ceilings (campaign page)")
+
+        # Following the redirect shows the success message, on the landing page.
+        landed = self.client.get(f"{LANDING_PATHS[1]}?sent=1")
+        self.assertContains(landed, "form-message show")
+
+    def test_a_bad_submission_comes_back_on_the_landing_page_with_errors(self):
+        response = self.client.post(LANDING_PATHS[0], enquiry_payload(email="not-an-email", message="no"))
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "Enquire About Acoustic Wall Panels", status_code=400)
+        self.assertContains(response, "field-error", status_code=400)
+        self.assertFalse(Enquiry.objects.exists())
+
+    def test_the_honeypot_still_rejects_bots(self):
+        response = self.client.post(LANDING_PATHS[0], enquiry_payload(website="http://spam.example"))
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Enquiry.objects.exists())

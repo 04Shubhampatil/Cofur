@@ -1,0 +1,275 @@
+{% extends "pages/landing/base.html" %}
+{% load static cofur_tags %}
+
+{% block content %}
+<main class="lp">
+
+  <!-- Announcement bar -->
+  <div class="lp-top">Design-led acoustic wall panel options for commercial interiors · Project enquiries welcome</div>
+
+  <!-- Header -->
+  <header class="lp-bar">
+    <div class="wrap">
+      <a class="lp-logo" href="https://cofur.in/"><img src="{% static 'images/cofur-logo-tagline.png' %}" alt="COFUR — Change the way you work" width="308" height="91"></a>
+      <nav class="lp-nav" aria-label="Page sections">
+        <a href="#products">Wall panel products</a>
+        <a href="#applications">Applications</a>
+        <a href="#faq">FAQs</a>
+        <a class="btn" href="#enquiry">Request project quote</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="lp-hero">
+    <div class="wrap lp-hero-grid">
+      <div>
+        <p class="lp-eyebrow">Acoustic wall panels · Commercial interiors</p>
+        <h1>Acoustic Wall Panels for Commercial Offices</h1>
+        <p class="lp-lead">
+          Explore COFUR&rsquo;s grooved, printed and fluted wall panel designs for corporate
+          workplaces, meeting rooms and contemporary commercial interiors. Share your project
+          requirements to discuss suitable options.
+        </p>
+        <ul class="lp-checks">
+          <li>Three wall panel product ranges to explore</li>
+          <li>Applications across corporate, institutional and hospitality spaces</li>
+          <li>Enquiries for architects, interior designers and project teams</li>
+        </ul>
+        <div class="lp-actions">
+          <a class="btn" href="#enquiry">Request a project quote</a>
+          <a class="btn btn--light" href="#products">Explore wall panels</a>
+        </div>
+      </div>
+
+      <figure class="lp-hero-media">
+        <img src="{% static 'images/cofur/wall-collection.webp' %}" alt="Acoustic wall panels by COFUR" fetchpriority="high" decoding="async">
+        <figcaption class="lp-hero-caption">
+          <span class="lp-hero-caption__title">Explore COFUR acoustic wall panels</span>
+          <span class="lp-hero-caption__meta">Grooved · Printed · Fluted</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Trust strip -->
+  <div class="lp-trust">
+    <div class="wrap lp-trust-grid">
+      <div>Corporate Spaces<small>Workplace applications</small></div>
+      <div>Institutional Spaces<small>Project-based enquiries</small></div>
+      <div>Hospitality Spaces<small>Interior design options</small></div>
+      <div>Design Consultation<small>Discuss your brief</small></div>
+    </div>
+  </div>
+
+  <!-- Products -->
+  <section id="products">
+    <div class="wrap">
+      <div class="lp-head" data-lp-reveal>
+        <p class="lp-eyebrow">Explore the collection</p>
+        <h2>COFUR Acoustic Wall Panel Products</h2>
+        <p>
+          View the three products listed in COFUR&rsquo;s Acoustic Wall Panels collection.
+          Open a product page for further details or enquire about your project.
+        </p>
+      </div>
+
+      <ul class="lp-grid lp-grid-3" role="list">
+        {% for panel in panels %}
+        <li class="lp-product" data-lp-reveal>
+          <a class="lp-product__media" href="{{ panel.url }}">
+            <img src="{% static panel.photo %}" alt="{{ panel.title }}" loading="lazy" decoding="async">
+          </a>
+          <div class="lp-product__body">
+            <h3>{{ panel.title }}</h3>
+            <p>{{ panel.copy }}</p>
+            <div class="lp-product__foot">
+              <a class="lp-link" href="{{ panel.url }}">View product details</a>
+              <a class="btn btn--light" href="#enquiry">Enquire about this product</a>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Wall panel options -->
+  <section class="lp-sec-tint">
+    <div class="wrap">
+      <div class="lp-head" data-lp-reveal>
+        <p class="lp-eyebrow">For commercial projects</p>
+        <h2>Wall Panel Options for Modern Interiors</h2>
+        <p>
+          Choose a panel style to complement your design brief. Ask COFUR about product
+          details, finishes and suitability for your project.
+        </p>
+      </div>
+
+      <ul class="lp-grid lp-grid-3" role="list">
+        <li class="lp-panel" data-lp-reveal>
+          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="48" height="48" rx="3"/><path d="M18 8 v48 M28 8 v48 M38 8 v48 M48 8 v48"/></g></svg>
+          <h3>Grooved wall design</h3>
+          <p>A patterned surface treatment for workplace and commercial interior schemes.</p>
+        </li>
+        <li class="lp-panel" data-lp-reveal>
+          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="48" height="48" rx="3"/><circle cx="22" cy="22" r="4"/><circle cx="42" cy="22" r="4"/><circle cx="32" cy="32" r="4"/><circle cx="22" cy="42" r="4"/><circle cx="42" cy="42" r="4"/></g></svg>
+          <h3>Printed wall design</h3>
+          <p>A visually distinctive option for interiors where wall graphics and design are part of the brief.</p>
+        </li>
+        <li class="lp-panel" data-lp-reveal>
+          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="48" height="48" rx="3"/><path d="M18 8 q-4 24 0 48 M28 8 q-4 24 0 48 M38 8 q-4 24 0 48 M48 8 q-4 24 0 48"/></g></svg>
+          <h3>Fluted wall design</h3>
+          <p>A linear, vertical design that can complement contemporary commercial interiors.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Applications -->
+  <section id="applications">
+    <div class="wrap">
+      <div class="lp-head" data-lp-reveal>
+        <p class="lp-eyebrow">Applications</p>
+        <h2>Where Can COFUR Wall Panels Be Considered?</h2>
+        <p>COFUR lists these wall panel products for corporate, institutional and hospitality spaces.</p>
+      </div>
+
+      <ul class="lp-grid lp-grid-3" role="list">
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-gallery-5.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:left center"></figure><h3><em>Corporate</em> offices</h3></li>
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-fluted.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:right center"></figure><h3><em>Meeting</em> &amp; conference areas</h3></li>
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-grooved.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:left center"></figure><h3><em>Institutional</em> interiors</h3></li>
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-printed.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:center right"></figure><h3><em>Hospitality</em> spaces</h3></li>
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-gallery-3.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:right center"></figure><h3><em>Reception</em> &amp; common areas</h3></li>
+        <li class="lp-app" data-lp-reveal><figure class="lp-app__media"><img src="{% static 'images/cofur/wall-collection.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:center"></figure><h3><em>Commercial</em> interior projects</h3></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Dark CTA band -->
+  <section class="lp-band">
+    <div class="wrap lp-band-grid">
+      <div>
+        <h2>Planning a Commercial Interior Project?</h2>
+        <p>
+          Tell us which wall panel range you&rsquo;re considering, along with your project
+          location and timeline. COFUR&rsquo;s team can follow up to discuss your requirements.
+        </p>
+      </div>
+      <a class="btn btn--pale" href="#enquiry">Discuss your project</a>
+    </div>
+  </section>
+
+  <!-- Audience -->
+  <section>
+    <div class="wrap lp-audience">
+      <div>
+        <p class="lp-eyebrow">For professional project teams</p>
+        <h2>For Architects, Interior Designers and Businesses</h2>
+        <p>
+          Share your project brief when planning wall treatments for a workplace, institution
+          or hospitality interior. If available, include drawings, approximate quantities and
+          preferred finishes during follow-up.
+        </p>
+        <div class="lp-actions">
+          <a class="btn" href="#enquiry">Request project consultation</a>
+        </div>
+      </div>
+      <div class="lp-audience__gallery">
+        <div class="lp-audience__col">
+          <figure class="lp-audience__photo"><img src="{% static 'images/cofur/wall-gallery-1.webp' %}" alt="" loading="lazy" decoding="async"><figcaption>Architects</figcaption></figure>
+          <figure class="lp-audience__photo"><img src="{% static 'images/cofur/wall-gallery-2.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:left center"><figcaption>Interior Designers</figcaption></figure>
+        </div>
+        <div class="lp-audience__col">
+          <figure class="lp-audience__photo"><img src="{% static 'images/cofur/wall-gallery-4.webp' %}" alt="" loading="lazy" decoding="async"><figcaption>Corporate Procurement</figcaption></figure>
+          <figure class="lp-audience__photo"><img src="{% static 'images/cofur/wall-gallery-3.webp' %}" alt="" loading="lazy" decoding="async"><figcaption>Facility Managers</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enquiry -->
+  <section class="lp-sec-sky" id="enquiry">
+    <div class="wrap lp-form-grid">
+      <div data-lp-reveal>
+        <p class="lp-eyebrow">Project enquiry</p>
+        <h2>Enquire About Acoustic Wall Panels</h2>
+        <p>Send your contact details and project information so the COFUR team can understand your requirements.</p>
+        <ul class="lp-form-list">
+          <li>Choose grooved, printed or fluted wall panels</li>
+          <li>Share your project city and project stage</li>
+          <li>Include quantity, finish or timeline if known</li>
+        </ul>
+      </div>
+
+      <div class="contact-form-panel">
+        {% include "components/landing-enquiry-form.html" with form_heading="Tell us about your project" products_label="Acoustic wall panels" submit_text="Submit project enquiry" message_placeholder="Quantity, preferred finish, project stage, timeline or other requirements." %}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="wrap">
+      <div class="lp-head" data-lp-reveal>
+        <p class="lp-eyebrow">Frequently asked questions</p>
+        <h2>Acoustic Wall Panels FAQs</h2>
+        <p>Information for commercial project enquiries.</p>
+      </div>
+
+      <div class="lp-faq">
+        <details>
+          <summary>Which acoustic wall panel products does COFUR list?</summary>
+          <p>The collection lists Grooved Wall Panels, Printed Wall Panels and Fluted Wall Panels. Visit each product page for the available details.</p>
+        </details>
+        <details>
+          <summary>Which spaces are these wall panels intended for?</summary>
+          <p>COFUR lists corporate, institutional and hospitality spaces as application areas for these wall panel products. Discuss your specific site and use case with the team.</p>
+        </details>
+        <details>
+          <summary>Can I request a quote for a commercial project?</summary>
+          <p>Yes. Use the enquiry form to share your contact information, project city, product interest and project stage.</p>
+        </details>
+        <details>
+          <summary>Can architects and interior designers enquire?</summary>
+          <p>Yes. Architects, interior designers, contractors and project teams can share their project brief through the enquiry form.</p>
+        </details>
+        <details>
+          <summary>Do the panels have specified acoustic performance ratings?</summary>
+          <p>Check the relevant product documentation or confirm with COFUR before relying on any particular acoustic rating or technical performance claim.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="lp-sec-tint lp-final">
+    <div class="wrap">
+      <p class="lp-eyebrow">Start your project discussion</p>
+      <h2>Looking for Wall Panels for a Commercial Interior?</h2>
+      <p>Explore grooved, printed and fluted wall panels by COFUR and discuss which options suit your project brief.</p>
+      <div class="lp-actions">
+        <a class="btn" href="#enquiry">Get a project quote</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="lp-foot">
+    <div class="wrap">
+      <div><strong>COFUR</strong> · Commercial workplace and acoustic solutions</div>
+      <div>
+        <a href="https://cofur.in/collections/acoustic-wall-panels/">View Acoustic Wall Panels Collection</a>
+        · <a href="https://cofur.in/">cofur.in</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile sticky bar -->
+  <div class="lp-sticky">
+    <a class="btn btn--light" href="#products">View products</a>
+    <a class="btn" href="#enquiry">Get quote</a>
+  </div>
+
+</main>
+{% endblock %}

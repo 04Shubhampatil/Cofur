@@ -1,7 +1,7 @@
 from django.urls import path
 from django.views.generic import RedirectView
 
-from . import views
+from . import landing, views
 
 app_name = "website"
 
@@ -20,6 +20,10 @@ urlpatterns = [
     path("collections/<slug:slug>/", views.collection_detail, name="collection_detail"),
     path("categories/<slug:slug>/", views.category_detail, name="category_detail"),
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
+    # Campaign landing pages. Deliberately not linked from anywhere on the
+    # site — they are reached only from an advert, an email or a direct link.
+    path("acoustic-wall-panels-for-offices/", landing.acoustic_wall_panels, name="landing_acoustic_wall_panels"),
+    path("acoustic-ceilings-for-offices/", landing.acoustic_ceilings, name="landing_acoustic_ceilings"),
     # Legacy static-site URLs -> permanent redirects
     path("index.html", RedirectView.as_view(pattern_name="website:home", permanent=True)),
     path("about.html", RedirectView.as_view(pattern_name="website:about", permanent=True)),

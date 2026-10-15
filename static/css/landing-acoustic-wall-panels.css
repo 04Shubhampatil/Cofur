@@ -1,0 +1,37 @@
+
+/* ---------------------------------------------------------------
+   COFUR enquiry form states (success note + field validation)
+   --------------------------------------------------------------- */
+.formnote {
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.formnote.ok {
+  background: #eef6f1;
+  border: 1px solid #cfe3d8;
+  color: #1d3027;
+}
+
+.formnote.err {
+  background: #fdf0ee;
+  border: 1px solid #f2d2cc;
+  color: #8c2f22;
+}
+
+.field-error {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #b3261e;
+}
+
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea {
+  border-color: #b3261e;
+}
