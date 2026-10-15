@@ -1031,6 +1031,7 @@
 
     .lp .lp-hero-media img {
         flex: none;
+        height: auto;
         min-height: 0;
         aspect-ratio: 4 / 3;
     }
@@ -1261,5 +1262,99 @@
 
     .lp .lp-app h3 {
         padding-right: 60px;
+    }
+}
+
+/* Ceilings enquiry: side by side on desktop; stacked (intro above form)
+   at 830px and below. */
+@media(max-width:830px) {
+    .lp .lp-sec-ink .lp-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .lp .lp-sec-ink .lp-form-grid > .contact-form-panel {
+        max-width: 760px;
+        justify-self: start;
+    }
+}
+
+/* ---- Header contact logos (WhatsApp, call) ---------------------------
+   Visual icons only: they link to nothing and perform no action. */
+.lp .lp-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--ink);
+}
+
+.lp .lp-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Phone: the header wraps so the contact icons and quote button sit on a
+   second row under the logo instead of running off the screen. */
+@media(max-width:640px) {
+    .lp-bar .wrap {
+        flex-wrap: wrap;
+        min-height: 0;
+        padding: 14px 0;
+        row-gap: 12px;
+    }
+
+    .lp-nav {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .lp-nav .btn {
+        white-space: nowrap;
+    }
+}
+
+/* ---- Floating call and WhatsApp buttons ----------------------------- */
+.lp .lp-float {
+    position: fixed;
+    bottom: 22px;
+    z-index: 50;
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(19, 34, 65, .25);
+    transition: transform .2s;
+}
+
+.lp .lp-float:hover,
+.lp .lp-float:focus-visible {
+    transform: scale(1.06);
+}
+
+.lp .lp-float svg {
+    width: 28px;
+    height: 28px;
+}
+
+.lp .lp-float--call {
+    left: 22px;
+    background: #1a73e8;
+}
+
+.lp .lp-float--wa {
+    right: 22px;
+    background: #25d366;
+}
+
+@media(max-width:640px) {
+    .lp .lp-float {
+        bottom: 84px;
     }
 }
