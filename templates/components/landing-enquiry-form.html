@@ -14,7 +14,7 @@ Expects: `form` (EnquiryForm), `success_message` (text), `interest`
   {% csrf_token %}
   {{ form.website }}
   {{ form.form_started }}
-  {{ form.product_slug }}
+  {% if not product_options %}{{ form.product_slug }}{% endif %}
   <input type="hidden" name="collection" value="{{ interest }}">
 
   <h2 class="contact-form-title">{{ form_heading|default:"Tell us about your project" }}</h2>
@@ -50,6 +50,12 @@ Expects: `form` (EnquiryForm), `success_message` (text), `interest`
     </div>
     <div class="cfield{% if form.product.errors %} has-error{% endif %}">
       <label for="{{ form.product.id_for_label }}">Product of Interest</label>
+      {% if product_options %}
+      <select id="id_product_slug" name="product_slug">
+        <option value="">Select a product (optional)</option>
+        {% for value, label in product_options %}<option value="{{ value }}"{% if request.POST.product_slug == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      {% else %}
       <select id="{{ form.product.id_for_label }}" name="product">
         <option value="">Select a product (optional)</option>
         {% if products %}
@@ -65,6 +71,7 @@ Expects: `form` (EnquiryForm), `success_message` (text), `interest`
           {% for product in form.fields.product.queryset %}<option value="{{ product.pk }}"{% if form.product.value|stringformat:'s' == product.pk|stringformat:'s' %} selected{% endif %}>{{ product.name }}</option>{% endfor %}
         {% endif %}
       </select>
+      {% endif %}
       {% for e in form.product.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
     </div>
     <div class="cfield cfield--full{% if form.message.errors %} has-error{% endif %}">

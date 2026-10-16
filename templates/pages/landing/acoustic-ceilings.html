@@ -5,18 +5,18 @@
 <main class="lp">
 
   <!-- Announcement bar -->
-  <div class="lp-top">Design-led acoustic wall panel options for commercial interiors · Project enquiries welcome</div>
+  <div class="lp-top">{{ L.top_bar }}</div>
 
   <!-- Header -->
   <header class="lp-bar">
     <div class="wrap">
       <a class="lp-logo" href="https://cofur.in/"><img src="{% static 'images/cofur-logo-tagline.png' %}" alt="COFUR — Change the way you work" width="308" height="91"></a>
       <nav class="lp-nav" aria-label="Page sections">
-        <a href="#products">Wall panel products</a>
-        <a href="#applications">Applications</a>
-        <a href="#faq">FAQs</a>
+        <a href="#products">{{ L.nav_products }}</a>
+        <a href="#applications">{{ L.nav_applications }}</a>
+        <a href="#faq">{{ L.nav_faqs }}</a>
         <a class="lp-icon" href="https://api.whatsapp.com/send/?phone=919076116124&amp;text=Hello+Cofur%2C+I+would+like+to+know+more+about+your+furniture.&amp;type=phone_number&amp;app_absent=0" target="_blank" rel="noopener" aria-label="WhatsApp COFUR" title="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M3.5 20.5l1.2-4.1A8.5 8.5 0 1 1 8 19.3z"/><path fill="currentColor" d="M9.2 7.6c.2-.4.4-.4.6-.4h.4c.1 0 .3 0 .4.3l.6 1.4c.1.2 0 .4-.1.6l-.5.6c.6 1.1 1.5 2 2.6 2.6l.6-.5c.2-.2.4-.2.6-.1l1.4.6c.2.1.3.2.3.4v.4c0 .2-.1.4-.5.7-.3.3-.8.5-1.4.4-1-.1-2.4-.8-3.7-2.1S8.9 10 8.8 9c-.1-.6.1-1.1.4-1.4z"/></svg></a><a class="lp-icon" href="tel:+919076116124" aria-label="Call COFUR" title="Call"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M6.6 3.5l2.6-.6c.4-.1.8.1 1 .5l1.4 3.2c.2.4.1.8-.2 1.1l-1.4 1.3c.9 1.9 2.5 3.5 4.4 4.4l1.3-1.4c.3-.3.7-.4 1.1-.2l3.2 1.4c.4.2.6.6.5 1l-.6 2.6c-.1.5-.5.8-1 .8C10.8 20.5 3.5 13.2 3.5 4.5c0-.5.3-.9.8-1z"/></svg></a>
-        <a class="btn" href="#enquiry">Request project quote</a>
+        <a class="btn" href="#enquiry">{{ L.nav_quote }}</a>
       </nav>
     </div>
   </header>
@@ -25,113 +25,61 @@
   <section class="lp-hero">
     <div class="wrap lp-hero-grid">
       <div>
-        <p class="lp-eyebrow">Commercial acoustic ceiling solutions</p>
-        <h1>Acoustic Ceilings for Commercial Offices</h1>
+        <p class="lp-eyebrow">{{ L.hero_eyebrow }}</p>
+        <h1>{{ L.hero_title }}</h1>
         <p class="lp-lead">
-          Design-led acoustic ceiling solutions for modern corporate workplaces, meeting rooms,
-          collaborative spaces and commercial interiors.
+          {{ L.hero_lead }}
         </p>
         <ul class="lp-checks">
-          <li>Designed for modern commercial workplaces</li>
-          <li>Multiple acoustic ceiling design options</li>
-          <li>Suitable for corporate and commercial projects</li>
-          <li>Project consultation for architects and design teams</li>
+          <li>{{ L.hero_check_1 }}</li>
+          <li>{{ L.hero_check_2 }}</li>
+          <li>{{ L.hero_check_3 }}</li>
+          <li>{{ L.hero_check_4 }}</li>
         </ul>
         <div class="lp-actions">
-          <a class="btn" href="#enquiry">Request project quote</a>
-          <a class="btn btn--light" href="#products">Explore designs</a>
+          <a class="btn" href="#enquiry">{{ L.hero_btn_quote }}</a>
+          <a class="btn btn--light" href="#products">{{ L.hero_btn_explore }}</a>
         </div>
       </div>
 
-      <figure class="lp-hero-media"><img src="{% static 'images/cofur/ceiling-collection.webp' %}" alt="COFUR acoustic ceiling installation" fetchpriority="high" decoding="async"></figure>
+      <figure class="lp-hero-media"><img src="{{ IMG.img_hero }}" alt="COFUR acoustic ceiling installation" fetchpriority="high" decoding="async"></figure>
     </div>
   </section>
 
   <!-- Trust strip -->
   <div class="lp-trust">
     <div class="wrap lp-trust-grid">
-      <div>Commercial Workspaces</div>
-      <div>Corporate Projects</div>
-      <div>Architect Support</div>
-      <div>Project Consultation</div>
+      <div>{{ L.trust_1 }}</div>
+      <div>{{ L.trust_2 }}</div>
+      <div>{{ L.trust_3 }}</div>
+      <div>{{ L.trust_4 }}</div>
     </div>
   </div>
 
   <!-- Benefits -->
-  <section>
-    <div class="wrap">
-      <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">Why acoustic ceilings</p>
-        <h2>Acoustic Ceiling Solutions for Modern Workplaces</h2>
-        <p>
-          Create a more considered workplace environment by combining acoustic ceiling
-          solutions with contemporary commercial interior design.
-        </p>
-      </div>
-
-      <ul class="lp-grid lp-grid-4" role="list">
-        <li class="lp-panel" data-lp-reveal>
-          <h3>Acoustic considerations</h3>
-          <p>Acoustic ceiling solutions can help address acoustic requirements within modern workplace environments.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <h3>Design-led solutions</h3>
-          <p>Choose from different forms and design directions to complement your commercial interior concept.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <h3>Commercial applications</h3>
-          <p>Suitable for corporate offices, meeting spaces, collaborative areas, breakout zones and other commercial workplaces.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <h3>Project support</h3>
-          <p>Discuss your requirements with the COFUR team for your commercial workplace project.</p>
-        </li>
-      </ul>
-    </div>
-  </section>
-
   <!-- Enquiry -->
-  <section class="lp-sec-ink" id="enquiry">
-    <div class="wrap lp-form-grid">
-      <div data-lp-reveal>
-        <p class="lp-eyebrow">Project enquiry</p>
-        <h2>Discuss Your Acoustic Ceiling Project</h2>
-        <p>Planning an office, corporate workplace or commercial interior project? Share your requirements with COFUR.</p>
-        <ul class="lp-form-list">
-          <li>Architects &amp; interior designers</li>
-          <li>Corporate procurement teams</li>
-          <li>Facility &amp; workplace teams</li>
-          <li>Commercial contractors</li>
-          <li>Office &amp; commercial projects</li>
-        </ul>
-      </div>
-
-      <div class="contact-form-panel">
-        {% include "components/landing-enquiry-form.html" with form_heading="Request project quote" products_label="Acoustic ceilings" submit_text="Request project quote" message_placeholder="Project type, approximate ceiling area, project stage, timeline or other requirements." %}
-      </div>
-    </div>
-  </section>
+  
 
   <!-- Designs -->
   <section id="products">
     <div class="wrap">
       <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">The collection</p>
-        <h2>Explore COFUR Acoustic Ceiling Designs</h2>
-        <p>Explore different acoustic ceiling forms designed for contemporary commercial workplace environments.</p>
+        <p class="lp-eyebrow">{{ L.products_eyebrow }}</p>
+        <h2>{{ L.products_title }}</h2>
+        <p>{{ L.products_intro }}</p>
       </div>
 
       <ul class="lp-grid lp-grid-4" role="list">
         {% for design in designs %}
         <li class="lp-product" data-lp-reveal>
           <div class="lp-product__media">
-            <img src="{% static design.photo %}" alt="{{ design.title }} acoustic ceiling" loading="lazy" decoding="async">
+            <img src="{{ design.photo_url }}" alt="{{ design.title }} acoustic ceiling" loading="lazy" decoding="async">
           </div>
           <div class="lp-product__body">
             <h3>{{ design.title }}</h3>
             <p>{{ design.copy }}</p>
             <div class="lp-product__foot">
-              <a class="btn btn--light" href="#enquiry">Enquire</a>
+              <a class="btn btn--light" href="#enquiry">{{ L.design_enquire }}</a>
             </div>
           </div>
         </li>
@@ -140,194 +88,101 @@
     </div>
   </section>
 
-  <!-- Applications -->
-  <section class="lp-sec-tint">
+  <!-- {{ L.apps_eyebrow }} -->
+  <section class="lp-sec-tint" id="applications">
     <div class="wrap">
       <div class="lp-head" data-lp-reveal>
         <p class="lp-eyebrow">Applications</p>
-        <h2>Acoustic Ceilings for Commercial Workplace Applications</h2>
-        <p>Suitable for different areas within modern corporate and commercial workplace environments.</p>
+        <h2>{{ L.apps_title }}</h2>
+        <p>{{ L.apps_intro }}</p>
       </div>
 
       <ul class="lp-grid lp-grid-3" role="list">
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-wave-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:left center"></figure>
-          <h3><em>Open-plan</em> offices</h3>
-          <p>Acoustic ceiling solutions for contemporary open-plan workplace environments.</p>
-        </li>
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-petal-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:left center"></figure>
-          <h3><em>Meeting</em> rooms</h3>
-          <p>Consider acoustic ceiling solutions for professional meeting environments.</p>
-        </li>
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-blade-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:right center"></figure>
-          <h3><em>Conference</em> rooms</h3>
-          <p>Design-led acoustic ceiling solutions for corporate conference spaces.</p>
-        </li>
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-planks-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:center left"></figure>
-          <h3><em>Collaborative</em> areas</h3>
-          <p>Create a visually coordinated environment for teamwork and interaction.</p>
-        </li>
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-grid-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:right center"></figure>
-          <h3><em>Breakout</em> spaces</h3>
-          <p>Suitable for informal workplace areas designed for interaction and relaxation.</p>
-        </li>
-        <li class="lp-app" data-lp-reveal>
-          <figure class="lp-app__media"><img src="{% static 'images/cofur/ceiling-waffle-alt.webp' %}" alt="" loading="lazy" decoding="async" style="object-position:right center"></figure>
-          <h3><em>Reception</em> &amp; common areas</h3>
-          <p>Coordinate acoustic considerations with the design of shared commercial spaces.</p>
-        </li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_1 }}</h3></li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_2 }}</h3></li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_3 }}</h3></li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_4 }}</h3></li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_5 }}</h3></li>
+        <li class="lp-app" data-lp-reveal><h3>{{ L.apps_6 }}</h3></li>
       </ul>
     </div>
   </section>
 
   <!-- Who we serve -->
   <section>
-    <div class="wrap">
-      <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">Who it is for</p>
-        <h2>Built for Commercial Workplace Projects</h2>
-        <p>COFUR acoustic ceiling solutions are relevant to professionals involved in designing, specifying and executing workplace projects.</p>
+    <div class="wrap lp-audience">
+      <div>
+        <p class="lp-eyebrow">{{ L.aud_eyebrow }}</p>
+        <h2>{{ L.aud_title }}</h2>
+        <p>{{ L.aud_text }}</p>
       </div>
-      <ul class="lp-grid lp-grid-5" role="list">
-        <li><figure class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/ceiling-collection.webp' %}" alt="" loading="lazy" decoding="async"></div><figcaption>Architects</figcaption></figure></li>
-        <li><figure class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/ceiling-wave-alt.webp' %}" alt="" loading="lazy" decoding="async"></div><figcaption>Interior Designers</figcaption></figure></li>
-        <li><figure class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/ceiling-petal-alt.webp' %}" alt="" loading="lazy" decoding="async"></div><figcaption>Corporate Procurement</figcaption></figure></li>
-        <li><figure class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/ceiling-blade-alt.webp' %}" alt="" loading="lazy" decoding="async"></div><figcaption>Facility Managers</figcaption></figure></li>
-        <li><figure class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/ceiling-planks-alt.webp' %}" alt="" loading="lazy" decoding="async"></div><figcaption>Contractors</figcaption></figure></li>
+      <ul class="lp-cards-row" role="list">
+        <li class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/illustrations/interior-design-cofur.svg' %}" alt="" loading="lazy" decoding="async"></div><figcaption>{{ L.role_1 }}</figcaption></li>
+        <li class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/illustrations/architect-cofur.svg' %}" alt="" loading="lazy" decoding="async"></div><figcaption>{{ L.role_2 }}</figcaption></li>
+        <li class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/illustrations/corporate-procurement-cofur.svg' %}" alt="" loading="lazy" decoding="async"></div><figcaption>{{ L.role_3 }}</figcaption></li>
+        <li class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/illustrations/facility-managers-cofur.svg' %}" alt="" loading="lazy" decoding="async"></div><figcaption>{{ L.role_4 }}</figcaption></li>
+        <li class="lp-card-photo"><div class="lp-card-photo__frame"><img src="{% static 'images/cofur/illustrations/contractors-cofur.svg' %}" alt="" loading="lazy" decoding="async"></div><figcaption>{{ L.role_5 }}</figcaption></li>
       </ul>
     </div>
   </section>
 
   <!-- Process -->
-  <section class="lp-sec-tint">
-    <div class="wrap">
-      <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">How it works</p>
-        <h2>How Your Project Works</h2>
-        <p>A simple project-focused process from initial requirement to quotation.</p>
-      </div>
-
-      <ol class="lp-grid lp-grid-4 lp-process-grid" role="list">
-        <li class="lp-process" data-lp-reveal>
-          <h3>Share your requirement</h3>
-          <p>Tell us about your workplace project, location and requirements.</p>
-        </li>
-        <li class="lp-process" data-lp-reveal>
-          <h3>Discuss the project</h3>
-          <p>Discuss your requirements and suitable acoustic ceiling options with COFUR.</p>
-        </li>
-        <li class="lp-process" data-lp-reveal>
-          <h3>Project proposal</h3>
-          <p>Review relevant product information and project-based requirements.</p>
-        </li>
-        <li class="lp-process" data-lp-reveal>
-          <h3>Move forward</h3>
-          <p>Coordinate the next steps for your commercial workplace project.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
   <!-- Why COFUR -->
-  <section>
-    <div class="wrap">
-      <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">Why COFUR</p>
-        <h2>Why Work With COFUR?</h2>
-      </div>
-      <ul class="lp-grid lp-grid-3" role="list">
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="14" width="48" height="26" rx="3"/><path d="M14 40 q6 -6 12 0 t12 0 t12 0"/><path d="M14 48 h36"/></g><rect x="8" y="14" width="48" height="26" rx="3" fill="#d4b791" opacity=".22" stroke="none"/></svg><h3>Design-led workplace solutions</h3>
-          <p>Acoustic ceiling solutions designed to complement modern commercial interiors.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="20" height="20" rx="2"/><circle cx="44" cy="18" r="10"/><path d="M8 46 l10 -10 l10 10 z"/><rect x="36" y="36" width="20" height="20" rx="10"/></g></svg><h3>Multiple design options</h3>
-          <p>Explore different forms and design directions for workplace projects.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 56 V18 h16 V56"/><path d="M26 56 V8 h26 V56"/><path d="M6 56 h52"/><path d="M32 16 h6 M32 24 h6 M32 32 h6 M32 40 h6 M14 26 h4 M14 36 h4"/></g></svg><h3>Commercial project focus</h3>
-          <p>Solutions positioned for corporate and commercial workplace environments.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 52 L52 12"/><path d="M20 44 l-6 -6 l6 -2 z"/><path d="M40 14 l10 10"/><path d="M14 14 h24 v24"/></g></svg><h3>Architect &amp; designer support</h3>
-          <p>Discuss product requirements with professionals involved in workplace design.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14 h26 a4 4 0 0 1 4 4 v12 a4 4 0 0 1 -4 4 h-12 l-8 6 v-6 h-6 a4 4 0 0 1 -4 -4 v-12 a4 4 0 0 1 4 -4 z"/><path d="M28 32 h18 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 h-2 v6 l-8 -6 h-8 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z"/></g></svg><h3>Project consultation</h3>
-          <p>Share your project requirements and discuss the appropriate solution.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="30" height="14" rx="2"/><circle cx="44" cy="20" r="8"/><path d="M14 34 h26 v10 h-26 z"/><path d="M14 44 v8 M40 44 v8"/></g></svg><h3>Integrated workplace solutions</h3>
-          <p>Combine acoustic ceilings with acoustic lighting, wall solutions and office furniture.</p>
-        </li>
-      </ul>
-    </div>
-  </section>
-
   <!-- Specifications -->
-  <section class="lp-sec-tint">
-    <div class="wrap">
-      <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">Specifications</p>
-        <h2>Need Product Specifications?</h2>
-        <p>Product specifications can vary by acoustic ceiling design and project requirements. Contact COFUR for project-specific information.</p>
+  <!-- FAQ -->
+  <section class="lp-sec-sky lp-ceil-enquiry" id="enquiry">
+    <div class="wrap lp-form-grid">
+      
+
+      <div data-lp-reveal>
+        <p class="lp-eyebrow">{{ L.enq_eyebrow }}</p>
+        <h2>{{ L.enq_title }}</h2>
+        <p>{{ L.enq_text }}</p>
+        <ul class="lp-form-list">
+          <li>{{ L.enq_bullet_1 }}</li>
+          <li>{{ L.enq_bullet_2 }}</li>
+          <li>{{ L.enq_bullet_3 }}</li>
+          <li>{{ L.enq_bullet_4 }}</li>
+          <li>{{ L.enq_bullet_5 }}</li>
+        </ul>
       </div>
-      <ul class="lp-grid lp-grid-4" role="list">
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="16" width="40" height="30" rx="2"/><path d="M10 52 h40"/><path d="M10 48 v4 M50 48 v4"/><path d="M54 16 v30"/><path d="M52 16 h4 M52 46 h4"/></g></svg><h3>Design &amp; dimensions</h3>
-          <p>Discuss available designs, dimensions and configurations for your project.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="22" height="22" rx="2"/><rect x="34" y="8" width="22" height="22" rx="11"/><rect x="8" y="34" width="22" height="22" rx="2"/><rect x="34" y="34" width="22" height="22" rx="2"/></g><rect x="34" y="34" width="22" height="22" rx="2" fill="#d4b791" opacity=".35" stroke="none"/></svg><h3>Materials &amp; finishes</h3>
-          <p>Explore available finishes and design options based on your workplace concept.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="10" width="40" height="46" rx="3"/><path d="M22 6 h20 v8 h-20 z"/><path d="M20 26 h24 M20 34 h24 M20 42 h14"/></g></svg><h3>Project requirements</h3>
-          <p>Share your ceiling area, layout and project requirements with the COFUR team.</p>
-        </li>
-        <li class="lp-panel" data-lp-reveal>
-          <svg class="lp-illus" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8 h26 l10 10 v38 h-36 z"/><path d="M40 8 v10 h10"/><path d="M22 30 h20 M22 38 h20 M22 46 h12"/></g><circle cx="48" cy="46" r="8" fill="#d4b791" opacity=".35" stroke="none"/></svg><h3>Quotation support</h3>
-          <p>Request project-specific information and a quotation based on your requirements.</p>
-        </li>
-      </ul>
+
+      <div class="contact-form-panel">
+        {% include "components/landing-enquiry-form.html" with form_heading=L.form_heading products_label="Acoustic ceilings" submit_text=L.form_submit message_placeholder=L.form_placeholder %}
+      </div>
     </div>
   </section>
 
-  <!-- FAQ -->
   <section id="faq">
     <div class="wrap">
       <div class="lp-head" data-lp-reveal>
-        <p class="lp-eyebrow">Frequently asked questions</p>
-        <h2>Frequently Asked Questions</h2>
+        <p class="lp-eyebrow">{{ L.faq_eyebrow }}</p>
+        <h2>{{ L.faq_title }}</h2>
       </div>
       <div class="lp-faq">
         <details>
-          <summary>What are acoustic ceilings?</summary>
-          <p>Acoustic ceilings are ceiling solutions designed to address acoustic considerations while also contributing to the visual design of an interior space.</p>
+          <summary>{{ L.faq_q1 }}</summary>
+          <p>{{ L.faq_a1 }}</p>
         </details>
         <details>
-          <summary>Are acoustic ceilings suitable for commercial offices?</summary>
-          <p>Yes. Acoustic ceiling solutions can be considered for corporate offices, commercial workplaces, meeting rooms, collaborative areas and other professional environments.</p>
+          <summary>{{ L.faq_q2 }}</summary>
+          <p>{{ L.faq_a2 }}</p>
         </details>
         <details>
-          <summary>What acoustic ceiling designs does COFUR offer?</summary>
-          <p>The COFUR acoustic ceiling collection includes Wave, Petal, Blade, Planks, Grid, Waffle and Hive designs.</p>
+          <summary>{{ L.faq_q3 }}</summary>
+          <p>{{ L.faq_a3 }}</p>
         </details>
         <details>
-          <summary>Can architects and interior designers contact COFUR?</summary>
-          <p>Yes. Architects, interior designers, procurement teams, contractors and workplace professionals can contact COFUR regarding commercial projects.</p>
+          <summary>{{ L.faq_q4 }}</summary>
+          <p>{{ L.faq_a4 }}</p>
         </details>
         <details>
-          <summary>Can acoustic ceilings be combined with acoustic lighting?</summary>
-          <p>Yes. Acoustic ceiling solutions can be considered alongside acoustic lighting and other workplace acoustic solutions depending on the project.</p>
+          <summary>{{ L.faq_q5 }}</summary>
+          <p>{{ L.faq_a5 }}</p>
         </details>
         <details>
-          <summary>How can I request an acoustic ceiling quotation?</summary>
-          <p>Submit your company and project details through the enquiry form. The COFUR team can then discuss your requirements and quotation.</p>
+          <summary>{{ L.faq_q6 }}</summary>
+          <p>{{ L.faq_a6 }}</p>
         </details>
       </div>
     </div>
@@ -336,11 +191,11 @@
   <!-- Closing CTA -->
   <section class="lp-sec-tint lp-final">
     <div class="wrap">
-      <p class="lp-eyebrow">Start your project discussion</p>
-      <h2>Planning an Office or Commercial Project?</h2>
-      <p>Discuss your acoustic ceiling requirements with COFUR and explore design-led solutions for your workplace.</p>
+      <p class="lp-eyebrow">{{ L.final_eyebrow }}</p>
+      <h2>{{ L.final_title }}</h2>
+      <p>{{ L.final_text }}</p>
       <div class="lp-actions">
-        <a class="btn" href="#enquiry">Request project quote</a>
+        <a class="btn" href="#enquiry">{{ L.final_btn }}</a>
       </div>
     </div>
   </section>
@@ -350,7 +205,7 @@
     <div class="wrap">
       <div><strong>COFUR</strong> · Commercial workplace and acoustic solutions</div>
       <div>
-        <a href="https://cofur.in/collections/acoustic-wall-panels/">View Acoustic Wall Panels Collection</a>
+        <a href="https://cofur.in/collections/acoustic-wall-panels/">{{ L.footer_link }}</a>
         · <a href="https://cofur.in/">cofur.in</a>
       </div>
     </div>

@@ -1,0 +1,13 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<p class="muted">Choose a landing page to edit its wording and photos.</p>
+
+<section class="card">
+  <ul style="list-style:none;padding:0;margin:0;display:grid;gap:10px">
+    {% for label, url in pages %}
+    <li><a href="{{ url }}">{{ label }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

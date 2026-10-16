@@ -23,6 +23,7 @@ def dashboard_nav(request):
             item("Contact page", "dashboard:page_contact", "pages.view_contactpage", "phone"),
             item("Footer", "dashboard:footer_settings", "core.view_sitesettings", "layout"),
             item("Collections menu", "dashboard:mega_menu", "core.view_navigationitem", "menu"),
+            item("Landing pages", "dashboard:landing_index", "pages.change_landingtext", "layout"),
         ]},
         {"title": "Catalogues", "items": [
             item("Catalogues page", "dashboard:page_catalogues", "pages.view_cataloguepage", "layout"),

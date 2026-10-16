@@ -264,3 +264,32 @@ class ContactPage(SEOFieldsMixin, SingletonModel):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         optimise_fields(self, "banner_image", "banner_mobile_image")
+
+
+class LandingText(models.Model):
+    """One editable item on a campaign landing page: a line of text or a photo.
+
+    Rows are seeded from apps.pages.landing_content, so the page shows the same
+    wording and photos until someone edits them in the admin panel.
+    """
+
+    page = models.CharField(max_length=30, db_index=True)
+    key = models.SlugField(max_length=80)
+    label = models.CharField(max_length=160)
+    value = models.TextField(blank=True)
+    image = models.ImageField(upload_to="landing/", blank=True, null=True)
+    default_image = models.CharField(max_length=255, blank=True, help_text="Static file used when no photo is uploaded.")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["page", "order", "id"]
+        unique_together = [("page", "key")]
+        verbose_name = "Landing page item"
+        verbose_name_plural = "Landing page items"
+
+    def __str__(self):
+        return f"{self.page}: {self.label}"
+
+    @property
+    def is_image(self):
+        return self.key.startswith("img_")

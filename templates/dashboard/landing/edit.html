@@ -1,0 +1,33 @@
+{% extends "dashboard/generic/form.html" %}
+{% load static %}
+
+{% block form_body %}
+{% for title, forms in groups %}
+<section class="card form-section">
+  <h2 class="form-section__title">{{ title }}</h2>
+  <div class="form-rows">
+    {% for form in forms %}
+      {{ form.id }}
+      {% if form.instance.is_image %}
+      <div class="field field--image{% if form.image.errors %} has-error{% endif %}" data-field="image">
+        <label for="{{ form.image.id_for_label }}">{{ form.instance.label }}</label>
+        {% if form.instance.image %}
+          <img src="{{ form.instance.image.url }}" alt="" style="max-width:260px;display:block;margin-bottom:8px">
+        {% elif form.instance.default_image %}
+          <img src="{% static form.instance.default_image %}" alt="" style="max-width:260px;display:block;margin-bottom:8px">
+        {% endif %}
+        {{ form.image }}
+        {% for error in form.image.errors %}<small class="error">{{ error }}</small>{% endfor %}
+      </div>
+      {% else %}
+      <div class="field{% if form.value.errors %} has-error{% endif %}" data-field="value">
+        <label for="{{ form.value.id_for_label }}">{{ form.instance.label }}</label>
+        {{ form.value }}
+        {% for error in form.value.errors %}<small class="error">{{ error }}</small>{% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import auth, catalog, catalogues, home, navigation, pages, people, projects, settings, stories
+from .views import auth, catalog, catalogues, home, landing, navigation, pages, people, projects, settings, stories
 
 app_name = "dashboard"
 
@@ -24,6 +24,11 @@ urlpatterns = [
     path("catalogues/cards/<int:pk>/delete/", catalogues.CatalogueDeleteView.as_view(), name="catalogue_delete"),
     path("catalogues/cards/<int:pk>/toggle/", catalogues.CatalogueToggleView.as_view(), name="catalogue_toggle"),
     path("content/footer/", settings.FooterSettingsView.as_view(), name="footer_settings"),
+
+    # Landing pages (campaign pages edited in place)
+    path("landing/", landing.LandingIndexView.as_view(), name="landing_index"),
+    path("landing/wall/", landing.LandingWallEditView.as_view(), name="landing_wall"),
+    path("landing/ceilings/", landing.LandingCeilingsEditView.as_view(), name="landing_ceilings"),
 
     # Collections mega menu
     path("menus/collections/", navigation.MegaMenuView.as_view(), name="mega_menu"),

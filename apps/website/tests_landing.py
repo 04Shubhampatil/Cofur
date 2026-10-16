@@ -87,8 +87,12 @@ class LandingPageTests(TestCase):
         self.assertIn('name="collection" value="Acoustic Wall Panels (campaign page)"', body)
         self.assertIn('name="website"', body)  # honeypot
         self.assertIn('name="form_started"', body)
-        for field in ["name", "email", "phone", "company", "city", "product", "message"]:
+        for field in ["name", "email", "phone", "company", "city", "message"]:
             self.assertIn(f'name="{field}"', body)
+        # The wall panels page offers only its three products, under product_slug.
+        self.assertIn('name="product_slug"', body)
+        for name in ["Grooved Wall Panels", "Printed Wall Panels", "Fluted Wall Panels"]:
+            self.assertIn(f">{name}</option>", body)
 
     def test_a_submission_lands_in_the_enquiry_inbox_and_stays_on_the_page(self):
         response = self.client.post(LANDING_PATHS[1], enquiry_payload())

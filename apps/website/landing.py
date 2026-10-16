@@ -16,12 +16,22 @@ it posts back to the landing page instead of /enquire/ so a visitor who has
 just converted stays on the campaign page and sees the success message there.
 """
 from django.shortcuts import redirect, render
+from django.templatetags.static import static
 from django.views.decorators.http import require_http_methods
 
 from apps.enquiries.forms import EnquiryForm
 from apps.enquiries.services import is_rate_limited, save_enquiry
+from apps.pages.landing_content import WALL_PAGE
+from apps.pages.landing_content_ceilings import CEILING_PAGE
+from apps.pages.models import LandingText
 
 from .views import _enquiry_form_kwargs, _page_seo
+
+WALL_PRODUCT_OPTIONS = [
+    ("grooved-wall-panels", "Grooved Wall Panels"),
+    ("printed-wall-panels", "Printed Wall Panels"),
+    ("fluted-wood-wall-panels", "Fluted Wall Panels"),
+]
 
 SUCCESS_MESSAGE = "Thank you. Our team will be in touch about your project shortly."
 
@@ -67,6 +77,22 @@ CEILING_DESIGNS = [
 ]
 
 
+def _landing_content(page):
+    """Text and photo URLs for a landing page, read from the LandingText table.
+
+    Returns (text, images): text maps key -> string, images maps key -> URL.
+    An uploaded photo wins over the static default.
+    """
+    text, images = {}, {}
+    for row in LandingText.objects.filter(page=page):
+        text[row.key] = row.value
+        if row.image:
+            images[row.key] = row.image.url
+        elif row.default_image:
+            images[row.key] = static(row.default_image)
+    return text, images
+
+
 def _render(request, *, template, interest, title, description, extra=None):
     """Shared GET/POST handling for a landing page.
 
@@ -80,11 +106,16 @@ def _render(request, *, template, interest, title, description, extra=None):
         limited = is_rate_limited(request)
         if form.is_valid() and not limited:
             enquiry = form.save(commit=False)
+            # A fixed product list (wall panels page) is not a catalogue lookup, so
+            # the chosen product is recorded in the interest field instead.
+            options = dict((extra or {}).get("product_options", []))
+            chosen = request.POST.get("product_slug", "")
+            interest_text = f"{interest} · {options[chosen]}" if chosen in options else interest
             save_enquiry(
                 enquiry,
                 request,
                 source="product" if enquiry.product_id else "contact",
-                collection_ref=interest,
+                collection_ref=interest_text,
             )
             return redirect(f"{request.path}?sent=1#enquiry")
         if limited:
@@ -110,6 +141,7 @@ def _render(request, *, template, interest, title, description, extra=None):
 
 @require_http_methods(["GET", "POST"])
 def acoustic_wall_panels(request):
+    text, images = _landing_content(WALL_PAGE)
     return _render(
         request,
         template="pages/landing/acoustic-wall-panels.html",
@@ -120,12 +152,22 @@ def acoustic_wall_panels(request):
             "and workplace interiors. Enquire about grooved, printed and fluted wall panels "
             "for your project."
         ),
-        extra={"panels": WALL_PANELS},
+        extra={
+            "panels": [
+                dict(entry, copy=text[f"product_{i}_copy"], photo_url=images[f"img_product_{i}"])
+                for i, entry in enumerate(WALL_PANELS, start=1)
+            ],
+            "product_options": WALL_PRODUCT_OPTIONS,
+            "L": text,
+            "IMG": images,
+            "success_message": text.get("form_success", SUCCESS_MESSAGE),
+        },
     )
 
 
 @require_http_methods(["GET", "POST"])
 def acoustic_ceilings(request):
+    text, images = _landing_content(CEILING_PAGE)
     return _render(
         request,
         template="pages/landing/acoustic-ceilings.html",
@@ -136,5 +178,13 @@ def acoustic_ceilings(request):
             "interiors. Explore Wave, Petal, Blade, Planks, Grid, Waffle and Hive acoustic "
             "ceiling designs by COFUR."
         ),
-        extra={"designs": CEILING_DESIGNS},
+        extra={
+            "designs": [
+                dict(entry, copy=text[f"design_{i}_copy"], photo_url=images[f"img_design_{i}"])
+                for i, entry in enumerate(CEILING_DESIGNS, start=1)
+            ],
+            "L": text,
+            "IMG": images,
+            "success_message": text.get("form_success", SUCCESS_MESSAGE),
+        },
     )
