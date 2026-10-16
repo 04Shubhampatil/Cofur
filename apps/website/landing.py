@@ -59,6 +59,11 @@ WALL_PANELS = [
     },
 ]
 
+# The seven ceiling designs have no product pages of their own yet, so their
+# cards link to the Acoustic Ceilings category page. Each card's destination is
+# editable per design in the admin panel (Landing pages > Ceilings > Designs).
+CEILING_DETAILS_URL = "/categories/acoustic-ceilings/"
+
 CEILING_DESIGNS = [
     {"title": "Wave", "photo": "images/cofur/ceiling-wave.webp",
      "copy": "A flowing acoustic ceiling design for contemporary workplace interiors."},
@@ -76,6 +81,13 @@ CEILING_DESIGNS = [
      "copy": "A geometric ceiling design inspired by honeycomb forms."},
 ]
 
+# The enquiry form offers the seven designs shown on the page and nothing else.
+# They are not catalogue products, so the choice is recorded as the enquiry's
+# interest rather than linked to a product record.
+CEILING_PRODUCT_OPTIONS = [
+    (design["title"].lower(), design["title"]) for design in CEILING_DESIGNS
+]
+
 
 def _landing_content(page):
     """Text and photo URLs for a landing page, read from the LandingText table.
@@ -91,6 +103,35 @@ def _landing_content(page):
         elif row.default_image:
             images[row.key] = static(row.default_image)
     return text, images
+
+
+def _landing_seo(request, extra, title, description):
+    """The page's search listing, as edited in the admin panel.
+
+    Each field falls back the way an editor would expect: an empty search
+    listing uses the wording in this module, an empty social title or
+    description reuses the search listing, no share image leaves the
+    site-wide one from Settings in place, empty robots follows the site
+    setting, and an empty canonical address means the page's own address.
+    """
+    text = extra.get("L", {})
+    images = extra.get("IMG", {})
+    seo = _page_seo(request, text.get("seo_title") or title, text.get("seo_description") or description)
+    for row_key, seo_key in (
+        ("seo_keywords", "keywords"),
+        ("seo_og_title", "og_title"),
+        ("seo_og_description", "og_description"),
+    ):
+        if text.get(row_key):
+            seo[seo_key] = text[row_key]
+    if images.get("img_seo_share"):
+        seo["og_image"] = request.build_absolute_uri(images["img_seo_share"])
+    if text.get("seo_robots"):
+        seo["robots"] = text["seo_robots"]
+    if text.get("seo_canonical"):
+        # og:url is built from this too, so a path has to become a full address.
+        seo["canonical"] = request.build_absolute_uri(text["seo_canonical"])
+    return seo
 
 
 def _render(request, *, template, interest, title, description, extra=None):
@@ -132,7 +173,7 @@ def _render(request, *, template, interest, title, description, extra=None):
         "form": form,
         "interest": interest,
         "success_message": SUCCESS_MESSAGE,
-        "seo": _page_seo(request, title, description),
+        "seo": _landing_seo(request, extra or {}, title, description),
         "body_page": "landing",
     }
     context.update(extra or {})
@@ -180,9 +221,15 @@ def acoustic_ceilings(request):
         ),
         extra={
             "designs": [
-                dict(entry, copy=text[f"design_{i}_copy"], photo_url=images[f"img_design_{i}"])
+                dict(
+                    entry,
+                    copy=text[f"design_{i}_copy"],
+                    photo_url=images[f"img_design_{i}"],
+                    url=text.get(f"design_{i}_url") or CEILING_DETAILS_URL,
+                )
                 for i, entry in enumerate(CEILING_DESIGNS, start=1)
             ],
+            "product_options": CEILING_PRODUCT_OPTIONS,
             "L": text,
             "IMG": images,
             "success_message": text.get("form_success", SUCCESS_MESSAGE),

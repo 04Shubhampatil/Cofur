@@ -62,3 +62,72 @@ class LandingAdminTests(TestCase):
                 live = self.client.get(live_path)
                 self.assertContains(live, new_text)
                 self.assertNotContains(live, f"<h1>{old_text}</h1>")
+
+    def post_editor(self, url_name, page, changes):
+        """Save one page's editor with `changes` (key -> new value) applied."""
+        rows = list(LandingText.objects.filter(page=page))
+        data = {
+            "landing-TOTAL_FORMS": str(len(rows)),
+            "landing-INITIAL_FORMS": str(len(rows)),
+            "landing-MIN_NUM_FORMS": "0",
+            "landing-MAX_NUM_FORMS": "1000",
+        }
+        for i, row in enumerate(rows):
+            data[f"landing-{i}-id"] = str(row.pk)
+            data[f"landing-{i}-value"] = changes.get(row.key, row.value)
+        return self.client.post(reverse(url_name), data)
+
+    def test_each_editor_has_an_seo_section_with_every_meta_field(self):
+        for url_name in ["dashboard:landing_wall", "dashboard:landing_ceilings"]:
+            with self.subTest(url_name=url_name):
+                response = self.client.get(reverse(url_name))
+                self.assertContains(response, "SEO")
+                # The same field names the product and category editors use.
+                for label in [
+                    "SEO title",
+                    "Meta description",
+                    "Meta keywords",
+                    "Open Graph title",
+                    "Open Graph description",
+                    "Open Graph image",
+                    "Canonical url",
+                    "Robots",
+                ]:
+                    self.assertContains(response, label)
+                # Indexing is a dropdown, not free text anyone can mistype.
+                self.assertContains(response, "Use the site setting")
+                self.assertContains(response, "noindex, follow")
+
+    def test_the_seo_section_changes_what_search_engines_are_told(self):
+        response = self.post_editor("dashboard:landing_wall", "wall", {
+            "seo_title": "Office Acoustic Wall Panels | COFUR",
+            "seo_keywords": "acoustic wall panels, office interiors",
+            "seo_og_title": "See COFUR wall panels",
+            "seo_robots": "noindex, follow",
+            "seo_canonical": "https://cofur.in/acoustic-wall-panels-for-offices/",
+        })
+        self.assertRedirects(response, reverse("dashboard:landing_index"))
+
+        live = self.client.get("/acoustic-wall-panels-for-offices/")
+        self.assertContains(live, "<title>Office Acoustic Wall Panels | COFUR</title>")
+        self.assertContains(live, "acoustic wall panels, office interiors")
+        self.assertContains(live, 'property="og:title" content="See COFUR wall panels"')
+        self.assertContains(live, 'name="robots" content="noindex, follow"')
+        self.assertContains(live, 'href="https://cofur.in/acoustic-wall-panels-for-offices/"')
+
+    def test_an_empty_seo_section_falls_back_instead_of_emptying_the_page(self):
+        blanks = dict.fromkeys(
+            ["seo_title", "seo_description", "seo_keywords", "seo_og_title",
+             "seo_og_description", "seo_robots", "seo_canonical"], "")
+        self.post_editor("dashboard:landing_ceilings", "ceilings", blanks)
+
+        live = self.client.get("/acoustic-ceilings-for-offices/")
+        self.assertContains(live, "<title>Acoustic Ceilings for Commercial Offices | COFUR</title>")
+        self.assertContains(live, 'name="robots" content="index, follow"')
+        self.assertContains(live, 'rel="canonical" href="http://testserver/acoustic-ceilings-for-offices/"')
+
+    def test_a_canonical_address_that_is_not_an_address_is_refused(self):
+        response = self.post_editor("dashboard:landing_wall", "wall", {"seo_canonical": "cofur.in/panels"})
+        self.assertEqual(response.status_code, 200)  # back on the form, not saved
+        self.assertContains(response, "Enter a full web address")
+        self.assertEqual(LandingText.objects.get(page="wall", key="seo_canonical").value, "")

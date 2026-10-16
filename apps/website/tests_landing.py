@@ -3,6 +3,7 @@
 What matters about these pages is as much what they do *not* have — site
 chrome, and any link pointing at them — as what they render.
 """
+import re
 import time
 
 from django.core.cache import cache
@@ -10,7 +11,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
+from apps.catalog.models import Product
 from apps.enquiries.models import Enquiry
+from apps.pages.models import LandingText
 
 LANDING_PATHS = [
     "/acoustic-wall-panels-for-offices/",
@@ -119,3 +122,41 @@ class LandingPageTests(TestCase):
         response = self.client.post(LANDING_PATHS[0], enquiry_payload(website="http://spam.example"))
         self.assertEqual(response.status_code, 400)
         self.assertFalse(Enquiry.objects.exists())
+
+    def test_the_ceilings_form_offers_only_the_designs_on_the_page(self):
+        body = self.client.get(LANDING_PATHS[1]).content.decode()
+        dropdown = re.search(r'<select[^>]*name="product[^"]*"[^>]*>.*?</select>', body, re.S).group(0)
+        self.assertEqual(
+            re.findall(r"<option[^>]*>(.*?)</option>", dropdown),
+            ["Select a product (optional)", "Wave", "Petal", "Blade", "Planks", "Grid", "Waffle", "Hive"],
+        )
+        # Nothing from the rest of the catalogue may appear here.
+        for product in Product.objects.published():
+            self.assertNotIn(product.name, dropdown)
+
+    def test_the_chosen_ceiling_design_reaches_the_enquiry_inbox(self):
+        response = self.client.post(LANDING_PATHS[1], enquiry_payload(product_slug="wave"))
+        self.assertEqual(response.status_code, 302)
+        enquiry = Enquiry.objects.get()
+        self.assertEqual(enquiry.collection_ref, "Acoustic Ceilings (campaign page) · Wave")
+        # The designs are not catalogue products, so none is linked.
+        self.assertIsNone(enquiry.product)
+
+    def test_every_ceiling_design_offers_a_link_to_its_product_page(self):
+        response = self.client.get(LANDING_PATHS[1])
+        body = response.content.decode()
+        # Seven designs, each with a details link beside its enquire button.
+        self.assertEqual(body.count("View product details"), 7)
+        # Until the designs have product pages of their own, every card points
+        # at the Acoustic Ceilings category page, which has to exist.
+        self.assertEqual(body.count('href="/categories/acoustic-ceilings/"'), 14)  # photo + link per card
+        self.assertEqual(self.client.get("/categories/acoustic-ceilings/").status_code, 200)
+
+    def test_a_design_can_be_pointed_at_its_own_product_page(self):
+        row = LandingText.objects.get(page="ceilings", key="design_1_url")
+        row.value = "/products/grooved-wall-panels/"
+        row.save()
+        body = self.client.get(LANDING_PATHS[1]).content.decode()
+        self.assertIn('href="/products/grooved-wall-panels/"', body)
+        # Only the design that was changed moves; the other six stay put.
+        self.assertEqual(body.count('href="/categories/acoustic-ceilings/"'), 12)

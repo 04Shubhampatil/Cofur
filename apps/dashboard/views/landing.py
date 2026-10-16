@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import TemplateView
 
+from apps.core.mixins import SEOFieldsMixin
 from apps.pages.landing_content import WALL_PAGE
 from apps.pages.landing_content_ceilings import CEILING_PAGE
 from apps.pages.models import LandingText
@@ -19,6 +20,9 @@ from ..mixins import DashboardPermissionMixin
 
 
 LONG_TEXT = 90  # characters; longer lines get a multi-line box
+
+# "Use the site setting" first, then the same wording the rest of the CMS uses.
+ROBOTS_CHOICES = [("", "Use the site setting")] + list(SEOFieldsMixin.ROBOTS_CHOICES)
 
 
 class LandingItemForm(forms.ModelForm):
@@ -31,11 +35,24 @@ class LandingItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         value = self.instance.value or ""
-        if "\n" in value or len(value) > LONG_TEXT:
+        if self.instance.key == "seo_robots":
+            self.fields["value"].widget = forms.Select(choices=ROBOTS_CHOICES, attrs={"class": "form-input"})
+        elif "\n" in value or len(value) > LONG_TEXT:
             self.fields["value"].widget = Textarea(attrs={"rows": 3, "class": "form-textarea"})
         else:
             self.fields["value"].widget = forms.TextInput(attrs={"class": "form-input"})
         self.fields["value"].required = False
+
+    def clean_value(self):
+        """A mistyped canonical address is worse than none, so check it here."""
+        value = self.cleaned_data.get("value") or ""
+        if self.instance.key == "seo_canonical":
+            value = value.strip()
+            if value and not value.startswith(("/", "http://", "https://")):
+                raise forms.ValidationError(
+                    "Enter a full web address (https://cofur.in/...) or a path starting with /."
+                )
+        return value
 
 
 # Editor sections, matched by the start of each item's key. First match wins.
@@ -52,6 +69,7 @@ SECTION_GROUPS = [
     ("FAQ", ("faq_",)),
     ("Closing", ("final_",)),
     ("Footer and mobile bar", ("footer_", "sticky_")),
+    ("SEO", ("seo_", "img_seo")),
 ]
 
 

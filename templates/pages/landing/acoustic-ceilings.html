@@ -72,13 +72,14 @@
       <ul class="lp-grid lp-grid-4" role="list">
         {% for design in designs %}
         <li class="lp-product" data-lp-reveal>
-          <div class="lp-product__media">
+          <a class="lp-product__media" href="{{ design.url }}">
             <img src="{{ design.photo_url }}" alt="{{ design.title }} acoustic ceiling" loading="lazy" decoding="async">
-          </div>
+          </a>
           <div class="lp-product__body">
             <h3>{{ design.title }}</h3>
             <p>{{ design.copy }}</p>
             <div class="lp-product__foot">
+              <a class="lp-link" href="{{ design.url }}" target="_blank" rel="noopener">{{ L.design_link }}</a>
               <a class="btn btn--light" href="#enquiry">{{ L.design_enquire }}</a>
             </div>
           </div>
