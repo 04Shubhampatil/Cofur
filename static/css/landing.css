@@ -757,9 +757,18 @@
     }
 }
 
+/* Medium widths: keep the menu links and let the header wrap onto two rows
+   instead of hiding the links. */
 @media(max-width:1080px) {
-    .lp-nav a:not(.btn) {
-        display: none;
+    .lp-bar .wrap {
+        flex-wrap: wrap;
+        row-gap: 12px;
+        padding: 12px 0;
+    }
+
+    .lp-nav {
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 }
 
@@ -1479,4 +1488,40 @@
     height: 16px;
     margin-right: 8px;
     flex: none;
+}
+
+/* Header alignment: logo on the first row; the menu row spans the full width,
+   with the links on the left and the icons and quote button on the right. Phones
+   show the links too. */
+@media(max-width:1080px) {
+    .lp-bar .wrap {
+        flex-wrap: wrap;
+        row-gap: 10px;
+        padding: 12px 0;
+    }
+
+    .lp .lp-nav {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px 22px;
+    }
+}
+
+@media(max-width:640px) {
+    .lp .lp-nav a:not(.btn):not(.lp-icon) {
+        display: inline;
+    }
+
+    .lp .lp-nav .btn {
+        white-space: nowrap;
+    }
+}
+
+/* Phones: the contact icons stay visible beside the menu links. */
+@media(max-width:640px) {
+    .lp .lp-nav a.lp-icon {
+        display: grid;
+    }
 }
