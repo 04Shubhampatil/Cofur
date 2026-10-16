@@ -59,25 +59,26 @@ WALL_PANELS = [
     },
 ]
 
-# The seven ceiling designs have no product pages of their own yet, so their
-# cards link to the Acoustic Ceilings category page. Each card's destination is
-# editable per design in the admin panel (Landing pages > Ceilings > Designs).
-CEILING_DETAILS_URL = "/categories/acoustic-ceilings/"
+# Each design's "View product details" goes to that design's own product page.
+# The collection page is the fallback if a design ever loses its product. Both
+# destinations are editable per design in the admin panel
+# (Landing pages > Ceilings > Products and designs).
+CEILING_DETAILS_URL = "/collections/acoustic-ceilings/"
 
 CEILING_DESIGNS = [
-    {"title": "Wave", "photo": "images/cofur/ceiling-wave.webp",
+    {"title": "Wave", "photo": "images/cofur/ceiling-wave.webp", "url": "/products/wave/",
      "copy": "A flowing acoustic ceiling design for contemporary workplace interiors."},
-    {"title": "Petal", "photo": "images/cofur/ceiling-petal.webp",
+    {"title": "Petal", "photo": "images/cofur/ceiling-petal.webp", "url": "/products/petal/",
      "copy": "An organic-inspired ceiling form for visually refined commercial spaces."},
-    {"title": "Blade", "photo": "images/cofur/ceiling-blade.webp",
+    {"title": "Blade", "photo": "images/cofur/ceiling-blade.webp", "url": "/products/blade/",
      "copy": "A linear design direction suitable for modern commercial workplace interiors."},
-    {"title": "Planks", "photo": "images/cofur/ceiling-planks.webp",
+    {"title": "Planks", "photo": "images/cofur/ceiling-planks.webp", "url": "/products/planks/",
      "copy": "A layered linear ceiling concept for contemporary workplace environments."},
-    {"title": "Grid", "photo": "images/cofur/ceiling-grid.webp",
+    {"title": "Grid", "photo": "images/cofur/ceiling-grid.webp", "url": "/products/grid/",
      "copy": "A structured ceiling design for modern commercial interiors."},
-    {"title": "Waffle", "photo": "images/cofur/ceiling-waffle.webp",
+    {"title": "Waffle", "photo": "images/cofur/ceiling-waffle.webp", "url": "/products/waffle/",
      "copy": "An architectural ceiling pattern for distinctive workplace environments."},
-    {"title": "Hive", "photo": "images/cofur/ceiling-hive.webp",
+    {"title": "Hive", "photo": "images/cofur/ceiling-hive.webp", "url": "/products/hive/",
      "copy": "A geometric ceiling design inspired by honeycomb forms."},
 ]
 
@@ -225,7 +226,7 @@ def acoustic_ceilings(request):
                     entry,
                     copy=text[f"design_{i}_copy"],
                     photo_url=images[f"img_design_{i}"],
-                    url=text.get(f"design_{i}_url") or CEILING_DETAILS_URL,
+                    url=text.get(f"design_{i}_url") or entry.get("url") or CEILING_DETAILS_URL,
                 )
                 for i, entry in enumerate(CEILING_DESIGNS, start=1)
             ],

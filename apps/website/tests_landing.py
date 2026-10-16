@@ -142,21 +142,23 @@ class LandingPageTests(TestCase):
         # The designs are not catalogue products, so none is linked.
         self.assertIsNone(enquiry.product)
 
-    def test_every_ceiling_design_offers_a_link_to_its_product_page(self):
+    def test_every_ceiling_design_links_to_its_own_product_page(self):
         response = self.client.get(LANDING_PATHS[1])
         body = response.content.decode()
         # Seven designs, each with a details link beside its enquire button.
         self.assertEqual(body.count("View product details"), 7)
-        # Until the designs have product pages of their own, every card points
-        # at the Acoustic Ceilings category page, which has to exist.
-        self.assertEqual(body.count('href="/categories/acoustic-ceilings/"'), 14)  # photo + link per card
-        self.assertEqual(self.client.get("/categories/acoustic-ceilings/").status_code, 200)
+        # Each card goes to its own product, from both the photo and the link.
+        for slug in ["wave", "petal", "blade", "planks", "grid", "waffle", "hive"]:
+            self.assertEqual(body.count(f'href="/products/{slug}/"'), 2, slug)
+        # The category page these used to point at does not exist on the live site.
+        self.assertNotIn("/categories/acoustic-ceilings/", body)
 
-    def test_a_design_can_be_pointed_at_its_own_product_page(self):
+    def test_a_design_can_be_pointed_somewhere_else_in_the_admin_panel(self):
         row = LandingText.objects.get(page="ceilings", key="design_1_url")
         row.value = "/products/grooved-wall-panels/"
         row.save()
         body = self.client.get(LANDING_PATHS[1]).content.decode()
         self.assertIn('href="/products/grooved-wall-panels/"', body)
         # Only the design that was changed moves; the other six stay put.
-        self.assertEqual(body.count('href="/categories/acoustic-ceilings/"'), 12)
+        self.assertNotIn('href="/products/wave/"', body)
+        self.assertEqual(body.count('href="/products/petal/"'), 2)
