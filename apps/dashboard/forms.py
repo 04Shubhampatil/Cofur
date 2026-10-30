@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.utils import timezone
 from django.forms import inlineformset_factory
@@ -31,6 +33,32 @@ from apps.team.models import TeamMember
 from .fields import CMSImageField, cms_formfield_callback
 
 SEO_FIELDS = ["seo_title", "meta_description", "meta_keywords", "og_title", "og_description", "og_image", "canonical_url", "robots"]
+
+GTM_ID = re.compile(r"^GTM-[A-Z0-9]{4,}$")
+META_TAG_CONTENT = re.compile(r"""content\s*=\s*["']([^"']+)["']""")
+
+
+def clean_verification_code(value):
+    """Google's verification code, whether the whole <meta> tag was pasted or just the code."""
+    value = (value or "").strip()
+    tag = META_TAG_CONTENT.search(value)
+    if tag:
+        value = tag.group(1).strip()
+    if value and (" " in value or "<" in value):
+        raise forms.ValidationError(
+            "Paste either the code itself or the whole <meta> tag Search Console gives you."
+        )
+    return value
+
+
+def clean_gtm_id(value):
+    """A Tag Manager container id, or empty to switch Tag Manager off."""
+    value = (value or "").strip().upper()
+    if value and not GTM_ID.match(value):
+        raise forms.ValidationError(
+            "Enter a Tag Manager ID like GTM-ABC1234, or leave it empty to switch Tag Manager off."
+        )
+    return value
 
 
 class CMSModelForm(forms.ModelForm):
@@ -295,6 +323,7 @@ class HomePageForm(CMSModelForm):
             "statement_heading", "statement_description", "statement_cta_text", "statement_cta_url", "statement_visible",
             "featured_heading", "featured_cta_text", "featured_visible",
             "why_heading", "why_image", "why_image_alt", "why_mobile_image", "why_mobile_alt", "why_visible",
+            *SEO_FIELDS,
         ]
 
 
@@ -341,6 +370,7 @@ class AboutPageForm(CMSModelForm):
             "recycled_heading", "recycled_content",
             "tree_heading", "tree_description",
             "india_image", "india_text", "india_visible",
+            *SEO_FIELDS,
         ]
 
 
@@ -351,6 +381,7 @@ class ContactPageForm(CMSModelForm):
             "page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt", "eyebrow", "heading", "intro_text",
             "visit_heading", "address", "mail_heading", "email", "hours_heading", "working_hours",
             "form_heading", "form_button_text", "success_message",
+            *SEO_FIELDS,
         ]
 
 
@@ -416,7 +447,14 @@ class SiteSettingsForm(CMSModelForm):
         fields = [
             "site_name", "tagline", "logo", "logo_light", "favicon", "contact_email", "phone_number", "whatsapp_number",
             "whatsapp_message", "address", "google_maps_url", "linkedin_url", "instagram_url", "twitter_url",
+            "google_site_verification", "gtm_container_id",
         ]
+
+    def clean_google_site_verification(self):
+        return clean_verification_code(self.cleaned_data.get("google_site_verification"))
+
+    def clean_gtm_container_id(self):
+        return clean_gtm_id(self.cleaned_data.get("gtm_container_id"))
 
 
 class FooterSettingsForm(CMSModelForm):

@@ -16,6 +16,14 @@ Expects: `form` (EnquiryForm), `success_message` (text), `interest`
   {{ form.form_started }}
   {% if not product_options %}{{ form.product_slug }}{% endif %}
   <input type="hidden" name="collection" value="{{ interest }}">
+  {% comment %}
+  The campaign page this form sits on, submitted with the enquiry so anything
+  reading the submission (analytics, Tag Manager) knows where the lead came
+  from. The notification email does not read these: it takes the page from the
+  server, which a visitor cannot edit.
+  {% endcomment %}
+  <input type="hidden" name="page_title" value="{{ page_title }}">
+  <input type="hidden" name="page_url" value="{{ page_url }}">
 
   <h2 class="contact-form-title">{{ form_heading|default:"Tell us about your project" }}</h2>
   <p class="lp-form__required">Fields marked <em style="font-style:normal;color:var(--peach)">*</em> are required.</p>

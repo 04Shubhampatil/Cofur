@@ -254,6 +254,9 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@cofur.in")
 ENQUIRY_NOTIFICATION_EMAIL = env("ENQUIRY_NOTIFICATION_EMAIL", "")
+# Leads from the campaign landing pages go here whatever the setting above
+# says, so a campaign is never quietly collecting enquiries nobody is emailed.
+LANDING_ENQUIRY_EMAIL = env("LANDING_ENQUIRY_EMAIL", "info@cofur.in")
 
 # ---------------------------------------------------------------------------
 # Cache (used for enquiry rate limiting)

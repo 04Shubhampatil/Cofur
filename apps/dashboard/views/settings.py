@@ -53,6 +53,7 @@ class SiteSettingsView(SiteSettingsBaseView):
         ("Brand", ["site_name", "tagline", "logo", "logo_light", "favicon"]),
         ("Contact", ["contact_email", "phone_number", "address", "google_maps_url", "whatsapp_number", "whatsapp_message"]),
         ("Social profiles (footer icons)", ["linkedin_url", "instagram_url", "twitter_url"]),
+        ("Google", ["google_site_verification", "gtm_container_id"]),
     ]
 
 

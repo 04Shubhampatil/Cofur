@@ -15,11 +15,13 @@ the real COFUR one (same EnquiryForm, same spam checks, same dashboard inbox);
 it posts back to the landing page instead of /enquire/ so a visitor who has
 just converted stays on the campaign page and sees the success message there.
 """
+from django.conf import settings
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.views.decorators.http import require_http_methods
 
 from apps.enquiries.forms import EnquiryForm
+from apps.core.models import SiteSettings
 from apps.enquiries.services import is_rate_limited, save_enquiry
 from apps.pages.landing_content import WALL_PAGE
 from apps.pages.landing_content_ceilings import CEILING_PAGE
@@ -135,11 +137,15 @@ def _landing_seo(request, extra, title, description):
     return seo
 
 
-def _render(request, *, template, interest, title, description, extra=None):
+def _render(request, *, template, interest, title, description, extra=None, notify_email=""):
     """Shared GET/POST handling for a landing page.
 
     ``interest`` is stored on the enquiry as its free-text interest, so the
     dashboard shows which campaign page a lead arrived from.
+
+    ``notify_email`` sends this page's leads to a fixed address, with the page
+    title and address in the mail so whoever reads it knows which campaign the
+    lead came from. Pages without it email the usual enquiry address.
     """
     status = 200
 
@@ -153,11 +159,20 @@ def _render(request, *, template, interest, title, description, extra=None):
             options = dict((extra or {}).get("product_options", []))
             chosen = request.POST.get("product_slug", "")
             interest_text = f"{interest} · {options[chosen]}" if chosen in options else interest
+            notify = None
+            if notify_email:
+                notify = {
+                    "email": notify_email,
+                    "page_title": (extra or {}).get("L", {}).get("seo_title") or title,
+                    "page_url": request.build_absolute_uri(request.path),
+                    "product_interest": options.get(chosen, ""),
+                }
             save_enquiry(
                 enquiry,
                 request,
                 source="product" if enquiry.product_id else "contact",
                 collection_ref=interest_text,
+                notify=notify,
             )
             return redirect(f"{request.path}?sent=1#enquiry")
         if limited:
@@ -176,6 +191,12 @@ def _render(request, *, template, interest, title, description, extra=None):
         "success_message": SUCCESS_MESSAGE,
         "seo": _landing_seo(request, extra or {}, title, description),
         "body_page": "landing",
+        # Carried as hidden fields on the form, for whatever reads the
+        # submission. The email uses the server's own copy of these.
+        "page_title": (extra or {}).get("L", {}).get("seo_title") or title,
+        "page_url": request.build_absolute_uri(request.path),
+        # This campaign's own Tag Manager container, or the site's.
+        "gtm_id": (extra or {}).get("L", {}).get("gtm_id") or SiteSettings.load().gtm_container_id,
     }
     context.update(extra or {})
     return render(request, template, context, status=status)
@@ -204,6 +225,9 @@ def acoustic_wall_panels(request):
             "IMG": images,
             "success_message": text.get("form_success", SUCCESS_MESSAGE),
         },
+        # Campaign leads are emailed to the info address, with the page title
+        # and address in the mail.
+        notify_email=settings.LANDING_ENQUIRY_EMAIL,
     )
 
 
@@ -235,4 +259,5 @@ def acoustic_ceilings(request):
             "IMG": images,
             "success_message": text.get("form_success", SUCCESS_MESSAGE),
         },
+        notify_email=settings.LANDING_ENQUIRY_EMAIL,
     )

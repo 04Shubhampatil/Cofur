@@ -95,6 +95,7 @@ class HomePageEditView(SingletonPageView):
         ("statement", "Brand statement", ["statement_heading", "statement_description", "statement_cta_text", "statement_cta_url", "statement_visible"], "lines", "Statement lines"),
         ("featured", "Featured products", ["featured_heading", "featured_cta_text", "featured_visible"], None, None),
         ("why", "Differentiators", ["why_heading", "why_image", "why_image_alt", "why_mobile_image", "why_mobile_alt", "why_visible"], "differentiators", "Differentiator items"),
+        ("seo", "SEO", SEO_FIELDS, None, None),
     ]
 
     def get_context_data(self, **kwargs):
@@ -121,6 +122,7 @@ class AboutPageEditView(SingletonPageView):
         ("recycled", "Recycled materials", ["recycled_heading", "recycled_content"], None, None),
         ("tree", "Tree planting", ["tree_heading", "tree_description"], None, None),
         ("india", "Made in India", ["india_image", "india_text", "india_visible"], None, None),
+        ("seo", "SEO", SEO_FIELDS, None, None),
     ]
 
     def get_context_data(self, **kwargs):
@@ -171,6 +173,7 @@ class ContactPageEditView(SingletonPageView):
         ("hero", "Banner & intro", ["page_title", "banner_image", "banner_alt", "banner_mobile_image", "banner_mobile_alt", "eyebrow", "heading", "intro_text"], None, None),
         ("details", "Contact details", ["visit_heading", "address", "mail_heading", "email", "hours_heading", "working_hours"], None, None),
         ("form", "Contact form", ["form_heading", "form_button_text", "success_message"], None, None),
+        ("seo", "SEO", SEO_FIELDS, None, None),
     ]
 
     def get_context_data(self, **kwargs):

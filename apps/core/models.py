@@ -41,6 +41,16 @@ class SiteSettings(SingletonModel):
     default_og_image = models.ImageField(upload_to="seo/", blank=True, null=True)
     default_robots = models.CharField(max_length=40, default="index, follow")
 
+    # Google
+    google_site_verification = models.CharField(
+        "Google site verification", max_length=200, blank=True,
+        help_text="From Search Console's HTML tag method. Paste the whole <meta> tag if you like — the code is taken out of it.",
+    )
+    gtm_container_id = models.CharField(
+        "Google Tag Manager ID", max_length=20, blank=True, default="GTM-MF44GQNS",
+        help_text="For example GTM-ABC1234. Leave empty to switch Tag Manager off across the site.",
+    )
+
     class Meta:
         verbose_name = "Site settings"
         verbose_name_plural = "Site settings"

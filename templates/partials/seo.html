@@ -1,4 +1,5 @@
 {% with s=seo %}
+  {% if site.google_site_verification %}<meta name="google-site-verification" content="{{ site.google_site_verification }}">{% endif %}
   <title>{{ s.title|default:site.default_meta_title|default:site.site_name }}</title>
   {% if s.description|default:site.default_meta_description %}<meta name="description" content="{{ s.description|default:site.default_meta_description }}">{% endif %}
   {% if s.keywords|default:site.default_meta_keywords %}<meta name="keywords" content="{{ s.keywords|default:site.default_meta_keywords }}">{% endif %}

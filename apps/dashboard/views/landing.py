@@ -16,6 +16,7 @@ from apps.pages.landing_content import WALL_PAGE
 from apps.pages.landing_content_ceilings import CEILING_PAGE
 from apps.pages.models import LandingText
 
+from ..forms import clean_gtm_id
 from ..mixins import DashboardPermissionMixin
 
 
@@ -44,7 +45,7 @@ class LandingItemForm(forms.ModelForm):
         self.fields["value"].required = False
 
     def clean_value(self):
-        """A mistyped canonical address is worse than none, so check it here."""
+        """A mistyped canonical address or tracking id is worse than none."""
         value = self.cleaned_data.get("value") or ""
         if self.instance.key == "seo_canonical":
             value = value.strip()
@@ -52,6 +53,8 @@ class LandingItemForm(forms.ModelForm):
                 raise forms.ValidationError(
                     "Enter a full web address (https://cofur.in/...) or a path starting with /."
                 )
+        elif self.instance.key == "gtm_id":
+            value = clean_gtm_id(value)
         return value
 
 
@@ -70,6 +73,7 @@ SECTION_GROUPS = [
     ("Closing", ("final_",)),
     ("Footer and mobile bar", ("footer_", "sticky_")),
     ("SEO", ("seo_", "img_seo")),
+    ("Tracking", ("gtm_",)),
 ]
 
 

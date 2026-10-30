@@ -6,9 +6,10 @@ chrome, and any link pointing at them — as what they render.
 import re
 import time
 
+from django.core import mail
 from django.core.cache import cache
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.catalog.models import Product
@@ -122,6 +123,90 @@ class LandingPageTests(TestCase):
         response = self.client.post(LANDING_PATHS[0], enquiry_payload(website="http://spam.example"))
         self.assertEqual(response.status_code, 400)
         self.assertFalse(Enquiry.objects.exists())
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="")
+    def test_a_wall_panels_enquiry_is_emailed_with_the_page_it_came_from(self):
+        self.client.post(LANDING_PATHS[0], enquiry_payload(product_slug="grooved-wall-panels"))
+
+        self.assertEqual(len(mail.outbox), 1)
+        notification = mail.outbox[0]
+        self.assertEqual(notification.to, ["info@cofur.test"])
+        self.assertIn("Acoustic Wall Panels for Offices", notification.subject)
+        self.assertIn("Asha Mehta", notification.subject)
+        # The page that produced the lead, by name and by address.
+        self.assertIn("Page: Acoustic Wall Panels for Offices | COFUR India", notification.body)
+        self.assertIn("Page URL: http://testserver/acoustic-wall-panels-for-offices/", notification.body)
+        # And the enquiry itself, as before.
+        for detail in ["asha@studio.example", "+91 98200 11223", "Mehta Design Studio", "Pune",
+                       "Grooved Wall Panels", "4,000 sq ft office fit-out"]:
+            self.assertIn(detail, notification.body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="")
+    def test_a_ceilings_enquiry_is_emailed_with_the_page_it_came_from(self):
+        self.client.post(LANDING_PATHS[1], enquiry_payload(product_slug="wave"))
+
+        self.assertEqual(len(mail.outbox), 1)
+        notification = mail.outbox[0]
+        self.assertEqual(notification.to, ["info@cofur.test"])
+        self.assertIn("Acoustic Ceilings for Commercial Offices", notification.subject)
+        self.assertIn("Page: Acoustic Ceilings for Commercial Offices | COFUR", notification.body)
+        self.assertIn("Page URL: http://testserver/acoustic-ceilings-for-offices/", notification.body)
+        self.assertIn("Acoustic Ceilings (campaign page) · Wave", notification.body)
+
+    def test_both_forms_carry_their_page_title_and_address(self):
+        for path, title in [
+            (LANDING_PATHS[0], "Acoustic Wall Panels for Offices | COFUR India"),
+            (LANDING_PATHS[1], "Acoustic Ceilings for Commercial Offices | COFUR"),
+        ]:
+            with self.subTest(path=path):
+                body = self.client.get(path).content.decode()
+                self.assertIn(f'<input type="hidden" name="page_title" value="{title}">', body)
+                self.assertIn(f'<input type="hidden" name="page_url" value="http://testserver{path}">', body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="")
+    def test_the_mail_ignores_a_page_address_sent_by_the_visitor(self):
+        """The hidden fields are for whoever reads the submission, not for us."""
+        self.client.post(LANDING_PATHS[1], enquiry_payload(
+            page_title="Spoofed title", page_url="https://evil.example/",
+        ))
+        body = mail.outbox[0].body
+        self.assertIn("Page URL: http://testserver/acoustic-ceilings-for-offices/", body)
+        self.assertNotIn("evil.example", body)
+        self.assertNotIn("Spoofed title", body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="")
+    def test_the_mail_names_the_product_the_visitor_picked_on_both_pages(self):
+        for path, slug, expected in [
+            # A real catalogue product on the wall panels page...
+            (LANDING_PATHS[0], "grooved-wall-panels", "Product: Grooved Wall Panels"),
+            # ...and a ceiling design, which is not a catalogue record.
+            (LANDING_PATHS[1], "petal", "Product: Petal"),
+        ]:
+            with self.subTest(path=path):
+                mail.outbox = []
+                cache.clear()
+                self.client.post(path, enquiry_payload(product_slug=slug))
+                self.assertIn(expected, mail.outbox[0].body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="")
+    def test_the_mail_says_so_when_no_product_was_picked(self):
+        self.client.post(LANDING_PATHS[1], enquiry_payload(product_slug=""))
+        self.assertIn("Product: -", mail.outbox[0].body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="leads@cofur.test")
+    def test_both_landing_pages_email_the_info_address_not_the_usual_one(self):
+        for path in LANDING_PATHS:
+            with self.subTest(path=path):
+                mail.outbox.clear()
+                self.client.post(path, enquiry_payload())
+                self.assertEqual(mail.outbox[0].to, ["info@cofur.test"])
+                self.assertIn("Page URL:", mail.outbox[0].body)
+
+    @override_settings(LANDING_ENQUIRY_EMAIL="info@cofur.test", ENQUIRY_NOTIFICATION_EMAIL="leads@cofur.test")
+    def test_the_rest_of_the_site_keeps_emailing_the_usual_address(self):
+        self.client.post("/contact/", enquiry_payload())
+        self.assertEqual(mail.outbox[0].to, ["leads@cofur.test"])
+        self.assertNotIn("Page URL:", mail.outbox[0].body)
 
     def test_the_ceilings_form_offers_only_the_designs_on_the_page(self):
         body = self.client.get(LANDING_PATHS[1]).content.decode()
